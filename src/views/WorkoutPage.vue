@@ -18,6 +18,7 @@ const toast = useToast()
 const logInput = ref('')
 const parseError = ref('')
 const plateConfig = ref<ReturnType<typeof plateCalc> | null>(null)
+const logging = ref(false)
 
 const currentExercise = computed(() => workoutStore.currentExercise)
 const currentSetNumber = computed(() => workoutStore.currentSetNumber)
@@ -131,14 +132,19 @@ watch(logInput, (val) => {
 async function handleSubmit() {
   try {
     const parsed = parseLogInput(logInput.value)
-    const ok = await workoutStore.logSet(parsed.weight, parsed.reps, parsed.rpe)
-    if (!ok) {
-      toast('Failed to save set')
-      return
+    logging.value = true
+    try {
+      const ok = await workoutStore.logSet(parsed.weight, parsed.reps, parsed.rpe)
+      if (!ok) {
+        toast('Failed to save set')
+        return
+      }
+      logInput.value = ''
+      parseError.value = ''
+      plateConfig.value = null
+    } finally {
+      logging.value = false
     }
-    logInput.value = ''
-    parseError.value = ''
-    plateConfig.value = null
   } catch (e) {
     parseError.value = e instanceof ParseError ? e.message : 'Invalid input'
   }
@@ -218,6 +224,7 @@ async function handleAbandon() {
         <RInput
           v-model="logInput"
           placeholder="150 12 9"
+          :disabled="logging"
           @keyup.enter="handleSubmit"
         />
         <RText v-if="parseError" tag="p" class="error">{{ parseError }}</RText>
@@ -233,7 +240,11 @@ async function handleAbandon() {
             {{ plateConfig.perSide.map((p) => `${p.count}×${p.weight}`).join(' + ') }}
           </RText>
         </div>
-        <RButton type="primary" @click="handleSubmit" :disabled="!logInput.trim()">
+        <RButton
+          type="primary"
+          @click="handleSubmit"
+          :disabled="!logInput.trim() || logging"
+        >
           Log Set
         </RButton>
       </RCard>
