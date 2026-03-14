@@ -39,8 +39,12 @@ export function suggest(
   }
 
   if (!lastSlot && !lastExercise) {
+    const rpeText =
+      exercise.earlySetRPE != null && exercise.earlySetRPE !== exercise.lastSetRPE
+        ? `RPE ${exercise.earlySetRPE}-${exercise.lastSetRPE}`
+        : `RPE ${exercise.lastSetRPE}`
     return {
-      note: `Try ${exercise.repRange[0]}-${exercise.repRange[1]} reps at RPE ${exercise.earlySetRPE ?? exercise.lastSetRPE}-${exercise.lastSetRPE}`,
+      note: `Try ${exercise.repRange[0]}-${exercise.repRange[1]} reps at ${rpeText}`,
       ...histories,
     }
   }

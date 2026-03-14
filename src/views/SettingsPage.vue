@@ -3,6 +3,7 @@ import { ref, onMounted, computed } from 'vue'
 import { db } from '../lib/db'
 import { getGoal } from '../lib/strengthGoals'
 import { getPendingCount, flushSyncQueue } from '../lib/sync'
+import { downloadBackup, importFromJson, parseSheetCsv } from '../lib/backup'
 import { RButton, RCard, RInput, RText, useToast } from 'roughness'
 
 const KEY_LIFTS = [
@@ -21,6 +22,11 @@ const appsScriptUrl = ref('')
 const saving = ref(false)
 const syncing = ref(false)
 const pendingCount = ref(0)
+const exporting = ref(false)
+const importing = ref(false)
+const importResult = ref<string | null>(null)
+const jsonInputRef = ref<HTMLInputElement | null>(null)
+const csvInputRef = ref<HTMLInputElement | null>(null)
 
 const LEVELS = [
   { value: 'beginner' as const, label: 'Beginner' },
@@ -83,6 +89,87 @@ function setUnit(u: 'lb' | 'kg') {
     weightDisplay.value = String(u === 'kg' ? kg : toLbs(kg))
   }
   unit.value = u
+}
+
+async function handleExport() {
+  exporting.value = true
+  try {
+    await downloadBackup()
+    toast('Backup downloaded')
+  } catch (e) {
+    console.error('[SettingsPage] Export failed', e)
+    toast('Export failed')
+  } finally {
+    exporting.value = false
+  }
+}
+
+function triggerJsonInput() {
+  jsonInputRef.value?.click()
+}
+
+function triggerCsvInput() {
+  csvInputRef.value?.click()
+}
+
+async function handleImportJson(e: Event) {
+  const input = e.target as HTMLInputElement
+  const file = input.files?.[0]
+  if (!file) return
+  importing.value = true
+  importResult.value = null
+  try {
+    const text = await file.text()
+    const result = await importFromJson(text)
+    if (result.error) {
+      toast(result.error)
+      importResult.value = result.error
+    } else {
+      const parts = []
+      if (result.sessionsImported > 0) parts.push(`${result.sessionsImported} sessions`)
+      if (result.setsImported > 0) parts.push(`${result.setsImported} sets`)
+      if (result.profileRestored) parts.push('profile')
+      if (result.programStateRestored) parts.push('program')
+      toast(`Restored: ${parts.join(', ')}`)
+      importResult.value = `Restored ${result.sessionsImported} sessions, ${result.setsImported} sets`
+      if (result.profileRestored) importResult.value += ', profile'
+      if (result.programStateRestored) importResult.value += ', program state'
+    }
+  } catch (err) {
+    toast('Import failed')
+    importResult.value = 'Import failed'
+    console.error('[SettingsPage] Import failed', err)
+  } finally {
+    importing.value = false
+    input.value = ''
+  }
+}
+
+async function handleImportSheet(e: Event) {
+  const input = e.target as HTMLInputElement
+  const file = input.files?.[0]
+  if (!file) return
+  importing.value = true
+  importResult.value = null
+  try {
+    const csv = await file.text()
+    const data = parseSheetCsv(csv)
+    const result = await importFromJson(JSON.stringify(data))
+    if (result.error) {
+      toast(result.error)
+      importResult.value = result.error
+    } else {
+      toast(`Restored ${result.sessionsImported} sessions, ${result.setsImported} sets from Sheet`)
+      importResult.value = `Restored ${result.sessionsImported} sessions, ${result.setsImported} sets`
+    }
+  } catch (err) {
+    toast('Import failed')
+    importResult.value = 'Import failed'
+    console.error('[SettingsPage] Sheet import failed', err)
+  } finally {
+    importing.value = false
+    input.value = ''
+  }
 }
 
 async function handleSync() {
@@ -205,6 +292,9 @@ const keyLiftGoals = computed(() => {
 
       <div class="sync-section">
         <RText tag="h3">Sync to Google Sheet</RText>
+        <RText v-if="!appsScriptUrl.trim()" tag="p" class="sync-hint">
+          Add an Apps Script URL above and save to enable sync.
+        </RText>
         <RText tag="p" class="sync-status">
           {{ pendingCount }} workout(s) pending sync
         </RText>
@@ -214,6 +304,39 @@ const keyLiftGoals = computed(() => {
         >
           {{ syncing ? 'Syncing…' : 'Sync now' }}
         </RButton>
+      </div>
+
+      <div class="backup-section">
+        <RText tag="h3">Backup & Restore</RText>
+        <RText tag="p" class="backup-hint">
+          Export saves your history to a file. Restore recovers data lost in incognito or on a new device.
+        </RText>
+        <div class="backup-actions">
+          <RButton :disabled="exporting" @click="handleExport">
+            {{ exporting ? 'Exporting…' : 'Download backup' }}
+          </RButton>
+          <RButton :disabled="importing" @click="triggerJsonInput">
+            Import backup (.json)
+          </RButton>
+          <RButton :disabled="importing" @click="triggerCsvInput">
+            Import from Sheet (.csv)
+          </RButton>
+          <input
+            ref="jsonInputRef"
+            type="file"
+            accept=".json,application/json"
+            class="file-input"
+            @change="handleImportJson"
+          />
+          <input
+            ref="csvInputRef"
+            type="file"
+            accept=".csv,text/csv"
+            class="file-input"
+            @change="handleImportSheet"
+          />
+        </div>
+        <RText v-if="importResult" tag="p" class="import-result">{{ importResult }}</RText>
       </div>
 
       <div v-if="keyLiftGoals.length > 0" class="key-lifts">
@@ -265,6 +388,42 @@ const keyLiftGoals = computed(() => {
 .sync-section h3 {
   margin: 0 0 0.5rem 0;
   font-size: 1rem;
+}
+.backup-section {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--r-color-stroke, #ccc);
+}
+.backup-section h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1rem;
+}
+.backup-hint {
+  margin: 0 0 0.75rem 0;
+  font-size: 0.9rem;
+  color: var(--r-color-text-secondary, #666);
+}
+.backup-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.file-input {
+  position: absolute;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+.import-result {
+  margin: 0.5rem 0 0;
+  font-size: 0.9rem;
+  color: var(--r-color-text-secondary, #666);
+}
+.sync-hint {
+  margin: 0 0 0.25rem 0;
+  font-size: 0.85rem;
+  color: var(--r-color-text-secondary, #666);
 }
 .sync-status {
   margin: 0 0 0.5rem 0;

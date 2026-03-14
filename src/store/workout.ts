@@ -112,20 +112,31 @@ export const useWorkoutStore = defineStore('workout', () => {
 
   async function completeWorkout(): Promise<boolean> {
     const session = activeSession.value
-    if (!session) return false
+    if (!session || session.id == null) return false
+    const sets = completedSets.value
+    const completedSession = { ...session, status: 'completed' as const, completedAt: Date.now() }
     try {
       await db.sessions.update(session.id!, {
         status: 'completed',
-        completedAt: Date.now(),
+        completedAt: completedSession.completedAt,
       })
-      const sets = completedSets.value
       activeSession.value = null
       todayExercises.value = []
       completedSets.value = []
-      await enqueueSync({ ...session, status: 'completed', completedAt: Date.now() }, sets)
+      try {
+        await enqueueSync(completedSession, sets)
+      } catch (syncErr) {
+        console.warn('[workout.completeWorkout] Sync queue failed (workout saved)', syncErr)
+      }
       return true
     } catch (e) {
-      console.error('[workout.completeWorkout] Failed to complete session', { sessionId: session.id }, e)
+      const errMsg = e instanceof Error ? e.message : String(e)
+      const errStack = e instanceof Error ? e.stack : undefined
+      console.error('[workout.completeWorkout] Failed to complete session', {
+        sessionId: session.id,
+        error: errMsg,
+        stack: errStack,
+      }, e)
       return false
     }
   }
@@ -193,6 +204,25 @@ export const useWorkoutStore = defineStore('workout', () => {
     }
   }
 
+  async function unskipExercise(): Promise<boolean> {
+    const session = activeSession.value
+    if (!session || session.currentExerciseIndex <= 0) return false
+    try {
+      const prevIdx = session.currentExerciseIndex - 1
+      await db.sessions.update(session.id!, {
+        currentExerciseIndex: prevIdx,
+      })
+      activeSession.value = {
+        ...session,
+        currentExerciseIndex: prevIdx,
+      }
+      return true
+    } catch (e) {
+      console.error('[workout.unskipExercise] Failed to go back', { sessionId: session.id }, e)
+      return false
+    }
+  }
+
   return {
     activeSession,
     todayExercises,
@@ -207,5 +237,6 @@ export const useWorkoutStore = defineStore('workout', () => {
     loadResumableSession,
     resumeSession,
     skipExercise,
+    unskipExercise,
   }
 })

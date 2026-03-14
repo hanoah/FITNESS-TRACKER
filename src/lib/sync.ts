@@ -12,8 +12,9 @@ export interface SyncPayload {
 }
 
 export async function enqueueSync(session: WorkoutSession, sets: SetLog[]): Promise<void> {
+  const payload: SyncPayload = JSON.parse(JSON.stringify({ session, sets }))
   await db.syncQueue.add({
-    payload: { session, sets } as SyncPayload,
+    payload,
     timestamp: Date.now(),
     synced: false,
   })

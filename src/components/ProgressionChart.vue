@@ -9,9 +9,11 @@ const props = defineProps<{
 
 const chartRef = ref<HTMLDivElement | null>(null)
 let chartInstance: { remove?: () => void } | null = null
+let mounted = true
+let renderSlot = 0
 
-function renderChart() {
-  if (!chartRef.value || props.data.length === 0) return
+function doRender() {
+  if (!mounted || !chartRef.value || props.data.length === 0) return
 
   const labels = props.data.map((d) => d.date)
   const values = props.data.map((d) => d.weight)
@@ -33,6 +35,21 @@ function renderChart() {
   })
 }
 
+function renderChart() {
+  if (!chartRef.value || props.data.length === 0) return
+  const framesToWait = renderSlot++
+  function waitThenRender(remaining: number) {
+    requestAnimationFrame(() => {
+      if (remaining <= 0) {
+        doRender()
+      } else {
+        waitThenRender(remaining - 1)
+      }
+    })
+  }
+  requestAnimationFrame(() => waitThenRender(framesToWait))
+}
+
 onMounted(() => {
   if (props.data.length > 0) {
     renderChart()
@@ -50,6 +67,7 @@ watch(
 )
 
 onUnmounted(() => {
+  mounted = false
   try {
     if (chartInstance?.remove) chartInstance.remove()
   } catch {

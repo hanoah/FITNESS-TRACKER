@@ -92,6 +92,8 @@ const upcomingExercises = computed(() => {
   return workoutStore.todayExercises.slice(idx + 1)
 })
 
+const canUnskip = computed(() => (workoutStore.activeSession?.currentExerciseIndex ?? 0) > 0)
+
 const isBarbell = computed(() => {
   const ex = currentExercise.value
   if (!ex) return false
@@ -197,6 +199,17 @@ async function handleSkip() {
   plateConfig.value = null
 }
 
+async function handleUnskip() {
+  const ok = await workoutStore.unskipExercise()
+  if (!ok) {
+    toast('Failed to go back')
+    return
+  }
+  logInput.value = ''
+  parseError.value = ''
+  plateConfig.value = null
+}
+
 async function handleComplete() {
   const ok = await workoutStore.completeWorkout()
   if (!ok) {
@@ -229,6 +242,7 @@ async function handleAbandon() {
     <div v-if="!currentExercise" class="done">
       <RCard>
         <RText tag="h2">All done!</RText>
+        <RButton v-if="canUnskip" @click="handleUnskip" class="back-btn">Back</RButton>
         <RButton type="primary" @click="handleComplete">Complete Workout</RButton>
         <RButton @click="handleAbandon">Abandon</RButton>
       </RCard>
@@ -238,7 +252,10 @@ async function handleAbandon() {
       <RCard class="exercise-card">
         <div class="exercise-header">
           <RText tag="h2" class="exercise-name">{{ currentExercise.name }}</RText>
-          <RButton @click="handleSkip">Skip</RButton>
+          <div class="exercise-actions">
+            <RButton v-if="canUnskip" @click="handleUnskip">Back</RButton>
+            <RButton @click="handleSkip">Skip</RButton>
+          </div>
         </div>
         <RText tag="p" class="exercise-notes">{{ currentExercise.notes }}</RText>
         <RText tag="p" class="set-info">
@@ -342,6 +359,11 @@ async function handleAbandon() {
   justify-content: space-between;
   align-items: flex-start;
   gap: 0.75rem;
+}
+.exercise-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
 }
 .exercise-name {
   font-size: 1.25rem;
@@ -449,5 +471,8 @@ async function handleAbandon() {
 .done {
   text-align: center;
   padding: 2rem;
+}
+.done .back-btn {
+  margin-bottom: 0.5rem;
 }
 </style>
