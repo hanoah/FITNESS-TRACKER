@@ -40,7 +40,7 @@ export function suggest(
 
   if (!lastSlot && !lastExercise) {
     return {
-      note: `Try ${exercise.repRange[0]}-${exercise.repRange[1]} reps at RPE ${exercise.earlySetRPE}-${exercise.lastSetRPE}`,
+      note: `Try ${exercise.repRange[0]}-${exercise.repRange[1]} reps at RPE ${exercise.earlySetRPE ?? exercise.lastSetRPE}-${exercise.lastSetRPE}`,
       ...histories,
     }
   }

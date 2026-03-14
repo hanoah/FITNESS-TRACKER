@@ -83,7 +83,7 @@ describe('suggest', () => {
     expect(result.weight).toBe(31.25)
   })
 
-  it('handles null earlySetRPE without crash', () => {
+  it('handles null earlySetRPE without crash, uses lastSetRPE as fallback', () => {
     const exWithNullRPE: ResolvedExercise = {
       ...baseExercise,
       earlySetRPE: undefined as unknown as number,
@@ -91,5 +91,6 @@ describe('suggest', () => {
     const result = suggest(exWithNullRPE, [], [])
     expect(result.note).toBeDefined()
     expect(result.note).toContain('6-8 reps')
+    expect(result.note).toContain('RPE 8-8')
   })
 })
