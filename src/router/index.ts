@@ -21,6 +21,12 @@ const router = createRouter({
       component: () => import('../views/HistoryPage.vue'),
       meta: { title: 'History' },
     },
+    {
+      path: '/settings',
+      name: 'settings',
+      component: () => import('../views/SettingsPage.vue'),
+      meta: { title: 'Settings' },
+    },
   ],
 })
 

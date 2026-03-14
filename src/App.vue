@@ -11,6 +11,7 @@
             <RouterLink to="/" class="nav-link">Home</RouterLink>
             <RouterLink to="/workout" class="nav-link">Workout</RouterLink>
             <RouterLink to="/history" class="nav-link">History</RouterLink>
+            <RouterLink to="/settings" class="nav-link">Settings</RouterLink>
           </nav>
         </header>
         <main class="main">
