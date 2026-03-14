@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { RButton, RCard, RText, useToast } from 'roughness'
 import { db } from '../lib/db'
+import ProgressionChart from '../components/ProgressionChart.vue'
 import type { WorkoutSession, SetLog } from '../types/session'
 
 const sessions = ref<WorkoutSession[]>([])
@@ -32,13 +33,18 @@ async function loadSets(sessionId: number) {
   }
 }
 
-function toggleExpand(s: WorkoutSession) {
+async function toggleExpand(s: WorkoutSession) {
   const id = s.id!
   if (expandedId.value === id) {
     expandedId.value = null
   } else {
     expandedId.value = id
-    loadSets(id)
+    await loadSets(id)
+    const sets = setsBySession.value[id] ?? []
+    const groups = groupSetsByExercise(sets)
+    for (const g of groups) {
+      await loadProgressionData(g.exerciseName)
+    }
   }
 }
 
@@ -67,7 +73,7 @@ function formatDayType(dayType: string) {
     .replace(/\b\w/g, (c) => c.toUpperCase())
 }
 
-function groupSetsByExercise(sets: SetLog[]): { exerciseName: string; sets: SetLog[] }[] {
+function groupSetsByExercise(sets: SetLog[]): { exerciseName: string; slotKey: string; sets: SetLog[] }[] {
   const bySlot = new Map<string, SetLog[]>()
   for (const s of sets) {
     const key = s.exerciseSlot
@@ -76,8 +82,40 @@ function groupSetsByExercise(sets: SetLog[]): { exerciseName: string; sets: SetL
   }
   return Array.from(bySlot.entries()).map(([slot, arr]) => {
     const sorted = [...arr].sort((a, b) => (a.setNumber ?? 0) - (b.setNumber ?? 0))
-    return { exerciseName: sorted[0]?.exerciseName ?? slot, sets: sorted }
+    return { exerciseName: sorted[0]?.exerciseName ?? slot, slotKey: slot, sets: sorted }
   })
+}
+
+const progressionDataByExercise = ref<Record<string, { date: string; weight: number }[]>>({})
+
+async function loadProgressionData(exerciseName: string) {
+  if (progressionDataByExercise.value[exerciseName]) return
+  try {
+    const allSets = await db.sets.where('exerciseName').equals(exerciseName).toArray()
+    const bySession = new Map<number, SetLog[]>()
+    for (const s of allSets) {
+      if (!bySession.has(s.sessionId)) bySession.set(s.sessionId, [])
+      bySession.get(s.sessionId)!.push(s)
+    }
+    const sessionIds = Array.from(bySession.keys())
+    const sessionList = await db.sessions.where('id').anyOf(sessionIds).toArray()
+    const dateBySession = new Map<number, string>()
+    for (const sess of sessionList) {
+      if (sess.id) dateBySession.set(sess.id, sess.date)
+    }
+    const points: { date: string; weight: number }[] = []
+    for (const [sid, sets] of bySession.entries()) {
+      const date = dateBySession.get(sid)
+      if (!date) continue
+      const working = sets.filter((s) => !s.isWarmup)
+      const maxWeight = working.length > 0 ? Math.max(...working.map((s) => s.weight)) : 0
+      if (maxWeight > 0) points.push({ date, weight: maxWeight })
+    }
+    points.sort((a, b) => a.date.localeCompare(b.date))
+    progressionDataByExercise.value = { ...progressionDataByExercise.value, [exerciseName]: points }
+  } catch (e) {
+    console.error('[HistoryPage] Failed to load progression', e)
+  }
 }
 </script>
 
@@ -129,6 +167,11 @@ function groupSetsByExercise(sets: SetLog[]): { exerciseName: string; sets: SetL
                 <span v-if="set.isWarmup" class="set-warmup">warm-up</span>
               </li>
             </ul>
+            <ProgressionChart
+              v-if="progressionDataByExercise[group.exerciseName]"
+              :data="progressionDataByExercise[group.exerciseName]"
+              :title="group.exerciseName"
+            />
           </div>
         </div>
         <RText v-else tag="p" class="no-sets">No sets logged</RText>
