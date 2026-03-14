@@ -23,6 +23,7 @@ const logging = ref(false)
 const showRestTimer = ref(false)
 const restTimerSeconds = ref(0)
 const restTimerKey = ref(0)
+const gifLoaded = ref<boolean | undefined>(undefined)
 
 const currentExercise = computed(() => workoutStore.currentExercise)
 const currentSetNumber = computed(() => workoutStore.currentSetNumber)
@@ -112,6 +113,13 @@ watch(
     if (!session) {
       router.push('/')
     }
+  }
+)
+
+watch(
+  () => currentExercise.value?.gifPath,
+  () => {
+    gifLoaded.value = undefined
   }
 )
 
@@ -241,6 +249,15 @@ async function handleAbandon() {
         </div>
       </RCard>
 
+      <div v-if="currentExercise.gifPath && gifLoaded !== false" class="exercise-gif">
+        <img
+          :src="currentExercise.gifPath"
+          :alt="currentExercise.name"
+          @load="gifLoaded = true"
+          @error="gifLoaded = false"
+        />
+      </div>
+
       <RCard class="log-card">
         <RText tag="p" class="log-hint">Enter: weight reps RPE (e.g. 150 12 9)</RText>
         <RInput
@@ -359,6 +376,15 @@ async function handleAbandon() {
 .plate-value {
   margin: 0;
   font-weight: 600;
+}
+.exercise-gif {
+  text-align: center;
+  min-height: 120px;
+}
+.exercise-gif img {
+  max-width: 100%;
+  max-height: 200px;
+  object-fit: contain;
 }
 .log-card {
   padding: 1.5rem;

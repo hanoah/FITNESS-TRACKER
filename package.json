@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "test": "vitest",
     "test:run": "vitest run",
-    "generate-icons": "node scripts/generate-pwa-icons.mjs"
+    "generate-icons": "node scripts/generate-pwa-icons.mjs",
+    "fetch-gifs": "npx tsx scripts/fetch-exrx-gifs.ts"
   },
   "dependencies": {
     "dexie": "^4.3.0",
