@@ -8,6 +8,7 @@ import { parseLogInput, ParseError } from '../lib/parseLogInput'
 import { plateCalc } from '../lib/plateCalc'
 import { suggest } from '../lib/progression'
 import { getScheduleDay } from '../lib/scheduleDay'
+import RestTimer from '../components/RestTimer.vue'
 import { RButton, RCard, RInput, RText, useToast } from 'roughness'
 
 const router = useRouter()
@@ -19,6 +20,9 @@ const logInput = ref('')
 const parseError = ref('')
 const plateConfig = ref<ReturnType<typeof plateCalc> | null>(null)
 const logging = ref(false)
+const showRestTimer = ref(false)
+const restTimerSeconds = ref(0)
+const restTimerKey = ref(0)
 
 const currentExercise = computed(() => workoutStore.currentExercise)
 const currentSetNumber = computed(() => workoutStore.currentSetNumber)
@@ -132,6 +136,8 @@ watch(logInput, (val) => {
 async function handleSubmit() {
   try {
     const parsed = parseLogInput(logInput.value)
+    const wasWorkingSet = !isWarmupSet.value
+    const ex = currentExercise.value
     logging.value = true
     try {
       const ok = await workoutStore.logSet(parsed.weight, parsed.reps, parsed.rpe)
@@ -142,12 +148,21 @@ async function handleSubmit() {
       logInput.value = ''
       parseError.value = ''
       plateConfig.value = null
+      if (wasWorkingSet && ex?.restSeconds?.[0]) {
+        restTimerSeconds.value = ex.restSeconds[0]
+        restTimerKey.value++
+        showRestTimer.value = true
+      }
     } finally {
       logging.value = false
     }
   } catch (e) {
     parseError.value = e instanceof ParseError ? e.message : 'Invalid input'
   }
+}
+
+function onRestTimerDone() {
+  showRestTimer.value = false
 }
 
 async function handleSkip() {
@@ -183,6 +198,13 @@ async function handleAbandon() {
 
 <template>
   <div class="workout-page">
+    <RestTimer
+      v-if="showRestTimer"
+      :key="restTimerKey"
+      :seconds="restTimerSeconds"
+      @done="onRestTimerDone"
+      @skip="onRestTimerDone"
+    />
     <div v-if="!currentExercise" class="done">
       <RCard>
         <RText tag="h2">All done!</RText>
