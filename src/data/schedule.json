@@ -1,0 +1,15 @@
+{
+  "monday": [
+    { "day": "lower_strength", "exerciseIndices": [0, 1, 2] }
+  ],
+  "tuesday": [
+    { "day": "upper_strength" }
+  ],
+  "thursday": [
+    { "day": "pull_hypertrophy" },
+    { "day": "push_hypertrophy" }
+  ],
+  "saturday": [
+    { "day": "legs_hypertrophy" }
+  ]
+}

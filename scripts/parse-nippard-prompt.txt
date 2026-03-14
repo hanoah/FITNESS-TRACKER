@@ -1,0 +1,25 @@
+You are parsing a PDF-extracted workout program (Jeff Nippard's Bodybuilding Transformation System) into structured JSON. The source text is messy: space-aligned columns, exercise names split across lines, NOTES and Substitution columns that wrap awkwardly. Extract the data accurately.
+
+Output a single JSON object. Return ONLY valid JSON, no markdown, no explanation.
+
+Schema:
+- blocks: array of Block
+- Block: { id, name, weeks }
+- Week: { number (1-based), isDeload (Week 1 = true), days }
+- Day: { id (slug like "upper_strength"), name, exercises }
+- ProgramExercise: { name, demoUrl: "", intensityTechnique, warmupSets, workingSets, repRange: [min,max], earlySetRPE, lastSetRPE, restSeconds: [min,max], sub1, sub2, notes }
+
+intensityTechnique: "none" | "failure" | "llps" | "static_stretch" | "myo_reps" | "drop_set"
+- N/A → "none", Failure → "failure", LLPs → "llps", etc.
+
+Day IDs: "Upper (Strength Focus)" → "upper_strength", "Lower (Strength Focus)" → "lower_strength", "Pull (Hypertrophy Focus)" → "pull_hypertrophy", "Push (Hypertrophy Focus)" → "push_hypertrophy", "Legs (Hypertrophy Focus)" → "legs_hypertrophy"
+
+warmupSets: "2-3" → 3, "1-2" → 2 (use higher when range)
+restSeconds: "3-5 min" → [180,300], "2-3 min" → [120,180], "1-2 min" → [60,120]
+RPE: "~6-7" → early 6 last 7, "~8-9" → 8 and 9, "10" → 10
+
+Merge split exercise names: "45° Incline Barbell" + "Press" → "45° Incline Barbell Press"
+Skip "Rest Day" rows.
+Parse every week in each block. Exercises may differ per week.
+
+Return ONLY the JSON object.

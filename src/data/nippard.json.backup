@@ -1,0 +1,172 @@
+{
+  "blocks": [
+    {
+      "id": "foundation",
+      "name": "Foundation Block",
+      "weeks": [
+        {
+          "number": 1,
+          "isDeload": true,
+          "days": [
+            {
+              "id": "upper_strength",
+              "name": "Upper (Strength Focus)",
+              "exercises": [
+                {
+                  "name": "45° Incline Barbell Press",
+                  "demoUrl": "",
+                  "intensityTechnique": "none",
+                  "warmupSets": 2,
+                  "workingSets": 2,
+                  "repRange": [6, 8],
+                  "earlySetRPE": 6,
+                  "lastSetRPE": 7,
+                  "restSeconds": [180, 300],
+                  "sub1": "45° Incline DB Press",
+                  "sub2": "45° Incline Machine Press",
+                  "notes": "1 second pause at the bottom of each rep while maintaining tension on the pecs."
+                },
+                {
+                  "name": "Wide-Grip Pull-Up",
+                  "demoUrl": "",
+                  "intensityTechnique": "none",
+                  "warmupSets": 1,
+                  "workingSets": 2,
+                  "repRange": [8, 10],
+                  "earlySetRPE": 6,
+                  "lastSetRPE": 7,
+                  "restSeconds": [120, 180],
+                  "sub1": "Wide-Grip Lat Pulldown",
+                  "sub2": "Dual-Handle Lat Pulldown",
+                  "notes": "1.5x shoulder width overhand grip. Slow 2-3 second negative. Feel your lats pulling apart."
+                },
+                {
+                  "name": "DB Hammer Curl",
+                  "demoUrl": "",
+                  "intensityTechnique": "none",
+                  "warmupSets": 1,
+                  "workingSets": 2,
+                  "repRange": [8, 10],
+                  "earlySetRPE": 7,
+                  "lastSetRPE": 8,
+                  "restSeconds": [60, 120],
+                  "sub1": "Cable Hammer Curl",
+                  "sub2": "EZ-Bar Curl",
+                  "notes": "Keep wrists neutral — palms facing each other. Don't swing."
+                }
+              ]
+            },
+            {
+              "id": "lower_strength",
+              "name": "Lower (Strength Focus)",
+              "exercises": [
+                {
+                  "name": "Smith Machine Squat",
+                  "demoUrl": "",
+                  "intensityTechnique": "none",
+                  "warmupSets": 4,
+                  "workingSets": 2,
+                  "repRange": [6, 8],
+                  "earlySetRPE": 6,
+                  "lastSetRPE": 7,
+                  "restSeconds": [180, 300],
+                  "sub1": "DB Bulgarian Split Squat",
+                  "sub2": "High-Bar Back Squat",
+                  "notes": "Feet forward 3-6 inches. More upright. Feel quads."
+                },
+                {
+                  "name": "Barbell RDL",
+                  "demoUrl": "",
+                  "intensityTechnique": "none",
+                  "warmupSets": 2,
+                  "workingSets": 2,
+                  "repRange": [6, 8],
+                  "earlySetRPE": 6,
+                  "lastSetRPE": 7,
+                  "restSeconds": [120, 180],
+                  "sub1": "DB RDL",
+                  "sub2": "Snatch-Grip RDL",
+                  "notes": "Stop 75% to lockout. Stay in bottom 3/4 ROM."
+                },
+                {
+                  "name": "Leg Extension",
+                  "demoUrl": "",
+                  "intensityTechnique": "none",
+                  "warmupSets": 1,
+                  "workingSets": 2,
+                  "repRange": [8, 10],
+                  "earlySetRPE": 7,
+                  "lastSetRPE": 8,
+                  "restSeconds": [60, 120],
+                  "sub1": "Reverse Nordic",
+                  "sub2": "Sissy Squat",
+                  "notes": "2-3 second negative. Feel quads pulling apart."
+                }
+              ]
+            },
+            {
+              "id": "pull_hypertrophy",
+              "name": "Pull (Hypertrophy Focus)",
+              "exercises": [
+                {
+                  "name": "Seated Cable Row",
+                  "demoUrl": "",
+                  "intensityTechnique": "none",
+                  "warmupSets": 1,
+                  "workingSets": 2,
+                  "repRange": [10, 12],
+                  "earlySetRPE": 7,
+                  "lastSetRPE": 8,
+                  "restSeconds": [120, 180],
+                  "sub1": "T-Bar Row",
+                  "sub2": "Chest-Supported DB Row",
+                  "notes": "Squeeze shoulder blades. Drive elbows down and back."
+                }
+              ]
+            },
+            {
+              "id": "push_hypertrophy",
+              "name": "Push (Hypertrophy Focus)",
+              "exercises": [
+                {
+                  "name": "Machine Shoulder Press",
+                  "demoUrl": "",
+                  "intensityTechnique": "none",
+                  "warmupSets": 2,
+                  "workingSets": 2,
+                  "repRange": [8, 10],
+                  "earlySetRPE": 6,
+                  "lastSetRPE": 7,
+                  "restSeconds": [120, 180],
+                  "sub1": "Cable Shoulder Press",
+                  "sub2": "Seated DB Shoulder Press",
+                  "notes": "Elbows break 90°. Mind-muscle connection with delts."
+                }
+              ]
+            },
+            {
+              "id": "legs_hypertrophy",
+              "name": "Legs (Hypertrophy Focus)",
+              "exercises": [
+                {
+                  "name": "Leg Press",
+                  "demoUrl": "",
+                  "intensityTechnique": "none",
+                  "warmupSets": 2,
+                  "workingSets": 2,
+                  "repRange": [8, 10],
+                  "earlySetRPE": 6,
+                  "lastSetRPE": 7,
+                  "restSeconds": [120, 180],
+                  "sub1": "DB Walking Lunge",
+                  "sub2": "Static Lunge",
+                  "notes": "Feet lower for more quad focus. Pause at bottom."
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+* {
+  box-sizing: border-box;
+}
+
+:root {
+  --r-common-font-family: 'Mansalva', cursive;
+}
+
+body {
+  margin: 0;
+  font-family: 'Mansalva', cursive, system-ui, -apple-system, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  color: #333;
+  background: #fff;
+}
+
+#app {
+  min-height: 100vh;
+}
