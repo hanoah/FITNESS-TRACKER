@@ -8,6 +8,8 @@ import { parseLogInput, ParseError } from '../lib/parseLogInput'
 import { plateCalc } from '../lib/plateCalc'
 import { suggest } from '../lib/progression'
 import { getScheduleDay } from '../lib/scheduleDay'
+import { useUserProfile } from '../composables/useUserProfile'
+import { getGoal } from '../lib/strengthGoals'
 import RestTimer from '../components/RestTimer.vue'
 import { RButton, RCard, RInput, RText, useToast } from 'roughness'
 
@@ -24,6 +26,17 @@ const showRestTimer = ref(false)
 const restTimerSeconds = ref(0)
 const restTimerKey = ref(0)
 const gifLoaded = ref<boolean | undefined>(undefined)
+
+const { profile: userProfile } = useUserProfile()
+const strengthGoal = computed(() => {
+  const ex = currentExercise.value
+  const profile = userProfile.value
+  if (!ex || !profile?.weightKg) return null
+  const bodyWeightLbs = profile.weightKg * 2.205
+  const level = (profile.strengthLevel ?? 'intermediate') as 'beginner' | 'novice' | 'intermediate' | 'advanced' | 'elite'
+  const goal = getGoal(ex.name, bodyWeightLbs, level)
+  return goal != null ? { weight: goal } : null
+})
 
 const currentExercise = computed(() => workoutStore.currentExercise)
 const currentSetNumber = computed(() => workoutStore.currentSetNumber)
@@ -247,6 +260,9 @@ async function handleAbandon() {
             </RText>
           </div>
         </div>
+        <div v-if="strengthGoal" class="goal-badge">
+          <RText tag="p">Goal: {{ strengthGoal.weight }} lb</RText>
+        </div>
       </RCard>
 
       <div v-if="currentExercise.gifPath && gifLoaded !== false" class="exercise-gif">
@@ -368,6 +384,13 @@ async function handleAbandon() {
 .plate-math.suggested {
   background: rgba(0, 102, 204, 0.08);
   margin-top: 0.5rem;
+}
+.goal-badge {
+  margin-top: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--r-color-fill-secondary, #f0f0f0);
+  border-radius: 6px;
+  font-size: 0.9rem;
 }
 .plate-label {
   margin: 0 0 0.25rem 0;

@@ -1,0 +1,44 @@
+{
+  "Barbell Bench Press": {
+    "130": { "beginner": 95, "novice": 130, "intermediate": 175, "advanced": 230, "elite": 290 },
+    "150": { "beginner": 105, "novice": 145, "intermediate": 195, "advanced": 255, "elite": 320 },
+    "170": { "beginner": 115, "novice": 160, "intermediate": 215, "advanced": 280, "elite": 350 },
+    "190": { "beginner": 125, "novice": 175, "intermediate": 235, "advanced": 305, "elite": 380 },
+    "210": { "beginner": 135, "novice": 190, "intermediate": 255, "advanced": 330, "elite": 410 }
+  },
+  "Smith Machine Squat": {
+    "130": { "beginner": 95, "novice": 145, "intermediate": 200, "advanced": 265, "elite": 340 },
+    "150": { "beginner": 105, "novice": 165, "intermediate": 230, "advanced": 305, "elite": 390 },
+    "170": { "beginner": 115, "novice": 185, "intermediate": 260, "advanced": 345, "elite": 440 },
+    "190": { "beginner": 125, "novice": 205, "intermediate": 290, "advanced": 385, "elite": 490 },
+    "210": { "beginner": 135, "novice": 225, "intermediate": 320, "advanced": 425, "elite": 540 }
+  },
+  "Barbell RDL": {
+    "130": { "beginner": 95, "novice": 140, "intermediate": 195, "advanced": 260, "elite": 335 },
+    "150": { "beginner": 105, "novice": 160, "intermediate": 225, "advanced": 300, "elite": 385 },
+    "170": { "beginner": 115, "novice": 180, "intermediate": 255, "advanced": 340, "elite": 435 },
+    "190": { "beginner": 125, "novice": 200, "intermediate": 285, "advanced": 380, "elite": 485 },
+    "210": { "beginner": 135, "novice": 220, "intermediate": 315, "advanced": 420, "elite": 535 }
+  },
+  "45° Incline Barbell Press": {
+    "130": { "beginner": 75, "novice": 105, "intermediate": 140, "advanced": 185, "elite": 235 },
+    "150": { "beginner": 85, "novice": 120, "intermediate": 160, "advanced": 210, "elite": 270 },
+    "170": { "beginner": 95, "novice": 135, "intermediate": 180, "advanced": 235, "elite": 305 },
+    "190": { "beginner": 105, "novice": 150, "intermediate": 200, "advanced": 260, "elite": 340 },
+    "210": { "beginner": 115, "novice": 165, "intermediate": 220, "advanced": 285, "elite": 375 }
+  },
+  "45° Incline DB Press": {
+    "130": { "beginner": 65, "novice": 90, "intermediate": 120, "advanced": 155, "elite": 200 },
+    "150": { "beginner": 75, "novice": 105, "intermediate": 140, "advanced": 180, "elite": 230 },
+    "170": { "beginner": 85, "novice": 120, "intermediate": 160, "advanced": 205, "elite": 260 },
+    "190": { "beginner": 95, "novice": 135, "intermediate": 180, "advanced": 230, "elite": 290 },
+    "210": { "beginner": 105, "novice": 150, "intermediate": 200, "advanced": 255, "elite": 320 }
+  },
+  "Machine Chest Press": {
+    "130": { "beginner": 90, "novice": 125, "intermediate": 165, "advanced": 220, "elite": 280 },
+    "150": { "beginner": 100, "novice": 140, "intermediate": 190, "advanced": 250, "elite": 315 },
+    "170": { "beginner": 110, "novice": 155, "intermediate": 210, "advanced": 275, "elite": 350 },
+    "190": { "beginner": 120, "novice": 170, "intermediate": 230, "advanced": 300, "elite": 385 },
+    "210": { "beginner": 130, "novice": 185, "intermediate": 250, "advanced": 325, "elite": 420 }
+  }
+}

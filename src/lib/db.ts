@@ -21,6 +21,7 @@ export interface UserProfile {
   weightKg?: number
   age?: number
   unit: 'lb' | 'kg'
+  strengthLevel?: 'beginner' | 'novice' | 'intermediate' | 'advanced' | 'elite'
   updatedAt: number
 }
 
