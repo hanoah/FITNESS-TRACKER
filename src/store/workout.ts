@@ -150,6 +150,11 @@ export const useWorkoutStore = defineStore('workout', () => {
         .first()
       if (!inProgress) return null
 
+      if (Date.now() - (inProgress.startedAt ?? 0) > 24 * 60 * 60 * 1000) {
+        await db.sessions.update(inProgress.id!, { status: 'abandoned' })
+        return null
+      }
+
       const sets = await db.sets.where('sessionId').equals(inProgress.id!).toArray()
       activeSession.value = inProgress
       completedSets.value = sets
