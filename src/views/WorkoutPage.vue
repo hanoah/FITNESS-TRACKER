@@ -7,6 +7,7 @@ import { useProgressionHistory } from '../composables/useProgressionHistory'
 import { parseLogInput, ParseError } from '../lib/parseLogInput'
 import { plateCalc } from '../lib/plateCalc'
 import { suggest } from '../lib/progression'
+import { getScheduleDay } from '../lib/scheduleDay'
 import { RButton, RCard, RInput, RText, useToast } from 'roughness'
 
 const router = useRouter()
@@ -92,15 +93,9 @@ onMounted(async () => {
       router.push('/')
       return
     }
-    const date = new Date(session.date)
-    const d = date.getDay()
-    let day: 'monday' | 'tuesday' | 'thursday' | 'saturday' | null = null
-    if (d === 1) day = 'monday'
-    else if (d === 2) day = 'tuesday'
-    else if (d === 4) day = 'thursday'
-    else if (d === 6) day = 'saturday'
-    if (day) {
-      const exercises = programStore.getExercisesForDay(day)
+    const dayInfo = getScheduleDay(new Date(session.date))
+    if (dayInfo) {
+      const exercises = programStore.getExercisesForDay(dayInfo.key)
       await workoutStore.resumeSession(exercises)
     }
   }

@@ -3,6 +3,7 @@ import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useWorkoutStore } from '../store/workout'
 import { useProgramStore } from '../store/program'
+import { getScheduleDay } from '../lib/scheduleDay'
 import { RButton, RCard, RText, useToast } from 'roughness'
 
 const router = useRouter()
@@ -12,23 +13,7 @@ const programStore = useProgramStore()
 const loading = ref(true)
 const resumable = ref(false)
 
-const dayLabel = computed(() => {
-  const d = new Date().getDay()
-  if (d === 1) return 'Monday'
-  if (d === 2) return 'Tuesday'
-  if (d === 4) return 'Thursday'
-  if (d === 6) return 'Saturday'
-  return null
-})
-
-const dayKey = computed((): 'monday' | 'tuesday' | 'thursday' | 'saturday' | null => {
-  const d = new Date().getDay()
-  if (d === 1) return 'monday'
-  if (d === 2) return 'tuesday'
-  if (d === 4) return 'thursday'
-  if (d === 6) return 'saturday'
-  return null
-})
+const scheduleDay = computed(() => getScheduleDay())
 
 onMounted(async () => {
   await programStore.loadProgramState()
@@ -43,7 +28,7 @@ onMounted(async () => {
 })
 
 async function startWorkout() {
-  const day = dayKey.value
+  const day = scheduleDay.value?.key
   if (!day) return
   const exercises = programStore.getExercisesForDay(day)
   if (exercises.length === 0) return
@@ -65,14 +50,9 @@ async function startWorkout() {
 async function resumeWorkout() {
   const session = workoutStore.activeSession
   if (!session) return
-  const date = new Date(session.date)
-  const d = date.getDay()
-  let day: 'monday' | 'tuesday' | 'thursday' | 'saturday' | null = null
-  if (d === 1) day = 'monday'
-  else if (d === 2) day = 'tuesday'
-  else if (d === 4) day = 'thursday'
-  else if (d === 6) day = 'saturday'
-  if (!day) return
+  const dayInfo = getScheduleDay(new Date(session.date))
+  if (!dayInfo) return
+  const day = dayInfo.key
   const exercises = programStore.getExercisesForDay(day)
   await workoutStore.resumeSession(exercises)
   router.push('/workout')
@@ -88,14 +68,14 @@ async function resumeWorkout() {
     <template v-else>
       <RCard class="welcome-card">
         <RText tag="h2" class="welcome-title">
-          {{ dayLabel ? `Today is ${dayLabel}` : "No workout scheduled today" }}
+          {{ scheduleDay ? `Today is ${scheduleDay.label}` : "No workout scheduled today" }}
         </RText>
-        <RText v-if="dayLabel" class="welcome-sub">
-          {{ programStore.getExercisesForDay(dayKey!).length }} exercises
+        <RText v-if="scheduleDay" class="welcome-sub">
+          {{ programStore.getExercisesForDay(scheduleDay.key).length }} exercises
         </RText>
       </RCard>
 
-      <div v-if="dayLabel" class="actions">
+      <div v-if="scheduleDay" class="actions">
         <RButton v-if="resumable" type="primary" @click="resumeWorkout">
           Resume Workout
         </RButton>
