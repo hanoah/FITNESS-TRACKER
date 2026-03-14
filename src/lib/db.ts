@@ -22,6 +22,7 @@ export interface UserProfile {
   age?: number
   unit: 'lb' | 'kg'
   strengthLevel?: 'beginner' | 'novice' | 'intermediate' | 'advanced' | 'elite'
+  appsScriptUrl?: string
   updatedAt: number
 }
 

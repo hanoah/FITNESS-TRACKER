@@ -9,6 +9,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { db } from '../lib/db'
+import { enqueueSync } from '../lib/sync'
 import type { WorkoutSession, SetLog } from '../types/session'
 import type { ResolvedExercise } from '../lib/programEngine'
 
@@ -117,9 +118,11 @@ export const useWorkoutStore = defineStore('workout', () => {
         status: 'completed',
         completedAt: Date.now(),
       })
+      const sets = completedSets.value
       activeSession.value = null
       todayExercises.value = []
       completedSets.value = []
+      await enqueueSync({ ...session, status: 'completed', completedAt: Date.now() }, sets)
       return true
     } catch (e) {
       console.error('[workout.completeWorkout] Failed to complete session', { sessionId: session.id }, e)

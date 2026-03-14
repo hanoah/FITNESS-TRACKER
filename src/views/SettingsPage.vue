@@ -2,6 +2,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { db } from '../lib/db'
 import { getGoal } from '../lib/strengthGoals'
+import { getPendingCount, flushSyncQueue } from '../lib/sync'
 import { RButton, RCard, RInput, RText, useToast } from 'roughness'
 
 const KEY_LIFTS = [
@@ -16,7 +17,10 @@ const heightDisplay = ref<string>('')
 const weightDisplay = ref<string>('')
 const unit = ref<'lb' | 'kg'>('kg')
 const strengthLevel = ref<'beginner' | 'novice' | 'intermediate' | 'advanced' | 'elite'>('intermediate')
+const appsScriptUrl = ref('')
 const saving = ref(false)
+const syncing = ref(false)
+const pendingCount = ref(0)
 
 const LEVELS = [
   { value: 'beginner' as const, label: 'Beginner' },
@@ -42,11 +46,17 @@ function toKg(lbs: number): number {
   return Math.round((lbs / 2.205) * 10) / 10
 }
 
+async function refreshPendingCount() {
+  pendingCount.value = await getPendingCount()
+}
+
 onMounted(async () => {
   const profile = await db.userProfile.get('current')
+  await refreshPendingCount()
   if (profile) {
     unit.value = profile.unit
     strengthLevel.value = profile.strengthLevel ?? 'intermediate'
+    appsScriptUrl.value = profile.appsScriptUrl ?? ''
     if (profile.heightCm != null) {
       heightDisplay.value = String(profile.unit === 'kg' ? profile.heightCm : toInches(profile.heightCm))
     } else {
@@ -75,6 +85,26 @@ function setUnit(u: 'lb' | 'kg') {
   unit.value = u
 }
 
+async function handleSync() {
+  const url = appsScriptUrl.value.trim()
+  if (!url) {
+    toast('Enter Apps Script URL first')
+    return
+  }
+  syncing.value = true
+  try {
+    const { synced, failed, errors } = await flushSyncQueue(url)
+    await refreshPendingCount()
+    if (synced > 0) toast(`Synced ${synced} workout(s)`)
+    if (failed > 0) toast(`Failed: ${errors[0] ?? 'unknown'}`)
+  } catch (e) {
+    console.error('[SettingsPage] Sync failed', e)
+    toast('Sync failed')
+  } finally {
+    syncing.value = false
+  }
+}
+
 async function handleSave() {
   saving.value = true
   try {
@@ -93,6 +123,7 @@ async function handleSave() {
       weightKg,
       unit: unit.value,
       strengthLevel: strengthLevel.value,
+      appsScriptUrl: appsScriptUrl.value.trim() || undefined,
       updatedAt: Date.now(),
     })
     toast('Settings saved')
@@ -156,6 +187,14 @@ const keyLiftGoals = computed(() => {
         </select>
       </div>
       <div class="field">
+        <RText tag="label">Apps Script URL</RText>
+        <RInput
+          v-model="appsScriptUrl"
+          type="url"
+          placeholder="https://script.google.com/..."
+        />
+      </div>
+      <div class="field">
         <RText tag="label">Unit</RText>
         <div class="unit-toggle">
           <RButton :type="unit === 'kg' ? 'primary' : undefined" @click="setUnit('kg')">kg</RButton>
@@ -163,6 +202,19 @@ const keyLiftGoals = computed(() => {
         </div>
       </div>
       <RButton type="primary" :disabled="saving" @click="handleSave">Save</RButton>
+
+      <div class="sync-section">
+        <RText tag="h3">Sync to Google Sheet</RText>
+        <RText tag="p" class="sync-status">
+          {{ pendingCount }} workout(s) pending sync
+        </RText>
+        <RButton
+          :disabled="syncing || !appsScriptUrl.trim()"
+          @click="handleSync"
+        >
+          {{ syncing ? 'Syncing…' : 'Sync now' }}
+        </RButton>
+      </div>
 
       <div v-if="keyLiftGoals.length > 0" class="key-lifts">
         <RText tag="h3">Key lift goals ({{ strengthLevel }})</RText>
@@ -204,6 +256,20 @@ const keyLiftGoals = computed(() => {
   border-radius: 4px;
   font-size: 1rem;
   min-width: 160px;
+}
+.sync-section {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--r-color-stroke, #ccc);
+}
+.sync-section h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1rem;
+}
+.sync-status {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.9rem;
+  color: var(--r-color-text-secondary, #666);
 }
 .key-lifts {
   margin-top: 1.5rem;
