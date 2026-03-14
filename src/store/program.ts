@@ -14,10 +14,28 @@ import { getDayExercises, getCurrentBlockAndWeek, type ResolvedExercise } from '
 const program = nippardData as NippardProgram
 const schedule = scheduleData as ScheduleConfig
 
+function validateProgram(p: NippardProgram): string | null {
+  if (!p.blocks?.length) return 'Program has no blocks'
+  for (const b of p.blocks) {
+    if (!b.weeks?.length) return `Block ${b.id} has no weeks`
+    for (const w of b.weeks) {
+      if (!w.days?.length) return `Block ${b.id} week ${w.number} has no days`
+    }
+  }
+  return null
+}
+
 export const useProgramStore = defineStore('program', () => {
+  const programError = ref<string | null>(null)
   const programState = ref<{ blockId: string; weekNumber: number } | null>(null)
 
   async function loadProgramState(): Promise<{ blockId: string; weekNumber: number } | null> {
+    programError.value = null
+    const validationError = validateProgram(program)
+    if (validationError) {
+      programError.value = validationError
+      return null
+    }
     try {
       const state = await db.programState.get('current')
       if (state) {
@@ -86,6 +104,7 @@ export const useProgramStore = defineStore('program', () => {
     program,
     schedule,
     programState,
+    programError,
     loadProgramState,
     advanceWeek,
     getExercisesForDay,

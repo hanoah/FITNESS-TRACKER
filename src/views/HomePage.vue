@@ -35,7 +35,9 @@ onMounted(async () => {
   const session = await workoutStore.loadResumableSession()
   resumable.value = !!session
   loading.value = false
-  if (!programStore.programState) {
+  if (programStore.programError) {
+    toast(programStore.programError)
+  } else if (!programStore.programState) {
     toast('Failed to load program')
   }
 })
