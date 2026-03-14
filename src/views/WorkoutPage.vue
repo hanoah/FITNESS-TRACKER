@@ -133,10 +133,14 @@ watch(logInput, (val) => {
   }
 })
 
-function handleSubmit() {
+async function handleSubmit() {
   try {
     const parsed = parseLogInput(logInput.value)
-    workoutStore.logSet(parsed.weight, parsed.reps, parsed.rpe)
+    const ok = await workoutStore.logSet(parsed.weight, parsed.reps, parsed.rpe)
+    if (!ok) {
+      toast('Failed to save set')
+      return
+    }
     logInput.value = ''
     parseError.value = ''
     plateConfig.value = null
@@ -145,21 +149,33 @@ function handleSubmit() {
   }
 }
 
-function handleSkip() {
-  workoutStore.skipExercise()
+async function handleSkip() {
+  const ok = await workoutStore.skipExercise()
+  if (!ok) {
+    toast('Failed to skip exercise')
+    return
+  }
   logInput.value = ''
   parseError.value = ''
   plateConfig.value = null
 }
 
-function handleComplete() {
-  workoutStore.completeWorkout()
+async function handleComplete() {
+  const ok = await workoutStore.completeWorkout()
+  if (!ok) {
+    toast('Failed to save workout')
+    return
+  }
   toast('Workout saved!')
   router.push('/')
 }
 
-function handleAbandon() {
-  workoutStore.abandonWorkout()
+async function handleAbandon() {
+  const ok = await workoutStore.abandonWorkout()
+  if (!ok) {
+    toast('Failed to abandon workout')
+    return
+  }
   router.push('/')
 }
 </script>

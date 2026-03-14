@@ -25,14 +25,20 @@ export function useProgressionHistory(
       return
     }
 
-    const [bySlot, byName] = await Promise.all([
-      db.sets.where('exerciseSlot').equals(slot).toArray(),
-      db.sets.where('exerciseName').equals(name).toArray(),
-    ])
+    try {
+      const [bySlot, byName] = await Promise.all([
+        db.sets.where('exerciseSlot').equals(slot).toArray(),
+        db.sets.where('exerciseName').equals(name).toArray(),
+      ])
 
-    const excludeCurrent = (s: SetLog) => s.sessionId !== sessionId
-    slotHistory.value = bySlot.filter(excludeCurrent).sort((a, b) => b.timestamp - a.timestamp)
-    exerciseHistory.value = byName.filter(excludeCurrent).sort((a, b) => b.timestamp - a.timestamp)
+      const excludeCurrent = (s: SetLog) => s.sessionId !== sessionId
+      slotHistory.value = bySlot.filter(excludeCurrent).sort((a, b) => b.timestamp - a.timestamp)
+      exerciseHistory.value = byName.filter(excludeCurrent).sort((a, b) => b.timestamp - a.timestamp)
+    } catch (e) {
+      console.error('[useProgressionHistory.load] Failed to load history', { slot, name }, e)
+      slotHistory.value = []
+      exerciseHistory.value = []
+    }
   }
 
   watch(

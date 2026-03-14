@@ -3,9 +3,10 @@ import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useWorkoutStore } from '../store/workout'
 import { useProgramStore } from '../store/program'
-import { RButton, RCard, RText } from 'roughness'
+import { RButton, RCard, RText, useToast } from 'roughness'
 
 const router = useRouter()
+const toast = useToast()
 const workoutStore = useWorkoutStore()
 const programStore = useProgramStore()
 const loading = ref(true)
@@ -34,6 +35,9 @@ onMounted(async () => {
   const session = await workoutStore.loadResumableSession()
   resumable.value = !!session
   loading.value = false
+  if (!programStore.programState) {
+    toast('Failed to load program')
+  }
 })
 
 async function startWorkout() {
@@ -41,13 +45,18 @@ async function startWorkout() {
   if (!day) return
   const exercises = programStore.getExercisesForDay(day)
   if (exercises.length === 0) return
-  const state = programStore.programState!
-  await workoutStore.startWorkout(
+  const state = programStore.programState
+  if (!state) return
+  const id = await workoutStore.startWorkout(
     exercises[0].dayType,
     exercises,
     state.blockId,
     state.weekNumber
   )
+  if (id === null) {
+    toast('Failed to start workout')
+    return
+  }
   router.push('/workout')
 }
 

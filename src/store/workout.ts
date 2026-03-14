@@ -44,7 +44,7 @@ export const useWorkoutStore = defineStore('workout', () => {
     exercises: ResolvedExercise[],
     blockId: string,
     weekNumber: number
-  ) {
+  ): Promise<number | null> {
     const today = new Date().toISOString().slice(0, 10)
     const session: WorkoutSession = {
       date: today,
@@ -56,17 +56,22 @@ export const useWorkoutStore = defineStore('workout', () => {
       completedSetCount: 0,
       startedAt: Date.now(),
     }
-    const id = await db.sessions.add(session)
-    activeSession.value = { ...session, id: id as number }
-    todayExercises.value = exercises
-    completedSets.value = []
-    return id
+    try {
+      const id = await db.sessions.add(session)
+      activeSession.value = { ...session, id: id as number }
+      todayExercises.value = exercises
+      completedSets.value = []
+      return id as number
+    } catch (e) {
+      console.error('[workout.startWorkout] Failed to save session', { dayType, blockId, weekNumber }, e)
+      return null
+    }
   }
 
-  async function logSet(weight: number, reps: number, rpe: number) {
+  async function logSet(weight: number, reps: number, rpe: number): Promise<boolean> {
     const session = activeSession.value
     const ex = currentExercise.value
-    if (!session || !ex) return
+    if (!session || !ex) return false
 
     const setLog: SetLog = {
       sessionId: session.id!,
@@ -79,57 +84,80 @@ export const useWorkoutStore = defineStore('workout', () => {
       isWarmup: isWarmupSet.value,
       timestamp: Date.now(),
     }
-    await db.sets.add(setLog)
-    completedSets.value = [...completedSets.value, setLog]
+    try {
+      await db.sets.add(setLog)
+      completedSets.value = [...completedSets.value, setLog]
 
-    const setsForEx = completedSets.value.filter((s) => s.exerciseSlot === ex.slotKey)
-    const workingDone = setsForEx.filter((s) => !s.isWarmup).length
-    if (workingDone >= ex.workingSets) {
-      const nextIdx = session.currentExerciseIndex + 1
-      await db.sessions.update(session.id!, {
-        currentExerciseIndex: nextIdx,
-        completedSetCount: session.completedSetCount + 1,
-      })
-      activeSession.value = {
-        ...session,
-        currentExerciseIndex: nextIdx,
-        completedSetCount: session.completedSetCount + 1,
+      const setsForEx = completedSets.value.filter((s) => s.exerciseSlot === ex.slotKey)
+      const workingDone = setsForEx.filter((s) => !s.isWarmup).length
+      if (workingDone >= ex.workingSets) {
+        const nextIdx = session.currentExerciseIndex + 1
+        await db.sessions.update(session.id!, {
+          currentExerciseIndex: nextIdx,
+          completedSetCount: session.completedSetCount + 1,
+        })
+        activeSession.value = {
+          ...session,
+          currentExerciseIndex: nextIdx,
+          completedSetCount: session.completedSetCount + 1,
+        }
       }
+      return true
+    } catch (e) {
+      console.error('[workout.logSet] Failed to save set', { weight, reps, rpe, sessionId: session.id }, e)
+      return false
     }
   }
 
-  async function completeWorkout() {
+  async function completeWorkout(): Promise<boolean> {
     const session = activeSession.value
-    if (!session) return
-    await db.sessions.update(session.id!, {
-      status: 'completed',
-      completedAt: Date.now(),
-    })
-    activeSession.value = null
-    todayExercises.value = []
-    completedSets.value = []
+    if (!session) return false
+    try {
+      await db.sessions.update(session.id!, {
+        status: 'completed',
+        completedAt: Date.now(),
+      })
+      activeSession.value = null
+      todayExercises.value = []
+      completedSets.value = []
+      return true
+    } catch (e) {
+      console.error('[workout.completeWorkout] Failed to complete session', { sessionId: session.id }, e)
+      return false
+    }
   }
 
-  async function abandonWorkout() {
+  async function abandonWorkout(): Promise<boolean> {
     const session = activeSession.value
-    if (!session) return
-    await db.sessions.update(session.id!, { status: 'abandoned' })
-    activeSession.value = null
-    todayExercises.value = []
-    completedSets.value = []
+    if (!session) return false
+    try {
+      await db.sessions.update(session.id!, { status: 'abandoned' })
+      activeSession.value = null
+      todayExercises.value = []
+      completedSets.value = []
+      return true
+    } catch (e) {
+      console.error('[workout.abandonWorkout] Failed to abandon session', { sessionId: session.id }, e)
+      return false
+    }
   }
 
-  async function loadResumableSession() {
-    const inProgress = await db.sessions
-      .where('status')
-      .equals('in_progress')
-      .first()
-    if (!inProgress) return null
+  async function loadResumableSession(): Promise<WorkoutSession | null> {
+    try {
+      const inProgress = await db.sessions
+        .where('status')
+        .equals('in_progress')
+        .first()
+      if (!inProgress) return null
 
-    const sets = await db.sets.where('sessionId').equals(inProgress.id!).toArray()
-    activeSession.value = inProgress
-    completedSets.value = sets
-    return inProgress
+      const sets = await db.sets.where('sessionId').equals(inProgress.id!).toArray()
+      activeSession.value = inProgress
+      completedSets.value = sets
+      return inProgress
+    } catch (e) {
+      console.error('[workout.loadResumableSession] Failed to load session', e)
+      return null
+    }
   }
 
   async function resumeSession(exercises: ResolvedExercise[]) {
@@ -137,17 +165,23 @@ export const useWorkoutStore = defineStore('workout', () => {
     return activeSession.value
   }
 
-  async function skipExercise() {
+  async function skipExercise(): Promise<boolean> {
     const session = activeSession.value
-    if (!session) return
-    const nextIdx = session.currentExerciseIndex + 1
-    await db.sessions.update(session.id!, {
-      currentExerciseIndex: nextIdx,
-      completedSetCount: session.completedSetCount,
-    })
-    activeSession.value = {
-      ...session,
-      currentExerciseIndex: nextIdx,
+    if (!session) return false
+    try {
+      const nextIdx = session.currentExerciseIndex + 1
+      await db.sessions.update(session.id!, {
+        currentExerciseIndex: nextIdx,
+        completedSetCount: session.completedSetCount,
+      })
+      activeSession.value = {
+        ...session,
+        currentExerciseIndex: nextIdx,
+      }
+      return true
+    } catch (e) {
+      console.error('[workout.skipExercise] Failed to skip exercise', { sessionId: session.id }, e)
+      return false
     }
   }
 
