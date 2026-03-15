@@ -2,52 +2,44 @@
 
 Personal workout tracker based on Jeff Nippard's Bodybuilding Transformation System. PWA with local-first storage, hand-drawn UI (roughness), and RPE-based logging.
 
-## Stack
+## Tech Stack
 
 - **Vue 3** + **Vite** + **TypeScript**
-- **Pinia** — state
+- **Pinia** — state management
 - **Vue Router** — navigation
-- **Dexie.js** — IndexedDB
+- **Dexie.js** — IndexedDB (local-first storage)
 - **roughness** — hand-drawn UI components
+- **rough-viz** — progression charts
 
-## Features (Phase 1)
+## Features
 
-- ✅ Home page with Start/Resume workout (Mon/Tue/Thu/Sat schedule)
-- ✅ Workout queue with exercise form cues
-- ✅ Log sets: `150 12 9` (weight reps RPE)
-- ✅ Plate math for barbell lifts (45 lb default)
-- ✅ Progression hints from last week
-- ✅ Session persist + resume on interrupt
-- ✅ History page
-- ✅ Vitest unit tests (parseLogInput, plateCalc)
+- Workout picker with recommended schedule (Mon/Tue/Thu/Sat)
+- Exercise queue with form cues and progression suggestions
+- Log sets: `150 12 9` (weight reps RPE)
+- Plate math for barbell lifts (45 lb default)
+- Rest timer overlay with beep
+- Session persist and resume on interrupt
+- History page (by workout and by exercise)
+- Backup and restore (JSON export/import)
+- Sync to Google Sheets via Apps Script
+- Strength standards and goals by body weight
 
 ## Run
 
 ```bash
 npm install
-npm run dev    # http://localhost:5173
-npm run build  # dist/
+npm run dev     # http://localhost:5173
+npm run build   # dist/
 npm run test:run
 ```
 
-## Schedule
+## Deploy
 
-Configured in `src/data/schedule.json`:
-- **Monday** — Condensed lower (3 exercises)
-- **Tuesday** — Upper strength
-- **Thursday** — Pull + Push merged
-- **Saturday** — Legs
+Build outputs to `dist/`. Deploy the `dist/` folder to any static host (Vercel, Netlify, GitHub Pages). The app runs fully offline after install (PWA).
 
-## Data
+## Project Structure
 
-- `src/data/nippard.json` — Program (stub; full parse via LLM script later)
-- `src/data/schedule.json` — Day mappings + exercise filters
-- IndexedDB — Sessions, sets, user profile, program state
-
-## Next (Phase 2+)
-
-- Rest timer overlay (manual, beep)
-- ExRx GIF display
-- Strength goals (bundled standards)
-- Apps Script → Google Sheets sync
-- roughViz progression graphs
+- `src/data/` — program (nippard.json), schedule, strength standards
+- `src/lib/` — db, sync, backup, progression, plate calc
+- `src/store/` — workout and program state
+- `src/views/` — Home, Workout, History, Settings
