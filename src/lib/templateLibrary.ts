@@ -99,3 +99,111 @@ export async function loadTemplates(): Promise<WorkoutTemplate[]> {
 export async function deleteTemplate(id: number): Promise<void> {
   await db.templates.delete(id)
 }
+
+const BUILT_IN_TEMPLATES: { name: string; exercises: SessionExercise[] }[] = [
+  {
+    name: 'Monday Upper Feel Good',
+    exercises: [
+      {
+        name: '45° Incline Barbell Press',
+        slotKey: 'quick-upper:0',
+        dayType: 'quick_upper',
+        warmupSets: 1,
+        workingSets: 2,
+        repRange: [8, 10],
+        earlySetRPE: 7,
+        lastSetRPE: 8,
+        restSeconds: [90, 120],
+        notes: '1 second pause at the bottom. Keep tension on the pecs.',
+        demoUrl: '',
+        sub1: '45° Incline DB Press',
+        sub2: '45° Incline Machine Press',
+        imagePath: '/images/wger/45-incline-barbell-press.png',
+      },
+      {
+        name: 'Chest-Supported Row',
+        slotKey: 'quick-upper:1',
+        dayType: 'quick_upper',
+        warmupSets: 1,
+        workingSets: 2,
+        repRange: [8, 10],
+        earlySetRPE: 7,
+        lastSetRPE: 8,
+        restSeconds: [60, 90],
+        notes: 'Squeeze shoulder blades at the top. Slow negative.',
+        demoUrl: '',
+        sub1: 'Seated Cable Row',
+        sub2: 'Smith Machine Row',
+        imagePath: '/images/wger/chest-supported-machine-row.png',
+      },
+      {
+        name: 'DB Shoulder Press',
+        slotKey: 'quick-upper:2',
+        dayType: 'quick_upper',
+        warmupSets: 1,
+        workingSets: 2,
+        repRange: [10, 12],
+        earlySetRPE: 7,
+        lastSetRPE: 8,
+        restSeconds: [60, 90],
+        notes: 'Seated or standing. Full range of motion.',
+        demoUrl: '',
+        sub1: 'Machine OHP',
+        sub2: 'Standing Barbell Press',
+        imagePath: '/images/wger/seated-db-shoulder-press.png',
+      },
+      {
+        name: 'Cable Crossover Ladder',
+        slotKey: 'quick-upper:3',
+        dayType: 'quick_upper',
+        warmupSets: 0,
+        workingSets: 2,
+        repRange: [10, 12],
+        earlySetRPE: 7,
+        lastSetRPE: 8,
+        restSeconds: [60, 60],
+        notes: 'Pick your favourite cable height. Chest pump.',
+        demoUrl: '',
+        sub1: 'Pec Deck',
+        sub2: 'Bottom-Half DB Flye',
+      },
+      {
+        name: 'Face Pull',
+        slotKey: 'quick-upper:4',
+        dayType: 'quick_upper',
+        warmupSets: 0,
+        workingSets: 2,
+        repRange: [12, 15],
+        earlySetRPE: 7,
+        lastSetRPE: 7,
+        restSeconds: [60, 60],
+        notes: 'External rotation at the top. Shoulder health finisher.',
+        demoUrl: '',
+        sub1: 'High-Cable Lateral Raise',
+        sub2: 'DB Lateral Raise',
+      },
+    ],
+  },
+]
+
+/**
+ * Seeds built-in templates into IndexedDB if they don't already exist.
+ * Safe to call on every app mount — checks by name before inserting.
+ */
+export async function seedBuiltInTemplates(): Promise<void> {
+  try {
+    const existing = await db.templates.toArray()
+    const existingNames = new Set(existing.map((t) => t.name))
+
+    for (const tmpl of BUILT_IN_TEMPLATES) {
+      if (existingNames.has(tmpl.name)) continue
+      await db.templates.add({
+        name: tmpl.name,
+        exercises: JSON.parse(JSON.stringify(tmpl.exercises)),
+        createdAt: Date.now(),
+      })
+    }
+  } catch (e) {
+    console.error('[templateLibrary] Failed to seed built-in templates', e)
+  }
+}
