@@ -144,7 +144,7 @@ function handleCancel() {
             </div>
 
             <div v-if="searchQuery.trim() && searchResults.length === 0" class="no-results">
-              <RText tag="p">No matches. Add as custom below.</RText>
+              <RText tag="p">No matches. Type a custom exercise name below.</RText>
             </div>
 
             <div class="custom-section">

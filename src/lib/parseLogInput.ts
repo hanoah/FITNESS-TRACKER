@@ -27,12 +27,12 @@ const REPS_MAX = 200
 export function parseLogInput(input: string): ParseResult {
   const trimmed = input.trim()
   if (!trimmed) {
-    throw new ParseError('Try: 150 12 9 (weight reps RPE)', input)
+    throw new ParseError('Enter weight, reps, and RPE. Example: 150 12 9', input)
   }
 
   const tokens = trimmed.split(/\s+/)
   if (tokens.length < 3) {
-    throw new ParseError('Try: 150 12 9 (weight reps RPE)', input)
+    throw new ParseError('Enter weight, reps, and RPE. Example: 150 12 9', input)
   }
 
   const [weightStr, repsStr, rpeStr] = tokens.slice(0, 3)
@@ -41,7 +41,7 @@ export function parseLogInput(input: string): ParseResult {
   const rpe = parseFloat(rpeStr)
 
   if (Number.isNaN(weight) || Number.isNaN(reps) || Number.isNaN(rpe)) {
-    throw new ParseError('Use numbers only. Try: 150 12 9', input)
+    throw new ParseError('Use numbers only. Example: 150 12 9', input)
   }
 
   if (weight <= 0 || reps <= 0) {
@@ -61,7 +61,7 @@ export function parseLogInput(input: string): ParseResult {
   }
 
   if (rpe < RPE_MIN || rpe > RPE_MAX) {
-    throw new ParseError(`RPE must be ${RPE_MIN}-${RPE_MAX}`, input)
+    throw new ParseError(`RPE must be ${RPE_MIN}–${RPE_MAX} (effort level)`, input)
   }
 
   return { weight: Math.round(weight * 10) / 10, reps: Math.round(reps), rpe: Math.round(rpe * 10) / 10 }

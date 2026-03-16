@@ -355,7 +355,7 @@ const keyLiftGoals = computed(() => {
           placeholder="https://script.google.com/..."
         />
       </div>
-      <RText tag="p" class="sync-hint">Save your profile above to persist the URL.</RText>
+      <RText tag="p" class="sync-hint">Paste the web app URL from your deployed Google Apps Script. Save your profile above to store it.</RText>
       <RText tag="p" class="sync-status">{{ pendingCount }} workout(s) pending sync</RText>
       <RButton
         :disabled="syncing || !appsScriptUrl.trim()"
@@ -368,7 +368,7 @@ const keyLiftGoals = computed(() => {
     <RCard class="settings-card">
       <RText tag="h3">Backup & Restore</RText>
       <RText tag="p" class="backup-hint">
-        Export saves your history to a file. Restore recovers data lost in incognito or on a new device.
+        Export downloads your workout history. Restore brings it back on a new device or after clearing data.
       </RText>
       <div class="backup-actions">
         <RButton :disabled="exporting" @click="handleExport">
@@ -396,7 +396,7 @@ const keyLiftGoals = computed(() => {
         />
       </div>
         <RText v-if="importResult" tag="p" class="import-result">{{ importResult }}</RText>
-        <RText tag="p" class="sample-hint">Replace all history with sample workout data to see the app populated:</RText>
+        <RText tag="p" class="sample-hint">Replace all history with sample data to preview the app:</RText>
         <RButton
           variant="secondary"
           :disabled="seeding"
@@ -407,7 +407,7 @@ const keyLiftGoals = computed(() => {
     </RCard>
 
     <RCard v-if="keyLiftGoals.length > 0" class="settings-card">
-      <RText tag="h3">Key lift goals ({{ strengthLevel }})</RText>
+      <RText tag="h3">Strength goals ({{ strengthLevel }})</RText>
       <ul class="key-lifts-list">
         <li v-for="g in keyLiftGoals" :key="g.label">{{ g.label }}: {{ g.goal }} lb</li>
       </ul>

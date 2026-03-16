@@ -4,6 +4,25 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.1.2] - 2026-03-14
+
+### Added
+
+- "By Exercise" muscle group dropdown filter (replaces collapsible region/muscle hierarchy)
+- Inline muscle badge on each exercise row in history
+- Keyword-based muscle inference for custom exercise names not in the library
+- `muscleGroups.ts` utility: maps exercises → muscles → body regions
+- Delight copy: randomized workout-complete messages
+- Button press micro-interaction (subtle translateY on tap)
+- "Nice work." subtext on workout completion card
+
+### Changed
+
+- UX copy overhaul: friendlier error toasts, clearer hints, better empty states across all views
+- Settings: "Key lift goals" → "Strength goals"; improved backup/sync hints
+- Parse input errors now include examples and RPE explanation
+- WorkoutPage: clearer plate math label, RPE hint in log prompt
+
 ## [0.1.1] - 2025-03-14
 
 ### Added

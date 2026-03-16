@@ -117,7 +117,7 @@ function selectCustomTemplate(template: WorkoutTemplate) {
 
 async function handleDeleteTemplate(e: Event, id: number) {
   e.stopPropagation()
-  if (!confirm('Delete this template?')) return
+  if (!confirm('Delete this template? You won\'t be able to recover it.')) return
   await deleteTemplate(id)
   customTemplates.value = await loadTemplates()
 }
@@ -176,7 +176,7 @@ async function handleDeleteTemplate(e: Event, id: number) {
                     </button>
                   </li>
                 </ul>
-                <RText v-else tag="p" class="empty-hint">No saved templates. Complete a workout and use "Save as Template" to create one.</RText>
+                <RText v-else tag="p" class="empty-hint">No custom templates yet. Complete a workout and save it to build your library.</RText>
               </div>
             </template>
 

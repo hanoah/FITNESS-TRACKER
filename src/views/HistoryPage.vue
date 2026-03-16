@@ -4,6 +4,7 @@ import { RButton, RCard, RText, useToast } from 'roughness'
 import { db } from '../lib/db'
 import ProgressionChart from '../components/ProgressionChart.vue'
 import { useExerciseProgression } from '../composables/useExerciseProgression'
+import { groupByBodyRegion } from '../lib/muscleGroups'
 import type { WorkoutSession, SetLog } from '../types/session'
 
 type ViewMode = 'workout' | 'exercise'
@@ -12,6 +13,7 @@ const viewMode = ref<ViewMode>('workout')
 const sessions = ref<WorkoutSession[]>([])
 const expandedId = ref<number | null>(null)
 const expandedExercise = ref<string | null>(null)
+const selectedRegion = ref<string>('All')
 const setsBySession = ref<Record<number, SetLog[]>>({})
 const loadingSets = ref<number | null>(null)
 const deleting = ref<number | null>(null)
@@ -37,7 +39,7 @@ async function load() {
   } catch (e) {
     console.error('[HistoryPage] Failed to load sessions', e)
     loadError.value = true
-    toast('Failed to load workout history')
+    toast("Couldn't load history — try again?")
   }
 }
 
@@ -51,7 +53,7 @@ async function loadSets(sessionId: number) {
     setsBySession.value = { ...setsBySession.value, [sessionId]: sets }
   } catch (e) {
     console.error('[HistoryPage] Failed to load sets', e)
-    toast('Failed to load sets')
+    toast("Couldn't load sets — try again?")
   } finally {
     loadingSets.value = null
   }
@@ -102,10 +104,20 @@ function formatDayType(dayType: string) {
 
 const exerciseList = computed(() => progression.exercisesSortedByRecent.value ?? [])
 
-const expandedExerciseGroup = computed(() => {
-  const name = expandedExercise.value
-  if (!name) return null
-  return progression.getExerciseGroup(name)
+const groupedExercises = computed(() => groupByBodyRegion(exerciseList.value))
+
+const availableRegions = computed(() => groupedExercises.value.map(g => g.region))
+
+const filteredExercises = computed(() => {
+  const groups = selectedRegion.value === 'All'
+    ? groupedExercises.value
+    : groupedExercises.value.filter(g => g.region === selectedRegion.value)
+
+  return groups.flatMap(g =>
+    g.muscles.flatMap(m =>
+      m.exercises.map(name => ({ name, muscle: m.muscle, region: g.region }))
+    )
+  )
 })
 
 function groupSetsByExercise(sets: SetLog[]): { exerciseName: string; slotKey: string; sets: SetLog[] }[] {
@@ -149,12 +161,12 @@ function groupSetsByExercise(sets: SetLog[]): { exerciseName: string; slotKey: s
     <!-- By Workout view -->
     <template v-if="viewMode === 'workout'">
       <RCard v-if="loadError" class="empty-card">
-        <RText tag="p">Couldn't load history.</RText>
+        <RText tag="p">Couldn't load history. Give it another try?</RText>
         <RButton @click="load">Retry</RButton>
       </RCard>
 
       <RCard v-else-if="sessions.length === 0" class="empty-card">
-        <RText tag="p">No workouts yet. Start one from the home page!</RText>
+        <RText tag="p">Your log is empty. Start one from home and make today count.</RText>
       </RCard>
 
       <RCard
@@ -221,7 +233,7 @@ function groupSetsByExercise(sets: SetLog[]): { exerciseName: string; slotKey: s
     <!-- By Exercise view -->
     <template v-else>
       <RCard v-if="progression.loadError.value" class="empty-card">
-        <RText tag="p">Couldn't load sets.</RText>
+        <RText tag="p">Couldn't load sets. Try again?</RText>
         <RButton @click="progression.loadAllSets">Retry</RButton>
       </RCard>
 
@@ -230,64 +242,76 @@ function groupSetsByExercise(sets: SetLog[]): { exerciseName: string; slotKey: s
       </RCard>
 
       <RCard v-else-if="exerciseList.length === 0" class="empty-card">
-        <RText tag="p">No exercises logged yet. Complete a workout to see your progress!</RText>
+        <RText tag="p">Your progress chart is empty. Complete a workout to start building it.</RText>
       </RCard>
 
-      <RCard
-        v-for="name in exerciseList"
-        :key="name"
-        class="exercise-card"
-        :class="{ expanded: expandedExercise === name }"
-      >
-        <button
-          type="button"
-          class="session-header"
-          @click="toggleExerciseExpand(name)"
-        >
-          <RText tag="p" class="exercise-name">{{ name }}</RText>
-          <span class="expand-icon" :class="{ open: expandedExercise === name }">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M9 18l6-6-6-6" />
-            </svg>
-          </span>
-        </button>
+      <template v-else>
+        <div class="filter-row">
+          <select v-model="selectedRegion" class="region-select">
+            <option value="All">All muscles</option>
+            <option v-for="r in availableRegions" :key="r" :value="r">{{ r }}</option>
+          </select>
+        </div>
 
-        <Transition name="expand">
-          <div v-if="expandedExercise === name" class="exercise-detail">
-          <template v-if="expandedExerciseGroup">
-            <div v-if="expandedExerciseGroup.bestSet" class="best-set">
-              Best: {{ expandedExerciseGroup.bestSet.weight }}×{{ expandedExerciseGroup.bestSet.reps }}
-              <span v-if="expandedExerciseGroup.bestSet.rpe">
-                @ RPE {{ expandedExerciseGroup.bestSet.rpe }}
-              </span>
+        <RCard
+          v-for="ex in filteredExercises"
+          :key="ex.name"
+          class="exercise-card"
+          :class="{ expanded: expandedExercise === ex.name }"
+        >
+          <button
+            type="button"
+            class="session-header"
+            @click="toggleExerciseExpand(ex.name)"
+          >
+            <div class="exercise-header-info">
+              <RText tag="p" class="exercise-name">{{ ex.name }}</RText>
+              <span class="muscle-badge">{{ ex.muscle }}</span>
             </div>
-            <ProgressionChart
-              v-if="expandedExerciseGroup.progressionData.length >= 2"
-              :data="expandedExerciseGroup.progressionData"
-              :title="name"
-            />
-            <p v-else-if="expandedExerciseGroup.progressionData.length === 1" class="chart-need-more">
-              Need more data (1 session) — log this exercise again to see progression
-            </p>
-            <div class="sets-by-date">
-              <template
-                v-for="[date, daySets] in Array.from(expandedExerciseGroup.setsByDate.entries()).sort((a, b) => b[0].localeCompare(a[0]))"
-                :key="date"
-              >
-                <RText tag="p" class="date-label">{{ date }}</RText>
-                <ul class="set-list">
-                  <li v-for="(set, i) in daySets" :key="date + '-' + (set.id ?? i)" class="set-item">
-                    {{ set.weight }}×{{ set.reps }}
-                    <span v-if="set.rpe" class="set-rpe">RPE {{ set.rpe }}</span>
-                    <span v-if="set.isWarmup" class="set-warmup">warm-up</span>
-                  </li>
-                </ul>
+            <span class="expand-icon" :class="{ open: expandedExercise === ex.name }">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 18l6-6-6-6" />
+              </svg>
+            </span>
+          </button>
+
+          <Transition name="expand">
+            <div v-if="expandedExercise === ex.name" class="exercise-detail">
+              <template v-if="progression.getExerciseGroup(ex.name) as any">
+                <div v-if="progression.getExerciseGroup(ex.name)?.bestSet" class="best-set">
+                  Best: {{ progression.getExerciseGroup(ex.name)!.bestSet!.weight }}×{{ progression.getExerciseGroup(ex.name)!.bestSet!.reps }}
+                  <span v-if="progression.getExerciseGroup(ex.name)!.bestSet!.rpe">
+                    @ RPE {{ progression.getExerciseGroup(ex.name)!.bestSet!.rpe }}
+                  </span>
+                </div>
+                <ProgressionChart
+                  v-if="(progression.getExerciseGroup(ex.name)?.progressionData?.length ?? 0) >= 2"
+                  :data="progression.getExerciseGroup(ex.name)!.progressionData"
+                  :title="ex.name"
+                />
+                <p v-else-if="(progression.getExerciseGroup(ex.name)?.progressionData?.length ?? 0) === 1" class="chart-need-more">
+                  Need more data (1 session) — log this exercise again to see progression
+                </p>
+                <div class="sets-by-date">
+                  <template
+                    v-for="[date, daySets] in Array.from(progression.getExerciseGroup(ex.name)!.setsByDate.entries()).sort((a, b) => b[0].localeCompare(a[0]))"
+                    :key="date"
+                  >
+                    <RText tag="p" class="date-label">{{ date }}</RText>
+                    <ul class="set-list">
+                      <li v-for="(set, i) in daySets" :key="date + '-' + (set.id ?? i)" class="set-item">
+                        {{ set.weight }}×{{ set.reps }}
+                        <span v-if="set.rpe" class="set-rpe">RPE {{ set.rpe }}</span>
+                        <span v-if="set.isWarmup" class="set-warmup">warm-up</span>
+                      </li>
+                    </ul>
+                  </template>
+                </div>
               </template>
             </div>
-          </template>
-          </div>
-        </Transition>
-      </RCard>
+          </Transition>
+        </RCard>
+      </template>
     </template>
   </div>
 </template>
@@ -447,6 +471,45 @@ function groupSetsByExercise(sets: SetLog[]): { exerciseName: string; slotKey: s
 }
 .date-label:first-child {
   margin-top: 0;
+}
+.filter-row {
+  display: flex;
+  align-items: center;
+}
+.region-select {
+  width: 100%;
+  padding: var(--space-sm) var(--space-md);
+  font-family: inherit;
+  font-size: 0.95rem;
+  background: var(--r-color-fill-secondary, #1a1a1a);
+  color: var(--r-color-text);
+  border: 1px solid var(--r-color-stroke);
+  border-radius: 8px;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+}
+.region-select:focus {
+  outline: 2px solid var(--r-color-primary);
+  outline-offset: 1px;
+}
+.exercise-header-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+.muscle-badge {
+  flex-shrink: 0;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--r-color-primary);
+  opacity: 0.8;
 }
 
 .expand-enter-active,
