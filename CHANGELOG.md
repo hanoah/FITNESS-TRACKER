@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.1.3] - 2026-03-16
+
+### Added
+
+- "Monday Upper Feel Good" built-in template: 5-exercise, ~25 min upper body session based on Jeff Nippard's Bodybuilding Transformation System
+- Built-in template seeding on app mount (idempotent — skips if already exists)
+
 ## [0.1.2] - 2026-03-14
 
 ### Added

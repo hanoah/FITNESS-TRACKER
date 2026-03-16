@@ -1,11 +1,16 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useWorkoutStore } from './store/workout'
+import { seedBuiltInTemplates } from './lib/templateLibrary'
 
 const router = useRouter()
 const route = useRoute()
 const workoutStore = useWorkoutStore()
+
+onMounted(() => {
+  seedBuiltInTemplates()
+})
 
 const hasActiveWorkout = computed(() => !!workoutStore.activeSession)
 
