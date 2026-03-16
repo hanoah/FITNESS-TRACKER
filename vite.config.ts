@@ -11,7 +11,7 @@ export default defineConfig({
       manifest: {
         name: 'Workout App',
         short_name: 'Workout',
-        theme_color: '#863bff',
+        theme_color: '#c45c26',
         icons: [
           { src: '/icon-192x192.png', sizes: '192x192', type: 'image/png' },
           { src: '/icon-512x512.png', sizes: '512x512', type: 'image/png' },
@@ -19,6 +19,7 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+        maximumFileSizeToCacheInBytes: 8 * 1024 * 1024, // 8 MiB for large exercise images
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,

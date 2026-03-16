@@ -9,9 +9,23 @@ import nippardData from '../data/nippard.json'
 import scheduleData from '../data/schedule.json'
 import type { NippardProgram } from '../types/program'
 import type { ScheduleConfig } from '../types/schedule'
-import { getDayExercises, getCurrentBlockAndWeek, type ResolvedExercise } from '../lib/programEngine'
+import { getDayExercises, type ResolvedExercise } from '../lib/programEngine'
+import type { ProgramExercise } from '../types/program'
 
 const program = nippardData as NippardProgram
+
+function findExerciseByName(name: string): ProgramExercise | null {
+  for (const block of program.blocks) {
+    for (const week of block.weeks) {
+      for (const day of week.days) {
+        for (const ex of day.exercises) {
+          if (ex?.name === name) return ex
+        }
+      }
+    }
+  }
+  return null
+}
 const schedule = scheduleData as ScheduleConfig
 
 function validateProgram(p: NippardProgram): string | null {
@@ -41,19 +55,33 @@ export const useProgramStore = defineStore('program', () => {
       if (state) {
         programState.value = { blockId: state.blockId, weekNumber: state.weekNumber }
       } else {
-        const { blockId, weekNumber } = getCurrentBlockAndWeek(program, null)
-        programState.value = { blockId, weekNumber }
-        await db.programState.put({
-          id: 'current',
-          blockId,
-          weekNumber,
-          updatedAt: Date.now(),
-        })
+        programState.value = null
       }
       return programState.value
     } catch (e) {
       console.error('[program.loadProgramState] Failed to load state', e)
       return null
+    }
+  }
+
+  async function setProgramState(blockId: string, weekNumber: number): Promise<boolean> {
+    const block = program.blocks.find((b) => b.id === blockId)
+    if (!block) return false
+    const maxWeek = Math.max(...block.weeks.map((w) => w.number))
+    if (weekNumber < 1 || weekNumber > maxWeek) return false
+
+    try {
+      programState.value = { blockId, weekNumber }
+      await db.programState.put({
+        id: 'current',
+        blockId,
+        weekNumber,
+        updatedAt: Date.now(),
+      })
+      return true
+    } catch (e) {
+      console.error('[program.setProgramState] Failed', e)
+      return false
     }
   }
 
@@ -100,14 +128,19 @@ export const useProgramStore = defineStore('program', () => {
     return program.blocks.find((b) => b.id === state.blockId)
   })
 
+  const hasProgram = computed(() => (program.blocks?.length ?? 0) > 0)
+
   return {
     program,
     schedule,
     programState,
     programError,
+    hasProgram,
     loadProgramState,
+    setProgramState,
     advanceWeek,
     getExercisesForDay,
+    getExerciseByName: findExerciseByName,
     currentBlock,
   }
 })

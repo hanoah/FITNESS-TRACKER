@@ -40,5 +40,138 @@
     "170": { "beginner": 110, "novice": 155, "intermediate": 210, "advanced": 275, "elite": 350 },
     "190": { "beginner": 120, "novice": 170, "intermediate": 230, "advanced": 300, "elite": 385 },
     "210": { "beginner": 130, "novice": 185, "intermediate": 250, "advanced": 325, "elite": 420 }
+  },
+  "Leg Press": {
+    "130": { "beginner": 126, "novice": 224, "intermediate": 356, "advanced": 519, "elite": 703 },
+    "150": { "beginner": 165, "novice": 274, "intermediate": 419, "advanced": 594, "elite": 790 },
+    "170": { "beginner": 202, "novice": 322, "intermediate": 478, "advanced": 664, "elite": 870 },
+    "190": { "beginner": 239, "novice": 368, "intermediate": 534, "advanced": 729, "elite": 945 },
+    "210": { "beginner": 275, "novice": 413, "intermediate": 586, "advanced": 791, "elite": 1015 }
+  },
+  "Hack Squat": {
+    "130": { "beginner": 90, "novice": 132, "intermediate": 185, "advanced": 247, "elite": 314 },
+    "150": { "beginner": 113, "novice": 159, "intermediate": 218, "advanced": 284, "elite": 356 },
+    "170": { "beginner": 135, "novice": 186, "intermediate": 248, "advanced": 320, "elite": 395 },
+    "190": { "beginner": 157, "novice": 212, "intermediate": 277, "advanced": 352, "elite": 431 },
+    "210": { "beginner": 177, "novice": 235, "intermediate": 304, "advanced": 383, "elite": 465 }
+  },
+  "Machine Shoulder Press": {
+    "130": { "beginner": 45, "novice": 70, "intermediate": 102, "advanced": 140, "elite": 181 },
+    "150": { "beginner": 57, "novice": 85, "intermediate": 120, "advanced": 161, "elite": 205 },
+    "170": { "beginner": 69, "novice": 99, "intermediate": 136, "advanced": 180, "elite": 227 },
+    "190": { "beginner": 80, "novice": 113, "intermediate": 152, "advanced": 198, "elite": 248 },
+    "210": { "beginner": 91, "novice": 126, "intermediate": 168, "advanced": 215, "elite": 267 }
+  },
+  "Seated DB Shoulder Press": {
+    "130": { "beginner": 45, "novice": 70, "intermediate": 102, "advanced": 140, "elite": 181 },
+    "150": { "beginner": 57, "novice": 85, "intermediate": 120, "advanced": 161, "elite": 205 },
+    "170": { "beginner": 69, "novice": 99, "intermediate": 136, "advanced": 180, "elite": 227 },
+    "190": { "beginner": 80, "novice": 113, "intermediate": 152, "advanced": 198, "elite": 248 },
+    "210": { "beginner": 91, "novice": 126, "intermediate": 168, "advanced": 215, "elite": 267 }
+  },
+  "Pendlay Deficit Row": {
+    "130": { "beginner": 62, "novice": 95, "intermediate": 137, "advanced": 186, "elite": 240 },
+    "150": { "beginner": 78, "novice": 115, "intermediate": 160, "advanced": 213, "elite": 271 },
+    "170": { "beginner": 94, "novice": 134, "intermediate": 182, "advanced": 238, "elite": 299 },
+    "190": { "beginner": 109, "novice": 152, "intermediate": 203, "advanced": 262, "elite": 326 },
+    "210": { "beginner": 124, "novice": 169, "intermediate": 223, "advanced": 285, "elite": 351 }
+  },
+  "Chest-Supported Machine Row": {
+    "130": { "beginner": 62, "novice": 95, "intermediate": 137, "advanced": 186, "elite": 240 },
+    "150": { "beginner": 78, "novice": 115, "intermediate": 160, "advanced": 213, "elite": 271 },
+    "170": { "beginner": 94, "novice": 134, "intermediate": 182, "advanced": 238, "elite": 299 },
+    "190": { "beginner": 109, "novice": 152, "intermediate": 203, "advanced": 262, "elite": 326 },
+    "210": { "beginner": 124, "novice": 169, "intermediate": 223, "advanced": 285, "elite": 351 }
+  },
+  "Chest-Supported T-Bar Row": {
+    "130": { "beginner": 62, "novice": 95, "intermediate": 137, "advanced": 186, "elite": 240 },
+    "150": { "beginner": 78, "novice": 115, "intermediate": 160, "advanced": 213, "elite": 271 },
+    "170": { "beginner": 94, "novice": 134, "intermediate": 182, "advanced": 238, "elite": 299 },
+    "190": { "beginner": 109, "novice": 152, "intermediate": 203, "advanced": 262, "elite": 326 },
+    "210": { "beginner": 124, "novice": 169, "intermediate": 223, "advanced": 285, "elite": 351 }
+  },
+  "Smith Machine Row": {
+    "130": { "beginner": 62, "novice": 95, "intermediate": 137, "advanced": 186, "elite": 240 },
+    "150": { "beginner": 78, "novice": 115, "intermediate": 160, "advanced": 213, "elite": 271 },
+    "170": { "beginner": 94, "novice": 134, "intermediate": 182, "advanced": 238, "elite": 299 },
+    "190": { "beginner": 109, "novice": 152, "intermediate": 203, "advanced": 262, "elite": 326 },
+    "210": { "beginner": 124, "novice": 169, "intermediate": 223, "advanced": 285, "elite": 351 }
+  },
+  "Barbell Curl": {
+    "130": { "beginner": 27, "novice": 49, "intermediate": 79, "advanced": 117, "elite": 160 },
+    "150": { "beginner": 34, "novice": 58, "intermediate": 91, "advanced": 131, "elite": 177 },
+    "170": { "beginner": 41, "novice": 67, "intermediate": 102, "advanced": 145, "elite": 192 },
+    "190": { "beginner": 47, "novice": 76, "intermediate": 113, "advanced": 157, "elite": 206 },
+    "210": { "beginner": 54, "novice": 84, "intermediate": 122, "advanced": 168, "elite": 219 }
+  },
+  "EZ-Bar Cable Curl": {
+    "130": { "beginner": 27, "novice": 49, "intermediate": 79, "advanced": 117, "elite": 160 },
+    "150": { "beginner": 34, "novice": 58, "intermediate": 91, "advanced": 131, "elite": 177 },
+    "170": { "beginner": 41, "novice": 67, "intermediate": 102, "advanced": 145, "elite": 192 },
+    "190": { "beginner": 47, "novice": 76, "intermediate": 113, "advanced": 157, "elite": 206 },
+    "210": { "beginner": 54, "novice": 84, "intermediate": 122, "advanced": 168, "elite": 219 }
+  },
+  "Bayesian Cable Curl": {
+    "130": { "beginner": 27, "novice": 49, "intermediate": 79, "advanced": 117, "elite": 160 },
+    "150": { "beginner": 34, "novice": 58, "intermediate": 91, "advanced": 131, "elite": 177 },
+    "170": { "beginner": 41, "novice": 67, "intermediate": 102, "advanced": 145, "elite": 192 },
+    "190": { "beginner": 47, "novice": 76, "intermediate": 113, "advanced": 157, "elite": 206 },
+    "210": { "beginner": 54, "novice": 84, "intermediate": 122, "advanced": 168, "elite": 219 }
+  },
+  "DB Concentration Curl": {
+    "130": { "beginner": 10, "novice": 23, "intermediate": 42, "advanced": 66, "elite": 96 },
+    "150": { "beginner": 12, "novice": 27, "intermediate": 47, "advanced": 73, "elite": 104 },
+    "170": { "beginner": 15, "novice": 30, "intermediate": 52, "advanced": 80, "elite": 111 },
+    "190": { "beginner": 18, "novice": 34, "intermediate": 57, "advanced": 85, "elite": 118 },
+    "210": { "beginner": 20, "novice": 37, "intermediate": 61, "advanced": 91, "elite": 124 }
+  },
+  "Leg Extension": {
+    "130": { "beginner": 38, "novice": 67, "intermediate": 107, "advanced": 156, "elite": 211 },
+    "150": { "beginner": 50, "novice": 82, "intermediate": 126, "advanced": 178, "elite": 237 },
+    "170": { "beginner": 61, "novice": 97, "intermediate": 143, "advanced": 199, "elite": 261 },
+    "190": { "beginner": 72, "novice": 110, "intermediate": 160, "advanced": 219, "elite": 284 },
+    "210": { "beginner": 83, "novice": 124, "intermediate": 176, "advanced": 237, "elite": 305 }
+  },
+  "Lying Leg Curl": {
+    "130": { "beginner": 40, "novice": 67, "intermediate": 100, "advanced": 140, "elite": 188 },
+    "150": { "beginner": 50, "novice": 82, "intermediate": 125, "advanced": 175, "elite": 235 },
+    "170": { "beginner": 60, "novice": 97, "intermediate": 148, "advanced": 207, "elite": 278 },
+    "190": { "beginner": 70, "novice": 110, "intermediate": 170, "advanced": 238, "elite": 318 },
+    "210": { "beginner": 78, "novice": 124, "intermediate": 190, "advanced": 266, "elite": 355 }
+  },
+  "Seated Leg Curl": {
+    "130": { "beginner": 40, "novice": 67, "intermediate": 100, "advanced": 140, "elite": 188 },
+    "150": { "beginner": 50, "novice": 82, "intermediate": 125, "advanced": 175, "elite": 235 },
+    "170": { "beginner": 60, "novice": 97, "intermediate": 148, "advanced": 207, "elite": 278 },
+    "190": { "beginner": 70, "novice": 110, "intermediate": 170, "advanced": 238, "elite": 318 },
+    "210": { "beginner": 78, "novice": 124, "intermediate": 190, "advanced": 266, "elite": 355 }
+  },
+  "Neutral-Grip Lat Pulldown": {
+    "130": { "beginner": 47, "novice": 71, "intermediate": 103, "advanced": 140, "elite": 180 },
+    "150": { "beginner": 59, "novice": 86, "intermediate": 120, "advanced": 160, "elite": 203 },
+    "170": { "beginner": 71, "novice": 101, "intermediate": 137, "advanced": 179, "elite": 224 },
+    "190": { "beginner": 82, "novice": 114, "intermediate": 152, "advanced": 197, "elite": 245 },
+    "210": { "beginner": 93, "novice": 127, "intermediate": 167, "advanced": 214, "elite": 263 }
+  },
+  "Dual-Handle Lat Pulldown": {
+    "130": { "beginner": 47, "novice": 71, "intermediate": 103, "advanced": 140, "elite": 180 },
+    "150": { "beginner": 59, "novice": 86, "intermediate": 120, "advanced": 160, "elite": 203 },
+    "170": { "beginner": 71, "novice": 101, "intermediate": 137, "advanced": 179, "elite": 224 },
+    "190": { "beginner": 82, "novice": 114, "intermediate": 152, "advanced": 197, "elite": 245 },
+    "210": { "beginner": 93, "novice": 127, "intermediate": 167, "advanced": 214, "elite": 263 }
+  },
+  "Lean-Back Lat Pulldown": {
+    "130": { "beginner": 47, "novice": 71, "intermediate": 103, "advanced": 140, "elite": 180 },
+    "150": { "beginner": 59, "novice": 86, "intermediate": 120, "advanced": 160, "elite": 203 },
+    "170": { "beginner": 71, "novice": 101, "intermediate": 137, "advanced": 179, "elite": 224 },
+    "190": { "beginner": 82, "novice": 114, "intermediate": 152, "advanced": 197, "elite": 245 },
+    "210": { "beginner": 93, "novice": 127, "intermediate": 167, "advanced": 214, "elite": 263 }
+  },
+  "45° Hyperextension": {
+    "130": { "beginner": 43, "novice": 63, "intermediate": 88, "advanced": 117, "elite": 151 },
+    "150": { "beginner": 47, "novice": 72, "intermediate": 101, "advanced": 135, "elite": 173 },
+    "170": { "beginner": 52, "novice": 81, "intermediate": 115, "advanced": 153, "elite": 196 },
+    "190": { "beginner": 56, "novice": 90, "intermediate": 128, "advanced": 171, "elite": 218 },
+    "210": { "beginner": 61, "novice": 99, "intermediate": 142, "advanced": 189, "elite": 241 }
   }
 }

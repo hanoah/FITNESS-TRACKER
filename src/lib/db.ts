@@ -13,7 +13,14 @@
  */
 
 import Dexie, { type Table } from 'dexie'
-import type { WorkoutSession, SetLog } from '../types/session'
+import type { WorkoutSession, SetLog, SessionExercise } from '../types/session'
+
+export interface WorkoutTemplate {
+  id?: number
+  name: string
+  exercises: SessionExercise[]
+  createdAt: number
+}
 
 export interface UserProfile {
   id: string
@@ -47,6 +54,7 @@ export class WorkoutDb extends Dexie {
   sets!: Table<SetLog, number>
   programState!: Table<ProgramState, string>
   syncQueue!: Table<SyncQueueItem, number>
+  templates!: Table<WorkoutTemplate, number>
 
   constructor() {
     super('WorkoutApp')
@@ -56,6 +64,21 @@ export class WorkoutDb extends Dexie {
       sets: '++id, sessionId, exerciseSlot, exerciseName, timestamp',
       programState: 'id',
       syncQueue: '++id, timestamp, synced',
+    })
+    this.version(2).stores({
+      userProfile: 'id',
+      sessions: '++id, date, status, dayType, blockId, weekNumber',
+      sets: '++id, sessionId, exerciseSlot, exerciseName, timestamp',
+      programState: 'id',
+      syncQueue: '++id, timestamp, synced',
+    })
+    this.version(3).stores({
+      userProfile: 'id',
+      sessions: '++id, date, status, dayType, blockId, weekNumber',
+      sets: '++id, sessionId, exerciseSlot, exerciseName, timestamp',
+      programState: 'id',
+      syncQueue: '++id, timestamp, synced',
+      templates: '++id, name, createdAt',
     })
   }
 }

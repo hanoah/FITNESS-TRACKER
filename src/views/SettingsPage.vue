@@ -3,7 +3,8 @@ import { ref, onMounted, computed } from 'vue'
 import { db } from '../lib/db'
 import { getGoal } from '../lib/strengthGoals'
 import { getPendingCount, flushSyncQueue } from '../lib/sync'
-import { downloadBackup, importFromJson, parseSheetCsv } from '../lib/backup'
+import { downloadBackup, importFromJson, parseSheetCsv, clearAndSeedFromTracker } from '../lib/backup'
+import { SAMPLE_TRACKER } from '../data/sampleTracker'
 import { RButton, RCard, RInput, RText, useToast } from 'roughness'
 
 const KEY_LIFTS = [
@@ -24,6 +25,7 @@ const syncing = ref(false)
 const pendingCount = ref(0)
 const exporting = ref(false)
 const importing = ref(false)
+const seeding = ref(false)
 const importResult = ref<string | null>(null)
 const jsonInputRef = ref<HTMLInputElement | null>(null)
 const csvInputRef = ref<HTMLInputElement | null>(null)
@@ -116,6 +118,10 @@ async function handleImportJson(e: Event) {
   const input = e.target as HTMLInputElement
   const file = input.files?.[0]
   if (!file) return
+  if (!confirm('Import will add data to your existing history. Continue?')) {
+    input.value = ''
+    return
+  }
   importing.value = true
   importResult.value = null
   try {
@@ -149,6 +155,10 @@ async function handleImportSheet(e: Event) {
   const input = e.target as HTMLInputElement
   const file = input.files?.[0]
   if (!file) return
+  if (!confirm('Import will add data to your existing history. Continue?')) {
+    input.value = ''
+    return
+  }
   importing.value = true
   importResult.value = null
   try {
@@ -192,11 +202,61 @@ async function handleSync() {
   }
 }
 
+async function handleLoadSample() {
+  if (!confirm('This will clear all workout history and replace it with sample data. Continue?')) return
+  seeding.value = true
+  importResult.value = null
+  try {
+    const result = await clearAndSeedFromTracker(SAMPLE_TRACKER)
+    if (result.error) {
+      toast(result.error)
+      importResult.value = result.error
+    } else {
+      toast(`Loaded ${result.sessionsImported} sessions, ${result.setsImported} sets`)
+      importResult.value = `Loaded ${result.sessionsImported} sessions, ${result.setsImported} sets`
+    }
+  } catch (err) {
+    toast('Failed to load sample data')
+    importResult.value = 'Failed to load sample data'
+    console.error('[SettingsPage] Sample load failed', err)
+  } finally {
+    seeding.value = false
+  }
+}
+
+const saveError = ref('')
+
 async function handleSave() {
+  saveError.value = ''
+  const hVal = parseFloat(heightDisplay.value)
+  const wVal = parseFloat(weightDisplay.value)
+
+  if (heightDisplay.value.trim() && (!isFinite(hVal) || hVal <= 0)) {
+    saveError.value = 'Height must be a positive number'
+    return
+  }
+  if (weightDisplay.value.trim() && (!isFinite(wVal) || wVal <= 0)) {
+    saveError.value = 'Weight must be a positive number'
+    return
+  }
+  const maxHeight = unit.value === 'kg' ? 300 : 120
+  const maxWeight = unit.value === 'kg' ? 400 : 880
+  if (hVal > maxHeight) {
+    saveError.value = `Height seems too high (max ${maxHeight} ${unit.value === 'kg' ? 'cm' : 'in'})`
+    return
+  }
+  if (wVal > maxWeight) {
+    saveError.value = `Weight seems too high (max ${maxWeight} ${unit.value === 'kg' ? 'kg' : 'lbs'})`
+    return
+  }
+  const url = appsScriptUrl.value.trim()
+  if (url && !url.startsWith('https://script.google.com/')) {
+    saveError.value = 'Apps Script URL must start with https://script.google.com/'
+    return
+  }
+
   saving.value = true
   try {
-    const hVal = parseFloat(heightDisplay.value)
-    const wVal = parseFloat(weightDisplay.value)
     const heightCm = !isNaN(hVal) && hVal > 0
       ? (unit.value === 'kg' ? hVal : toCm(hVal))
       : undefined
@@ -241,11 +301,12 @@ const keyLiftGoals = computed(() => {
     return { label, goal }
   }).filter((g) => g.goal != null)
 })
+
 </script>
 
 <template>
   <div class="settings">
-    <RCard class="profile-card">
+    <RCard class="settings-card">
       <RText tag="h2">Profile</RText>
       <div class="field">
         <RText tag="label">{{ heightLabel() }}</RText>
@@ -274,6 +335,19 @@ const keyLiftGoals = computed(() => {
         </select>
       </div>
       <div class="field">
+        <RText tag="label">Unit</RText>
+        <div class="unit-toggle">
+          <RButton :type="unit === 'kg' ? 'primary' : undefined" @click="setUnit('kg')">kg</RButton>
+          <RButton :type="unit === 'lb' ? 'primary' : undefined" @click="setUnit('lb')">lb</RButton>
+        </div>
+      </div>
+      <RText v-if="saveError" tag="p" class="save-error">{{ saveError }}</RText>
+      <RButton type="primary" :disabled="saving" @click="handleSave">Save</RButton>
+    </RCard>
+
+    <RCard class="settings-card">
+      <RText tag="h3">Sync to Google Sheet</RText>
+      <div class="field">
         <RText tag="label">Apps Script URL</RText>
         <RInput
           v-model="appsScriptUrl"
@@ -281,70 +355,62 @@ const keyLiftGoals = computed(() => {
           placeholder="https://script.google.com/..."
         />
       </div>
-      <div class="field">
-        <RText tag="label">Unit</RText>
-        <div class="unit-toggle">
-          <RButton :type="unit === 'kg' ? 'primary' : undefined" @click="setUnit('kg')">kg</RButton>
-          <RButton :type="unit === 'lb' ? 'primary' : undefined" @click="setUnit('lb')">lb</RButton>
-        </div>
-      </div>
-      <RButton type="primary" :disabled="saving" @click="handleSave">Save</RButton>
+      <RText tag="p" class="sync-hint">Save your profile above to persist the URL.</RText>
+      <RText tag="p" class="sync-status">{{ pendingCount }} workout(s) pending sync</RText>
+      <RButton
+        :disabled="syncing || !appsScriptUrl.trim()"
+        @click="handleSync"
+      >
+        {{ syncing ? 'Syncing…' : 'Sync now' }}
+      </RButton>
+    </RCard>
 
-      <div class="sync-section">
-        <RText tag="h3">Sync to Google Sheet</RText>
-        <RText v-if="!appsScriptUrl.trim()" tag="p" class="sync-hint">
-          Add an Apps Script URL above and save to enable sync.
-        </RText>
-        <RText tag="p" class="sync-status">
-          {{ pendingCount }} workout(s) pending sync
-        </RText>
-        <RButton
-          :disabled="syncing || !appsScriptUrl.trim()"
-          @click="handleSync"
-        >
-          {{ syncing ? 'Syncing…' : 'Sync now' }}
+    <RCard class="settings-card">
+      <RText tag="h3">Backup & Restore</RText>
+      <RText tag="p" class="backup-hint">
+        Export saves your history to a file. Restore recovers data lost in incognito or on a new device.
+      </RText>
+      <div class="backup-actions">
+        <RButton :disabled="exporting" @click="handleExport">
+          {{ exporting ? 'Exporting…' : 'Download backup' }}
         </RButton>
+        <RButton :disabled="importing" @click="triggerJsonInput">
+          Import backup (.json)
+        </RButton>
+        <RButton :disabled="importing" @click="triggerCsvInput">
+          Import from Sheet (.csv)
+        </RButton>
+        <input
+          ref="jsonInputRef"
+          type="file"
+          accept=".json,application/json"
+          class="file-input"
+          @change="handleImportJson"
+        />
+        <input
+          ref="csvInputRef"
+          type="file"
+          accept=".csv,text/csv"
+          class="file-input"
+          @change="handleImportSheet"
+        />
       </div>
-
-      <div class="backup-section">
-        <RText tag="h3">Backup & Restore</RText>
-        <RText tag="p" class="backup-hint">
-          Export saves your history to a file. Restore recovers data lost in incognito or on a new device.
-        </RText>
-        <div class="backup-actions">
-          <RButton :disabled="exporting" @click="handleExport">
-            {{ exporting ? 'Exporting…' : 'Download backup' }}
-          </RButton>
-          <RButton :disabled="importing" @click="triggerJsonInput">
-            Import backup (.json)
-          </RButton>
-          <RButton :disabled="importing" @click="triggerCsvInput">
-            Import from Sheet (.csv)
-          </RButton>
-          <input
-            ref="jsonInputRef"
-            type="file"
-            accept=".json,application/json"
-            class="file-input"
-            @change="handleImportJson"
-          />
-          <input
-            ref="csvInputRef"
-            type="file"
-            accept=".csv,text/csv"
-            class="file-input"
-            @change="handleImportSheet"
-          />
-        </div>
         <RText v-if="importResult" tag="p" class="import-result">{{ importResult }}</RText>
-      </div>
+        <RText tag="p" class="sample-hint">Replace all history with sample workout data to see the app populated:</RText>
+        <RButton
+          variant="secondary"
+          :disabled="seeding"
+          @click="handleLoadSample"
+        >
+          {{ seeding ? 'Loading…' : 'Clear & load sample history' }}
+        </RButton>
+    </RCard>
 
-      <div v-if="keyLiftGoals.length > 0" class="key-lifts">
-        <RText tag="h3">Key lift goals ({{ strengthLevel }})</RText>
-        <ul>
-          <li v-for="g in keyLiftGoals" :key="g.label">{{ g.label }}: {{ g.goal }} lb</li>
-        </ul>
-      </div>
+    <RCard v-if="keyLiftGoals.length > 0" class="settings-card">
+      <RText tag="h3">Key lift goals ({{ strengthLevel }})</RText>
+      <ul class="key-lifts-list">
+        <li v-for="g in keyLiftGoals" :key="g.label">{{ g.label }}: {{ g.goal }} lb</li>
+      </ul>
     </RCard>
   </div>
 </template>
@@ -353,60 +419,50 @@ const keyLiftGoals = computed(() => {
 .settings {
   max-width: 400px;
   margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xl);
 }
-.profile-card {
-  padding: 1.5rem;
+.settings-card {
+  padding: var(--space-xl);
 }
-.profile-card h2 {
-  margin: 0 0 1rem 0;
+.settings-card h2 {
+  margin: 0 0 var(--space-lg) 0;
   font-size: 1.25rem;
 }
+.settings-card h3 {
+  margin: 0 0 var(--space-md) 0;
+  font-size: 1rem;
+}
 .field {
-  margin-bottom: 1rem;
+  margin-bottom: var(--space-lg);
 }
 .field label {
   display: block;
-  margin-bottom: 0.25rem;
+  margin-bottom: var(--space-xs);
   font-size: 0.9rem;
 }
 .unit-toggle {
   display: flex;
-  gap: 0.5rem;
+  gap: var(--space-sm);
 }
 .level-select {
-  padding: 0.5rem;
-  border: 2px solid var(--r-color-stroke, #333);
-  border-radius: 4px;
+  padding: var(--space-sm);
+  border: 2px solid var(--r-color-stroke);
+  border-radius: 6px;
   font-size: 1rem;
+  font-family: inherit;
   min-width: 160px;
 }
-.sync-section {
-  margin-top: 1.5rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--r-color-stroke, #ccc);
-}
-.sync-section h3 {
-  margin: 0 0 0.5rem 0;
-  font-size: 1rem;
-}
-.backup-section {
-  margin-top: 1.5rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--r-color-stroke, #ccc);
-}
-.backup-section h3 {
-  margin: 0 0 0.5rem 0;
-  font-size: 1rem;
-}
 .backup-hint {
-  margin: 0 0 0.75rem 0;
+  margin: 0 0 var(--space-md) 0;
   font-size: 0.9rem;
-  color: var(--r-color-text-secondary, #666);
+  color: var(--r-color-text-secondary);
 }
 .backup-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: var(--space-sm);
 }
 .file-input {
   position: absolute;
@@ -416,34 +472,40 @@ const keyLiftGoals = computed(() => {
   pointer-events: none;
 }
 .import-result {
-  margin: 0.5rem 0 0;
+  margin: var(--space-sm) 0 0;
   font-size: 0.9rem;
-  color: var(--r-color-text-secondary, #666);
+  color: var(--r-color-text-secondary);
+}
+.sample-hint {
+  margin: var(--space-lg) 0 var(--space-sm) 0;
+  font-size: 0.9rem;
+  color: var(--r-color-text-secondary);
+}
+.save-error {
+  color: var(--r-color-error);
+  margin: 0 0 var(--space-sm) 0;
+  font-size: 0.9rem;
 }
 .sync-hint {
-  margin: 0 0 0.25rem 0;
+  margin: 0 0 var(--space-xs) 0;
   font-size: 0.85rem;
-  color: var(--r-color-text-secondary, #666);
+  color: var(--r-color-text-secondary);
 }
 .sync-status {
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 var(--space-md) 0;
   font-size: 0.9rem;
-  color: var(--r-color-text-secondary, #666);
+  color: var(--r-color-text-secondary);
 }
-.key-lifts {
-  margin-top: 1.5rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--r-color-stroke, #ccc);
-}
-.key-lifts h3 {
-  margin: 0 0 0.5rem 0;
-  font-size: 1rem;
-}
-.key-lifts ul {
+.key-lifts-list {
   margin: 0;
   padding-left: 1.25rem;
 }
-.key-lifts li {
-  margin: 0.25rem 0;
+.key-lifts-list li {
+  margin: var(--space-xs) 0;
+}
+.no-program-hint {
+  font-size: 0.9rem;
+  color: var(--r-color-text-secondary);
+  margin: 0;
 }
 </style>

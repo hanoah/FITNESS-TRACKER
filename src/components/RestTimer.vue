@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { RButton, RText } from 'roughness'
 
 const props = defineProps<{
@@ -12,6 +12,10 @@ const emit = defineEmits<{
 }>()
 
 const displaySeconds = ref(props.seconds)
+const progressPercent = computed(() => {
+  if (props.seconds <= 0) return 0
+  return (displaySeconds.value / props.seconds) * 100
+})
 let rafId = 0
 let endTime = 0
 
@@ -73,12 +77,15 @@ function handleSkip() {
 
 <template>
   <Teleport to="body">
-    <div class="rest-overlay" @click.self="handleSkip">
+    <div class="rest-overlay" role="dialog" aria-modal="true" aria-label="Rest timer" @click.self="handleSkip">
       <div class="rest-modal">
         <RText tag="h3">Rest</RText>
-        <RText tag="p" class="countdown">{{ displaySeconds }}</RText>
+        <div class="progress-ring">
+          <div class="progress-bar" :style="{ width: progressPercent + '%' }"></div>
+        </div>
+        <RText tag="p" class="countdown" aria-live="polite" aria-atomic="true">{{ displaySeconds }}</RText>
         <RText tag="p" class="hint">seconds</RText>
-        <RButton @click="handleSkip">Skip</RButton>
+        <RButton type="primary" @click="handleSkip">Skip</RButton>
       </div>
     </div>
   </Teleport>
@@ -95,24 +102,39 @@ function handleSkip() {
   z-index: 1000;
 }
 .rest-modal {
-  background: var(--r-color-bg, #fff);
-  border: 2px solid var(--r-color-stroke, #333);
+  background: var(--r-color-bg);
+  border: 2px solid var(--r-color-stroke);
   border-radius: 12px;
-  padding: 2rem;
+  padding: var(--space-2xl);
   text-align: center;
-  min-width: 200px;
+  min-width: 220px;
 }
 .rest-modal h3 {
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 var(--space-md) 0;
   font-size: 1.25rem;
+}
+.progress-ring {
+  width: 100%;
+  height: 4px;
+  background: var(--r-color-fill-secondary);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: var(--space-md);
+}
+.progress-bar {
+  height: 100%;
+  background: var(--r-color-primary);
+  border-radius: 2px;
+  transition: width 1s linear;
 }
 .countdown {
   font-size: 3rem;
   font-weight: 700;
-  margin: 0.5rem 0;
+  margin: var(--space-sm) 0;
+  color: var(--r-color-primary);
 }
 .hint {
-  margin: 0 0 1rem 0;
-  color: var(--r-color-text-secondary, #666);
+  margin: 0 0 var(--space-lg) 0;
+  color: var(--r-color-text-secondary);
 }
 </style>

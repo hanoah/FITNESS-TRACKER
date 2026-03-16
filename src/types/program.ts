@@ -24,7 +24,7 @@ export interface ProgramExercise {
   sub1: string
   sub2: string
   notes: string
-  gifPath?: string
+  imagePath?: string
 }
 
 export interface Day {

@@ -21,6 +21,8 @@ export interface ParseResult {
 
 const RPE_MIN = 1
 const RPE_MAX = 10
+const WEIGHT_MAX = 2000
+const REPS_MAX = 200
 
 export function parseLogInput(input: string): ParseResult {
   const trimmed = input.trim()
@@ -44,6 +46,18 @@ export function parseLogInput(input: string): ParseResult {
 
   if (weight <= 0 || reps <= 0) {
     throw new ParseError('Weight and reps must be positive', input)
+  }
+
+  if (weight > WEIGHT_MAX) {
+    throw new ParseError(`Weight can't exceed ${WEIGHT_MAX} lbs`, input)
+  }
+
+  if (reps > REPS_MAX) {
+    throw new ParseError(`Reps can't exceed ${REPS_MAX}`, input)
+  }
+
+  if (!Number.isInteger(reps)) {
+    throw new ParseError('Reps must be a whole number', input)
   }
 
   if (rpe < RPE_MIN || rpe > RPE_MAX) {

@@ -3,7 +3,44 @@
 }
 
 :root {
+  /* Typography */
   --r-common-font-family: 'Mansalva', cursive;
+  --font-data: system-ui, -apple-system, sans-serif;
+
+  /* Color palette — warm, earthy, sketch-friendly */
+  --color-ink: #2d2a26;
+  --color-accent: #c45c26;
+  --color-text: #2d2a26;
+  --color-text-secondary: #6b6560;
+  --color-bg: #faf8f5;
+  --color-bg-card: #fff;
+  --color-fill-secondary: #f0ede8;
+  --color-fill-tertiary: rgba(45, 42, 38, 0.06);
+  --color-error: #b8412a;
+  --color-stroke: #2d2a26;
+
+  /* App tokens (used by components) */
+  --r-color-bg: var(--color-bg-card);
+  --r-color-stroke: var(--color-stroke);
+  --r-color-text: var(--color-text);
+  --r-color-text-secondary: var(--color-text-secondary);
+  --r-color-primary: var(--color-accent);
+  --r-color-fill-secondary: var(--color-fill-secondary);
+  --r-color-fill-tertiary: var(--color-fill-tertiary);
+  --r-color-error: var(--color-error);
+
+  /* Roughness overrides */
+  --r-common-color: var(--color-ink);
+  --r-common-primary-color: var(--color-accent);
+  --r-common-background-color: var(--color-bg-card);
+
+  /* Spacing scale */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 0.75rem;
+  --space-lg: 1rem;
+  --space-xl: 1.5rem;
+  --space-2xl: 2rem;
 }
 
 body {
@@ -11,10 +48,40 @@ body {
   font-family: 'Mansalva', cursive, system-ui, -apple-system, sans-serif;
   font-size: 16px;
   line-height: 1.5;
-  color: #333;
-  background: #fff;
+  color: var(--color-text);
+  background: var(--color-bg);
+  -webkit-text-size-adjust: 100%;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right)
+    env(safe-area-inset-bottom) env(safe-area-inset-left);
 }
 
 #app {
   min-height: 100vh;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+img,
+svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Override roughness strikethrough on disabled controls — use opacity instead */
+.r-button:disabled:not(.is-loading),
+.r-checkbox:has(> .r-checkbox__input:disabled),
+.r-input__input:disabled,
+.r-select__input:disabled,
+.r-switch:has(> .r-switch__input:disabled) {
+  text-decoration-line: none !important;
+  opacity: 0.45;
 }

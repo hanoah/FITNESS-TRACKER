@@ -16,6 +16,221 @@ export interface BackupData {
   programState?: ProgramState | null
 }
 
+/**
+ * Clear all workout history (sessions and sets). Does not touch profile or program state.
+ */
+export async function clearAllHistory(): Promise<void> {
+  await db.sets.clear()
+  await db.sessions.clear()
+  await db.syncQueue.clear()
+}
+
+export interface TrackerSession {
+  day: string
+  focus: string
+  exercises: Array<{
+    name: string
+    weight?: string
+    reps?: string
+    notes?: string | null
+  }>
+}
+
+export interface TrackerWeek {
+  week: number
+  label: string
+  rpe: string
+  sets: number
+  sessions: TrackerSession[]
+}
+
+export interface TrackerData {
+  tracker: string
+  weeks: TrackerWeek[]
+}
+
+/** Parse weight string to number (lbs). "115-120 lbs" -> 117.5, "BW" -> 0, "16kg (35 lbs)" -> 35 */
+function parseWeight(s: string | undefined): number {
+  if (!s || !s.trim()) return 0
+  const lower = s.toLowerCase()
+  if (lower === 'bw' || lower.includes('bodyweight')) return 0
+  // Match numbers: "115-120" -> avg 117.5, "90" -> 90, "16kg (35 lbs)" -> 35
+  const ranges = s.match(/(\d+\.?\d*)\s*-\s*(\d+\.?\d*)/)
+  if (ranges) {
+    const a = parseFloat(ranges[1])
+    const b = parseFloat(ranges[2])
+    return (a + b) / 2
+  }
+  const paren = s.match(/\((\d+)\s*lbs?\)/i) // "(35 lbs)"
+  if (paren) return parseFloat(paren[1])
+  const num = s.match(/(\d+\.?\d*)/)
+  return num ? parseFloat(num[1]) : 0
+}
+
+/** Parse reps string. "8" -> 8, "8-10" -> 9 */
+function parseReps(s: string | undefined, defaultVal: number): number {
+  if (!s || !s.trim()) return defaultVal
+  const ranges = s.match(/(\d+)\s*-\s*(\d+)/)
+  if (ranges) {
+    const a = parseInt(ranges[1], 10)
+    const b = parseInt(ranges[2], 10)
+    return Math.round((a + b) / 2)
+  }
+  const num = parseInt(s, 10)
+  return isNaN(num) ? defaultVal : num
+}
+
+/** Parse RPE string. "7-8" -> 7.5, "10" -> 10 */
+function parseRpe(s: string): number {
+  const ranges = s.match(/(\d+)\s*-\s*(\d+)/)
+  if (ranges) {
+    const a = parseFloat(ranges[1])
+    const b = parseFloat(ranges[2])
+    return (a + b) / 2
+  }
+  const num = parseFloat(s)
+  return isNaN(num) ? 9 : num
+}
+
+/**
+ * Convert Noah's tracking format to BackupData. Generates realistic dates for the past 2 weeks.
+ */
+export function trackerToBackupData(tracker: TrackerData): BackupData {
+  const sessions: (WorkoutSession & { tempId: number })[] = []
+  const sets: (SetLog & { tempSessionId: number })[] = []
+  let tempSessionId = 0
+
+  const dayToOffset: Record<string, number> = {
+    sunday: 0,
+    monday: 1,
+    tuesday: 2,
+    wednesday: 3,
+    thursday: 4,
+    friday: 5,
+    saturday: 6,
+  }
+
+  const today = new Date()
+
+  for (let weekIdx = 0; weekIdx < tracker.weeks.length; weekIdx++) {
+    const w = tracker.weeks[weekIdx]
+    const rpe = parseRpe(w.rpe)
+    const setsPerExercise = w.sets
+
+    const weeksAgo = tracker.weeks.length - 1 - weekIdx
+    const weekStart = new Date(today)
+    weekStart.setDate(weekStart.getDate() - 7 * weeksAgo)
+
+    const tuesdayOfWeek = new Date(weekStart)
+    while (tuesdayOfWeek.getDay() !== 2) {
+      tuesdayOfWeek.setDate(tuesdayOfWeek.getDate() - 1)
+    }
+
+    for (const sess of w.sessions) {
+      const dayName = sess.day.toLowerCase().replace(/\s/g, '')
+      const dayKey = dayName as keyof typeof dayToOffset
+      const targetDow = dayToOffset[dayKey] ?? 2
+
+      const d = new Date(tuesdayOfWeek)
+      d.setDate(d.getDate() + (targetDow - 2))
+
+      tempSessionId++
+      const dateStr = d.toISOString().slice(0, 10)
+      const startedAt = new Date(dateStr).setHours(9, 0, 0, 0)
+      const completedAt = startedAt + 45 * 60 * 1000
+
+      sessions.push({
+        tempId: tempSessionId,
+        date: dateStr,
+        dayType: dayName,
+        blockId: 'calibration',
+        weekNumber: w.week,
+        status: 'completed',
+        currentExerciseIndex: sess.exercises.length,
+        completedSetCount: sess.exercises.length * setsPerExercise,
+        startedAt,
+        completedAt,
+      })
+
+      let setIdx = 0
+      for (let exIdx = 0; exIdx < sess.exercises.length; exIdx++) {
+        const ex = sess.exercises[exIdx]
+        const weight = parseWeight(ex.weight)
+        const reps = parseReps(ex.reps, 10)
+        const slotKey = `free:${exIdx}`
+
+        for (let s = 0; s < setsPerExercise; s++) {
+          setIdx++
+          const ts = startedAt + (setIdx * 90) * 1000
+          sets.push({
+            tempSessionId,
+            sessionId: tempSessionId,
+            exerciseSlot: slotKey,
+            exerciseName: ex.name,
+            setNumber: s + 1,
+            weight,
+            reps,
+            rpe,
+            isWarmup: false,
+            timestamp: ts,
+          })
+        }
+      }
+    }
+  }
+
+  return {
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    sessions: sessions.map(({ tempId, ...s }) => ({ ...s, id: tempId })),
+    sets: sets.map(({ tempSessionId, ...s }) => ({ ...s, sessionId: tempSessionId })),
+    userProfile: null,
+    programState: null,
+  }
+}
+
+/**
+ * Clear all history and seed with tracker data.
+ */
+export async function clearAndSeedFromTracker(tracker: TrackerData): Promise<{
+  sessionsImported: number
+  setsImported: number
+  error?: string
+}> {
+  await clearAllHistory()
+  const data = trackerToBackupData(tracker)
+
+  const oldToNewSessionId = new Map<number, number>()
+
+  try {
+    for (const s of data.sessions) {
+      const { id: oldId, ...rest } = s
+      const newId = await db.sessions.add(rest as WorkoutSession)
+      if (typeof oldId === 'number') {
+        oldToNewSessionId.set(oldId, newId as number)
+      }
+    }
+
+    for (const set of data.sets) {
+      const newSessionId = oldToNewSessionId.get(set.sessionId) ?? set.sessionId
+      const { id: _oldId, ...rest } = set
+      await db.sets.add({ ...rest, sessionId: newSessionId } as SetLog)
+    }
+
+    return {
+      sessionsImported: data.sessions.length,
+      setsImported: data.sets.length,
+    }
+  } catch (e) {
+    console.error('[backup.clearAndSeedFromTracker]', e)
+    return {
+      sessionsImported: 0,
+      setsImported: 0,
+      error: e instanceof Error ? e.message : 'Seed failed',
+    }
+  }
+}
+
 export async function exportAll(): Promise<BackupData> {
   const [sessions, sets, userProfile, programState] = await Promise.all([
     db.sessions.toArray(),

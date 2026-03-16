@@ -7,7 +7,7 @@ const router = createRouter({
       path: '/',
       name: 'home',
       component: () => import('../views/HomePage.vue'),
-      meta: { title: 'Workout' },
+      meta: { title: 'Home — Workout' },
     },
     {
       path: '/workout',
@@ -19,15 +19,27 @@ const router = createRouter({
       path: '/history',
       name: 'history',
       component: () => import('../views/HistoryPage.vue'),
-      meta: { title: 'History' },
+      meta: { title: 'History — Workout' },
     },
     {
       path: '/settings',
       name: 'settings',
       component: () => import('../views/SettingsPage.vue'),
-      meta: { title: 'Settings' },
+      meta: { title: 'Settings — Workout' },
+    },
+    {
+      path: '/:pathMatch(.*)*',
+      name: 'not-found',
+      redirect: '/',
     },
   ],
+})
+
+router.afterEach((to) => {
+  const title = to.meta?.title
+  if (typeof title === 'string') {
+    document.title = title
+  }
 })
 
 export default router

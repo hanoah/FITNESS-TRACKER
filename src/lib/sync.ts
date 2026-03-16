@@ -36,13 +36,26 @@ export async function flushSyncQueue(appsScriptUrl: string): Promise<{
 
   for (const item of pending) {
     try {
+      if (!navigator.onLine) {
+        failed += pending.length - synced
+        errors.push('Device is offline')
+        break
+      }
       const payload = item.payload as SyncPayload
       const body = JSON.stringify(payload)
-      const res = await fetch(appsScriptUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body,
-      })
+      const controller = new AbortController()
+      const timeout = setTimeout(() => controller.abort(), 15_000)
+      let res: Response
+      try {
+        res = await fetch(appsScriptUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body,
+          signal: controller.signal,
+        })
+      } finally {
+        clearTimeout(timeout)
+      }
       if (!res.ok) {
         throw new Error(`HTTP ${res.status}`)
       }

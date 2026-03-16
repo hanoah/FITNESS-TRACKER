@@ -8,12 +8,11 @@
  */
 
 import type { ScheduleConfig } from '../types/schedule'
-import type { NippardProgram, ProgramExercise } from '../types/program'
+import type { NippardProgram } from '../types/program'
+import type { SessionExercise } from '../types/session'
 
-export interface ResolvedExercise extends ProgramExercise {
-  slotKey: string
-  dayType: string
-}
+/** Alias for backward compat; SessionExercise is the canonical type */
+export type ResolvedExercise = SessionExercise
 
 export function getDayExercises(
   dayOfWeek: 'monday' | 'tuesday' | 'thursday' | 'saturday',

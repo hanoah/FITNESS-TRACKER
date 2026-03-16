@@ -10,9 +10,21 @@ import type { ResolvedExercise } from './programEngine'
 export interface ProgressionSuggestion {
   weight?: number
   reps?: number
+  rpe?: number
   note: string
+  lastWeight?: number
+  lastReps?: number
+  lastRpe?: number
+  lastDate?: string
   slotHistory?: { weight: number; reps: number; rpe: number }[]
   exerciseHistory?: { weight: number; reps: number; rpe: number }[]
+}
+
+function formatDateFromTimestamp(ts: number): string {
+  const d = new Date(ts)
+  const month = d.toLocaleString('en-US', { month: 'short' })
+  const day = d.getDate()
+  return `${month} ${day}`
 }
 
 export function suggest(
@@ -38,13 +50,20 @@ export function suggest(
     exerciseHistory: exerciseWorkingSets.map((s) => ({ weight: s.weight, reps: s.reps, rpe: s.rpe })),
   }
 
+  const lastSet = lastSlot
+    ? slotWorkingSets[slotWorkingSets.length - 1]
+    : exerciseWorkingSets[exerciseWorkingSets.length - 1]
+  const lastTimestamp = lastSet?.timestamp
+
   if (!lastSlot && !lastExercise) {
     const rpeText =
       exercise.earlySetRPE != null && exercise.earlySetRPE !== exercise.lastSetRPE
         ? `RPE ${exercise.earlySetRPE}-${exercise.lastSetRPE}`
         : `RPE ${exercise.lastSetRPE}`
     return {
-      note: `Try ${exercise.repRange[0]}-${exercise.repRange[1]} reps at ${rpeText}`,
+      reps: repMin,
+      rpe: exercise.lastSetRPE,
+      note: `Enter starting weight for ${repMin}-${repMax} reps at ${rpeText}`,
       ...histories,
     }
   }
@@ -54,20 +73,33 @@ export function suggest(
     return { note: 'Start with working weight', ...histories }
   }
 
+  const lastDate = lastTimestamp ? formatDateFromTimestamp(lastTimestamp) : undefined
+
   if (last.reps < repMax) {
     return {
       reps: last.reps + 1,
       weight: last.weight,
+      rpe: exercise.lastSetRPE,
       note: `Add 1 rep: ${last.weight} × ${last.reps + 1}`,
+      lastWeight: last.weight,
+      lastReps: last.reps,
+      lastRpe: last.rpe,
+      lastDate,
       ...histories,
     }
   }
 
   const increment = last.weight >= 135 ? 5 : last.weight >= 45 ? 2.5 : 1.25
+  const newWeight = last.weight + increment
   return {
-    weight: last.weight + increment,
+    weight: newWeight,
     reps: repMin,
-    note: `Add weight: ${last.weight + increment} × ${repMin}-${repMax}`,
+    rpe: exercise.lastSetRPE,
+    note: `Add weight: ${newWeight} × ${repMin}-${repMax}`,
+    lastWeight: last.weight,
+    lastReps: last.reps,
+    lastRpe: last.rpe,
+    lastDate,
     ...histories,
   }
 }
