@@ -4,6 +4,7 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: '/FITNESS-TRACKER/',
   plugins: [
     vue(),
     VitePWA({
@@ -13,8 +14,8 @@ export default defineConfig({
         short_name: 'Workout',
         theme_color: '#c45c26',
         icons: [
-          { src: '/icon-192x192.png', sizes: '192x192', type: 'image/png' },
-          { src: '/icon-512x512.png', sizes: '512x512', type: 'image/png' },
+          { src: 'icon-192x192.png', sizes: '192x192', type: 'image/png' },
+          { src: 'icon-512x512.png', sizes: '512x512', type: 'image/png' },
         ],
       },
       workbox: {
