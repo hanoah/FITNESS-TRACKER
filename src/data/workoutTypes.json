@@ -1,0 +1,26 @@
+[
+  {
+    "key": "monday",
+    "label": "Lower Strength",
+    "description": "Condensed lower (3 exercises)",
+    "recommendedDay": "monday"
+  },
+  {
+    "key": "tuesday",
+    "label": "Upper Strength",
+    "description": "Upper body strength focus",
+    "recommendedDay": "tuesday"
+  },
+  {
+    "key": "thursday",
+    "label": "Pull + Push Hypertrophy",
+    "description": "Pull and push merged",
+    "recommendedDay": "thursday"
+  },
+  {
+    "key": "saturday",
+    "label": "Legs Hypertrophy",
+    "description": "Legs hypertrophy focus",
+    "recommendedDay": "saturday"
+  }
+]

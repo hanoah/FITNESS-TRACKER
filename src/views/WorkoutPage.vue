@@ -1,21 +1,24 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import { storeToRefs } from 'pinia'
 import { useWorkoutStore } from '../store/workout'
-import { useProgramStore } from '../store/program'
 import { useProgressionHistory } from '../composables/useProgressionHistory'
 import { parseLogInput, ParseError } from '../lib/parseLogInput'
 import { plateCalc } from '../lib/plateCalc'
 import { suggest } from '../lib/progression'
-import { getScheduleDay } from '../lib/scheduleDay'
+import { toSessionExercise } from '../lib/exerciseLibrary'
+import { saveTemplate } from '../lib/templateLibrary'
 import { useUserProfile } from '../composables/useUserProfile'
 import { getGoal } from '../lib/strengthGoals'
 import RestTimer from '../components/RestTimer.vue'
+import ExercisePicker from '../components/ExercisePicker.vue'
 import { RButton, RCard, RInput, RText, useToast } from 'roughness'
+import type { ExerciseInfo } from '../lib/exerciseLibrary'
 
 const router = useRouter()
 const workoutStore = useWorkoutStore()
-const programStore = useProgramStore()
+const { todayExercises } = storeToRefs(workoutStore)
 const toast = useToast()
 
 const logInput = ref('')
@@ -26,6 +29,7 @@ const showRestTimer = ref(false)
 const restTimerSeconds = ref(0)
 const restTimerKey = ref(0)
 const gifLoaded = ref<boolean | undefined>(undefined)
+const showOverflowMenu = ref(false)
 
 const { profile: userProfile } = useUserProfile()
 const strengthGoal = computed(() => {
@@ -76,6 +80,33 @@ const suggestion = computed(() => {
 })
 
 const suggestedWeight = computed(() => suggestion.value?.weight)
+const suggestedReps = computed(() => suggestion.value?.reps ?? 0)
+const suggestedRpe = computed(() => {
+  const s = suggestion.value
+  const ex = currentExercise.value
+  if (s?.rpe != null) return s.rpe
+  return ex?.lastSetRPE ?? 9
+})
+const canLogSuggested = computed(() => {
+  const w = suggestedWeight.value
+  const r = suggestedReps.value
+  return w != null && w > 0 && r > 0
+})
+
+/** First-time exercise: we have reps/rpe from suggestion but no weight yet */
+const canLogFirstTime = computed(() => {
+  const w = suggestedWeight.value
+  const r = suggestedReps.value
+  return r > 0 && (w == null || w === 0)
+})
+
+const firstTimeWeight = ref('')
+
+const lastCompletedSetForPreload = computed(() => {
+  const sets = completedSetsForExercise.value
+  if (sets.length === 0) return null
+  return sets[sets.length - 1]
+})
 
 const suggestedPlateConfig = computed(() => {
   const weight = suggestedWeight.value
@@ -114,10 +145,9 @@ onMounted(async () => {
       router.push('/')
       return
     }
-    const dayInfo = getScheduleDay(new Date(session.date))
-    if (dayInfo) {
-      const exercises = programStore.getExercisesForDay(dayInfo.key)
-      await workoutStore.resumeSession(exercises)
+    const result = await workoutStore.resumeSession()
+    if (!result.ok) {
+      toast(result.error)
     }
   }
 })
@@ -131,10 +161,31 @@ watch(
   }
 )
 
+function closeOverflowMenu() {
+  showOverflowMenu.value = false
+}
+
+watch(showOverflowMenu, (open) => {
+  if (!open) return
+  const handler = (e: MouseEvent) => {
+    const target = e.target as HTMLElement
+    if (!target.closest('.overflow-wrapper')) closeOverflowMenu()
+  }
+  setTimeout(() => document.addEventListener('click', handler, { once: true }), 0)
+})
+
 watch(
-  () => currentExercise.value?.gifPath,
+  () => currentExercise.value?.imagePath,
   () => {
     gifLoaded.value = undefined
+  }
+)
+
+watch(
+  () => currentExercise.value?.slotKey,
+  () => {
+    firstTimeWeight.value = ''
+    logInput.value = ''
   }
 )
 
@@ -156,29 +207,61 @@ watch(logInput, (val) => {
   }
 })
 
+/** Pre-fill manual input with last logged set so user can tap Log Set without typing */
+watch(
+  [() => currentExercise.value?.slotKey, lastCompletedSetForPreload],
+  ([, lastSet]) => {
+    if (!lastSet || logInput.value.trim()) return
+    logInput.value = `${lastSet.weight} ${lastSet.reps} ${lastSet.rpe}`
+  },
+  { immediate: true }
+)
+
+function handleLogFirstTime() {
+  const w = parseFloat(firstTimeWeight.value)
+  if (!Number.isFinite(w) || w <= 0) {
+    toast('Enter a valid weight')
+    return
+  }
+  firstTimeWeight.value = ''
+  doLogSet(w, suggestedReps.value, suggestedRpe.value)
+}
+
+async function doLogSet(weight: number, reps: number, rpe: number) {
+  const ex = currentExercise.value
+  logging.value = true
+  try {
+    const ok = await workoutStore.logSet(weight, reps, rpe)
+    if (!ok) {
+      toast('Failed to save set')
+      return
+    }
+    logInput.value = ''
+    parseError.value = ''
+    plateConfig.value = null
+    if (ex?.restSeconds?.[0]) {
+      restTimerSeconds.value = ex.restSeconds[0]
+      restTimerKey.value++
+      showRestTimer.value = true
+    }
+    toast(`${weight}×${reps} @ RPE ${rpe} logged`)
+  } finally {
+    logging.value = false
+  }
+}
+
+async function handleLogSuggested() {
+  if (!canLogSuggested.value || logging.value) return
+  const w = suggestedWeight.value!
+  const r = suggestedReps.value
+  const rpe = suggestedRpe.value
+  await doLogSet(w, r, rpe)
+}
+
 async function handleSubmit() {
   try {
     const parsed = parseLogInput(logInput.value)
-    const wasWorkingSet = !isWarmupSet.value
-    const ex = currentExercise.value
-    logging.value = true
-    try {
-      const ok = await workoutStore.logSet(parsed.weight, parsed.reps, parsed.rpe)
-      if (!ok) {
-        toast('Failed to save set')
-        return
-      }
-      logInput.value = ''
-      parseError.value = ''
-      plateConfig.value = null
-      if (wasWorkingSet && ex?.restSeconds?.[0]) {
-        restTimerSeconds.value = ex.restSeconds[0]
-        restTimerKey.value++
-        showRestTimer.value = true
-      }
-    } finally {
-      logging.value = false
-    }
+    await doLogSet(parsed.weight, parsed.reps, parsed.rpe)
   } catch (e) {
     parseError.value = e instanceof ParseError ? e.message : 'Invalid input'
   }
@@ -210,23 +293,119 @@ async function handleUnskip() {
   plateConfig.value = null
 }
 
-async function handleComplete() {
-  const ok = await workoutStore.completeWorkout()
-  if (!ok) {
-    toast('Failed to save workout')
-    return
+const completing = ref(false)
+const abandoning = ref(false)
+const showSubPicker = ref(false)
+const showAddPicker = ref(false)
+
+const needsAddExercise = computed(
+  () =>
+    workoutStore.activeSession &&
+    workoutStore.todayExercises.length === 0
+)
+
+const subQuickPicks = computed(() => {
+  const ex = currentExercise.value
+  if (!ex) return []
+  const picks: string[] = []
+  if (ex.sub1) picks.push(ex.sub1)
+  if (ex.sub2 && ex.sub2 !== ex.sub1) picks.push(ex.sub2)
+  return picks
+})
+
+function openSubPicker() {
+  showSubPicker.value = true
+}
+
+function closeSubPicker() {
+  showSubPicker.value = false
+}
+
+function openAddPicker() {
+  showAddPicker.value = true
+}
+
+function closeAddPicker() {
+  showAddPicker.value = false
+}
+
+async function handleSubSelect(info: ExerciseInfo) {
+  const ex = currentExercise.value
+  if (!ex) return
+  const ok = await workoutStore.substituteExercise(ex.slotKey, info.name)
+  if (ok) {
+    toast(`Swapped to ${info.name}`)
+    closeSubPicker()
+  } else {
+    toast('Failed to substitute')
   }
-  toast('Workout saved!')
-  router.push('/')
+}
+
+async function handleAddExercise(info: ExerciseInfo) {
+  const base = toSessionExercise(info, '')
+  const ok = await workoutStore.addExercise(base)
+  if (ok) {
+    toast(`Added ${info.name}`)
+    closeAddPicker()
+  } else {
+    toast('Failed to add exercise')
+  }
+}
+
+async function handleRemoveExercise() {
+  const ex = currentExercise.value
+  if (!ex) return
+  if (!confirm(`Remove ${ex.name} from this workout?`)) return
+  const ok = await workoutStore.removeExercise(ex.slotKey)
+  if (!ok) {
+    toast('Failed to remove exercise')
+  }
+}
+
+async function handleSaveAsTemplate() {
+  const exercises = todayExercises.value
+  if (!exercises.length) return
+  const name = prompt('Template name')
+  if (!name?.trim()) return
+  try {
+    await saveTemplate(name.trim(), exercises)
+    toast('Template saved')
+  } catch (e) {
+    console.error('[WorkoutPage] Save template failed', e)
+    toast('Failed to save template')
+  }
+}
+
+async function handleComplete() {
+  if (completing.value) return
+  completing.value = true
+  try {
+    const ok = await workoutStore.completeWorkout()
+    if (!ok) {
+      toast('Failed to save workout')
+      return
+    }
+    toast('Workout saved!')
+    router.push('/')
+  } finally {
+    completing.value = false
+  }
 }
 
 async function handleAbandon() {
-  const ok = await workoutStore.abandonWorkout()
-  if (!ok) {
-    toast('Failed to abandon workout')
-    return
+  if (!confirm('Abandon this workout? Your logged sets will still be saved.')) return
+  if (abandoning.value) return
+  abandoning.value = true
+  try {
+    const ok = await workoutStore.abandonWorkout()
+    if (!ok) {
+      toast('Failed to abandon workout')
+      return
+    }
+    router.push('/')
+  } finally {
+    abandoning.value = false
   }
-  router.push('/')
 }
 </script>
 
@@ -239,22 +418,95 @@ async function handleAbandon() {
       @done="onRestTimerDone"
       @skip="onRestTimerDone"
     />
-    <div v-if="!currentExercise" class="done">
+    <ExercisePicker
+      v-if="showSubPicker && currentExercise"
+      title="Substitute exercise"
+      :quick-picks="subQuickPicks"
+      @select="handleSubSelect"
+      @cancel="closeSubPicker"
+    />
+    <ExercisePicker
+      v-if="showAddPicker"
+      title="Add exercise"
+      @select="handleAddExercise"
+      @cancel="closeAddPicker"
+    />
+    <div v-if="needsAddExercise" class="add-first">
+      <RCard>
+        <RText tag="h2">Add your first exercise</RText>
+        <RText tag="p" class="add-hint">Start your free workout by adding an exercise.</RText>
+        <RButton type="primary" @click="openAddPicker">+ Add Exercise</RButton>
+        <RButton variant="secondary" :disabled="abandoning" @click="handleAbandon" class="abandon-free">
+          Abandon
+        </RButton>
+      </RCard>
+    </div>
+    <div v-else-if="!currentExercise" class="done">
       <RCard>
         <RText tag="h2">All done!</RText>
         <RButton v-if="canUnskip" @click="handleUnskip" class="back-btn">Back</RButton>
-        <RButton type="primary" @click="handleComplete">Complete Workout</RButton>
-        <RButton @click="handleAbandon">Abandon</RButton>
+        <RButton v-if="workoutStore.activeSession?.dayType === 'free'" @click="openAddPicker" class="add-more-btn">
+          + Add more
+        </RButton>
+        <RButton type="primary" :disabled="completing" @click="handleComplete">
+          {{ completing ? 'Saving…' : 'Complete Workout' }}
+        </RButton>
+        <RButton :disabled="abandoning" @click="handleAbandon">
+          {{ abandoning ? 'Abandoning…' : 'Abandon' }}
+        </RButton>
       </RCard>
     </div>
 
     <template v-else>
       <RCard class="exercise-card">
         <div class="exercise-header">
-          <RText tag="h2" class="exercise-name">{{ currentExercise.name }}</RText>
+          <div class="exercise-header-left">
+            <button
+              v-if="canUnskip"
+              type="button"
+              class="back-link"
+              @click="handleUnskip"
+            >
+              ← Back
+            </button>
+            <RText tag="h2" class="exercise-name">{{ currentExercise.name }}</RText>
+          </div>
           <div class="exercise-actions">
-            <RButton v-if="canUnskip" @click="handleUnskip">Back</RButton>
-            <RButton @click="handleSkip">Skip</RButton>
+            <RButton type="primary" class="skip-btn" @click="handleSkip">Skip</RButton>
+            <div class="overflow-wrapper">
+              <RButton
+                class="overflow-btn"
+                variant="secondary"
+                :disabled="abandoning"
+                @click.stop="showOverflowMenu = !showOverflowMenu"
+              >
+                ⋯
+              </RButton>
+              <Transition name="dropdown">
+                <div v-if="showOverflowMenu" class="overflow-menu">
+                  <button
+                    v-if="todayExercises.length > 0"
+                    type="button"
+                    class="overflow-item"
+                    @click="handleSaveAsTemplate(); closeOverflowMenu()"
+                  >
+                    Save as Template
+                  </button>
+                  <button type="button" class="overflow-item" @click="openSubPicker(); closeOverflowMenu()">
+                    Substitute
+                  </button>
+                  <button type="button" class="overflow-item" @click="openAddPicker(); closeOverflowMenu()">
+                    Add Exercise
+                  </button>
+                  <button type="button" class="overflow-item" @click="handleRemoveExercise(); closeOverflowMenu()">
+                    Remove
+                  </button>
+                  <button type="button" class="overflow-item" @click="handleAbandon(); closeOverflowMenu()">
+                    End Workout
+                  </button>
+                </div>
+              </Transition>
+            </div>
           </div>
         </div>
         <RText tag="p" class="exercise-notes">{{ currentExercise.notes }}</RText>
@@ -262,11 +514,19 @@ async function handleAbandon() {
           Set {{ currentSetNumber }} of
           {{ currentExercise.warmupSets + currentExercise.workingSets }}
           {{ isWarmupSet ? '(warm-up)' : '' }}
+          <span v-if="currentExercise.restSeconds" class="rest-info">
+            · Rest: {{ Math.floor(currentExercise.restSeconds[0] / 60) }}-{{ Math.ceil((currentExercise.restSeconds[1] || currentExercise.restSeconds[0]) / 60) }} min
+          </span>
         </RText>
 
         <div v-if="suggestion" class="suggestion-block">
-          <RText tag="p" class="suggestion-title">Suggested</RText>
-          <RText tag="p" class="suggestion-note">{{ suggestion.note }}</RText>
+          <RText tag="p" class="suggestion-title">Progression</RText>
+          <RText v-if="suggestion.lastWeight != null" tag="p" class="suggestion-last">
+            Last: {{ suggestion.lastWeight }}×{{ suggestion.lastReps }} @ RPE {{ suggestion.lastRpe }}
+            <span v-if="suggestion.lastDate">({{ suggestion.lastDate }})</span>
+            — {{ suggestion.note }}
+          </RText>
+          <RText v-else tag="p" class="suggestion-note">{{ suggestion.note }}</RText>
           <div
             v-if="suggestedPlateConfig && suggestedPlateConfig.perSide.length > 0"
             class="plate-math suggested"
@@ -282,17 +542,59 @@ async function handleAbandon() {
         </div>
       </RCard>
 
-      <div v-if="currentExercise.gifPath && gifLoaded !== false" class="exercise-gif">
+      <div class="exercise-gif">
         <img
-          :src="currentExercise.gifPath"
+          v-if="currentExercise.imagePath && gifLoaded !== false"
+          :src="currentExercise.imagePath"
           :alt="currentExercise.name"
           @load="gifLoaded = true"
           @error="gifLoaded = false"
         />
+        <div
+          v-else-if="!currentExercise.imagePath || gifLoaded === false"
+          class="exercise-gif-placeholder"
+        >
+          <span class="placeholder-icon">🏋️</span>
+          <RText tag="p">No demo available</RText>
+        </div>
       </div>
 
       <RCard class="log-card">
-        <RText tag="p" class="log-hint">Enter: weight reps RPE (e.g. 150 12 9)</RText>
+        <RButton
+          v-if="canLogSuggested"
+          type="primary"
+          class="log-suggested-btn"
+          :disabled="logging"
+          @click="handleLogSuggested"
+        >
+          Log: {{ suggestedWeight }} × {{ suggestedReps }} @ RPE {{ suggestedRpe }}
+        </RButton>
+        <div v-else-if="canLogFirstTime" class="log-first-time">
+          <RText tag="p" class="log-hint">Enter starting weight:</RText>
+          <div class="first-time-row">
+            <RInput
+              v-model="firstTimeWeight"
+              type="number"
+              min="0"
+              step="0.5"
+              placeholder="135"
+              :disabled="logging"
+              class="first-time-weight-input"
+              @keyup.enter="handleLogFirstTime"
+            />
+            <RButton
+              type="primary"
+              class="log-suggested-btn"
+              :disabled="logging || !firstTimeWeight.trim()"
+              @click="handleLogFirstTime"
+            >
+              Log: {{ suggestedReps }} @ RPE {{ suggestedRpe }}
+            </RButton>
+          </div>
+        </div>
+        <RText tag="p" class="log-hint">
+          {{ canLogSuggested || canLogFirstTime ? 'Or enter manually: ' : 'Enter: ' }}weight reps RPE (e.g. 150 12 9)
+        </RText>
         <RInput
           v-model="logInput"
           placeholder="150 12 9"
@@ -349,68 +651,141 @@ async function handleAbandon() {
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: var(--space-xl);
 }
 .exercise-card {
-  padding: 1.5rem;
+  padding: var(--space-xl);
 }
 .exercise-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 0.75rem;
+  gap: var(--space-lg);
+}
+.exercise-header-left {
+  flex: 1;
+  min-width: 0;
+}
+.back-link {
+  display: block;
+  margin-bottom: var(--space-xs);
+  padding: 0;
+  background: none;
+  border: none;
+  font-family: inherit;
+  font-size: 0.85rem;
+  color: var(--r-color-primary);
+  cursor: pointer;
+  text-decoration: none;
+}
+.back-link:hover {
+  text-decoration: underline;
 }
 .exercise-actions {
   display: flex;
-  gap: 0.5rem;
+  gap: var(--space-sm);
   flex-shrink: 0;
+}
+.overflow-wrapper {
+  position: relative;
+}
+.overflow-btn {
+  min-width: 2.5rem;
+  padding: 0.35rem 0.5rem;
+}
+.overflow-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: var(--space-xs);
+  min-width: 160px;
+  padding: var(--space-xs);
+  background: var(--r-color-bg);
+  border: 2px solid var(--r-color-stroke);
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+}
+.overflow-item {
+  display: block;
+  width: 100%;
+  padding: var(--space-sm) var(--space-md);
+  text-align: left;
+  background: none;
+  border: none;
+  font-family: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+.overflow-item:hover {
+  background: var(--r-color-fill-tertiary);
+}
+.dropdown-enter-active,
+.dropdown-leave-active {
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+.dropdown-enter-from,
+.dropdown-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
 }
 .exercise-name {
   font-size: 1.25rem;
   margin: 0 0 0.5rem 0;
   flex: 1;
+  min-width: 0;
+  overflow-wrap: break-word;
 }
 .exercise-notes {
-  color: var(--r-color-text-secondary, #666);
+  color: var(--r-color-text-secondary);
   font-size: 0.9rem;
-  margin: 0 0 0.75rem 0;
+  margin: 0 0 var(--space-md) 0;
 }
 .set-info {
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 var(--space-sm) 0;
+  font-weight: 600;
+}
+.rest-info {
+  color: var(--r-color-text-secondary);
+  font-weight: 400;
+}
+.suggestion-last {
+  margin: 0 0 var(--space-sm) 0;
   font-weight: 500;
+  color: var(--r-color-primary);
 }
 .suggestion-block {
-  margin-top: 1rem;
-  padding: 0.75rem;
-  background: var(--r-color-fill-secondary, #f0f7ff);
+  margin-top: var(--space-lg);
+  padding: var(--space-md);
+  background: var(--r-color-fill-secondary);
   border-radius: 6px;
-  border: 1px dashed var(--r-color-primary, #0066cc);
+  border: 1px solid var(--r-color-fill-tertiary);
 }
 .suggestion-title {
-  margin: 0 0 0.25rem 0;
+  margin: 0 0 var(--space-xs) 0;
   font-size: 0.85rem;
   font-weight: 600;
-  color: var(--r-color-primary, #0066cc);
+  color: var(--r-color-primary);
 }
 .suggestion-note {
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 var(--space-sm) 0;
   font-style: italic;
-  color: var(--r-color-primary, #0066cc);
+  color: var(--r-color-primary);
 }
 .plate-math {
-  margin: 0.5rem 0;
-  padding: 0.5rem;
-  background: var(--r-color-fill-secondary, #f5f5f5);
+  margin: var(--space-sm) 0;
+  padding: var(--space-sm);
+  background: var(--r-color-fill-tertiary);
   border-radius: 4px;
 }
 .plate-math.suggested {
-  background: rgba(0, 102, 204, 0.08);
-  margin-top: 0.5rem;
+  background: var(--r-color-fill-tertiary);
+  margin-top: var(--space-sm);
 }
 .goal-badge {
-  margin-top: 0.75rem;
-  padding: 0.5rem 0.75rem;
-  background: var(--r-color-fill-secondary, #f0f0f0);
+  margin-top: var(--space-md);
+  padding: var(--space-sm) var(--space-md);
+  background: var(--r-color-fill-secondary);
   border-radius: 6px;
   font-size: 0.9rem;
 }
@@ -431,21 +806,60 @@ async function handleAbandon() {
   max-height: 200px;
   object-fit: contain;
 }
+.exercise-gif-placeholder {
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-xl);
+  background: var(--r-color-fill-secondary);
+  border-radius: 8px;
+  color: var(--r-color-text-secondary);
+}
+.placeholder-icon {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+.exercise-gif-placeholder p {
+  margin: 0;
+  font-size: 0.9rem;
+}
 .log-card {
-  padding: 1.5rem;
+  padding: var(--space-xl);
+}
+.log-suggested-btn {
+  width: 100%;
+  margin-bottom: var(--space-md);
+  font-size: 1.1rem;
+  font-weight: 600;
+  padding: var(--space-lg) var(--space-xl);
+}
+.log-first-time {
+  margin-bottom: 0.75rem;
+}
+.first-time-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+.first-time-weight-input {
+  flex: 0 0 100px;
 }
 .log-hint {
   font-size: 0.85rem;
-  margin: 0 0 0.5rem 0;
-  color: var(--r-color-text-secondary, #666);
+  margin: 0 0 var(--space-sm) 0;
+  color: var(--r-color-text-secondary);
 }
 .error {
-  color: var(--r-color-error, #c00);
+  color: var(--r-color-error);
   margin: 0.5rem 0 0 0;
   font-size: 0.9rem;
 }
 .up-next-card {
-  padding: 1rem;
+  padding: var(--space-lg);
+  background: var(--r-color-fill-tertiary);
+  border-color: var(--r-color-fill-secondary);
 }
 .up-next-card h3 {
   margin: 0 0 0.5rem 0;
@@ -459,7 +873,9 @@ async function handleAbandon() {
   margin: 0.25rem 0;
 }
 .history-card {
-  padding: 1rem;
+  padding: var(--space-lg);
+  background: var(--r-color-fill-tertiary);
+  border-color: var(--r-color-fill-secondary);
 }
 .history-card ul {
   margin: 0.5rem 0 0 0;
@@ -468,11 +884,26 @@ async function handleAbandon() {
 .history-card li {
   margin: 0.25rem 0;
 }
+.add-first {
+  text-align: center;
+  padding: 2rem;
+}
+.add-first h2 {
+  margin: 0 0 0.5rem 0;
+}
+.add-hint {
+  color: var(--r-color-text-secondary);
+  margin: 0 0 1rem 0;
+}
+.add-first .abandon-free {
+  margin-top: 0.5rem;
+}
 .done {
   text-align: center;
   padding: 2rem;
 }
-.done .back-btn {
+.done .back-btn,
+.done .add-more-btn {
   margin-bottom: 0.5rem;
 }
 </style>

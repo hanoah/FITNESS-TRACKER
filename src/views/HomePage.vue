@@ -1,61 +1,76 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useWorkoutStore } from '../store/workout'
-import { useProgramStore } from '../store/program'
-import { getScheduleDay } from '../lib/scheduleDay'
+import TemplatePicker from '../components/TemplatePicker.vue'
+import type { SessionExercise } from '../types/session'
 import { RButton, RCard, RText, useToast } from 'roughness'
 
 const router = useRouter()
 const toast = useToast()
 const workoutStore = useWorkoutStore()
-const programStore = useProgramStore()
 const loading = ref(true)
+const starting = ref(false)
 const resumable = ref(false)
-
-const scheduleDay = computed(() => getScheduleDay())
+const showTemplatePicker = ref(false)
 
 onMounted(async () => {
-  await programStore.loadProgramState()
   const session = await workoutStore.loadResumableSession()
   resumable.value = !!session
   loading.value = false
-  if (programStore.programError) {
-    toast(programStore.programError)
-  } else if (!programStore.programState) {
-    toast('Failed to load program')
-  }
 })
 
-async function startWorkout() {
-  const day = scheduleDay.value?.key
-  if (!day) return
-  const exercises = programStore.getExercisesForDay(day)
+async function startFromTemplate(exercises: SessionExercise[]) {
   if (exercises.length === 0) return
-  const state = programStore.programState
-  if (!state) return
-  const id = await workoutStore.startWorkout(
-    exercises[0].dayType,
-    exercises,
-    state.blockId,
-    state.weekNumber
-  )
-  if (id === null) {
-    toast('Failed to start workout')
-    return
+  if (starting.value) return
+  starting.value = true
+  try {
+    const dayType = exercises[0].dayType
+    const id = await workoutStore.startWorkout(dayType, exercises)
+    if (id === null) {
+      toast('Failed to start workout')
+      return
+    }
+    showTemplatePicker.value = false
+    router.push('/workout')
+  } finally {
+    starting.value = false
   }
-  router.push('/workout')
+}
+
+async function startFreeWorkout() {
+  if (starting.value) return
+  starting.value = true
+  try {
+    const id = await workoutStore.startFreeWorkout()
+    if (id === null) {
+      toast('Failed to start workout')
+      return
+    }
+    router.push('/workout')
+  } finally {
+    starting.value = false
+  }
 }
 
 async function resumeWorkout() {
+  if (starting.value) return
   const session = workoutStore.activeSession
-  if (!session) return
-  const dayInfo = getScheduleDay(new Date(session.date))
-  if (!dayInfo) return
-  const day = dayInfo.key
-  const exercises = programStore.getExercisesForDay(day)
-  await workoutStore.resumeSession(exercises)
-  router.push('/workout')
+  if (!session) {
+    toast('No session to resume')
+    return
+  }
+  starting.value = true
+  try {
+    const result = await workoutStore.resumeSession()
+    if (!result.ok) {
+      toast(result.error)
+      return
+    }
+    router.push('/workout')
+  } finally {
+    starting.value = false
+  }
 }
 </script>
 
@@ -66,57 +81,76 @@ async function resumeWorkout() {
     </RCard>
 
     <template v-else>
-      <RCard class="welcome-card">
-        <RText tag="h2" class="welcome-title">
-          {{ scheduleDay ? `Today is ${scheduleDay.label}` : "No workout scheduled today" }}
-        </RText>
-        <RText v-if="scheduleDay" class="welcome-sub">
-          {{ programStore.getExercisesForDay(scheduleDay.key).length }} exercises
-        </RText>
-      </RCard>
-
-      <div v-if="scheduleDay" class="actions">
-        <RButton v-if="resumable" type="primary" @click="resumeWorkout">
-          Resume Workout
-        </RButton>
-        <RButton v-else type="primary" @click="startWorkout">
-          Start Workout
+      <div v-if="resumable" class="resume-banner">
+        <RButton type="primary" class="resume-btn" :disabled="starting" @click="resumeWorkout">
+          {{ starting ? 'Loading…' : 'Resume Workout' }}
         </RButton>
       </div>
 
-      <RCard v-if="programStore.programState" class="block-info">
-        <RText tag="p">
-          Block: {{ programStore.programState?.blockId }} · Week {{ programStore.programState?.weekNumber }}
-        </RText>
+      <RCard class="welcome-card">
+        <RText tag="h2" class="welcome-title">Ready to train?</RText>
+        <RText class="welcome-sub">Add exercises as you go. Track sets, weight, and RPE.</RText>
       </RCard>
+
+      <RCard class="free-workout-card">
+        <RButton type="primary" class="free-workout-btn" :disabled="starting" @click="startFreeWorkout">
+          {{ starting ? 'Starting…' : 'Start Workout' }}
+        </RButton>
+        <RButton
+          class="from-template-btn"
+          :disabled="starting"
+          @click="showTemplatePicker = true"
+        >
+          From Template
+        </RButton>
+      </RCard>
+
+      <TemplatePicker
+        v-if="showTemplatePicker"
+        @select="startFromTemplate"
+        @cancel="showTemplatePicker = false"
+      />
     </template>
   </div>
 </template>
 
 <style scoped>
 .home {
-  max-width: 400px;
+  max-width: 420px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: var(--space-xl);
+}
+.resume-banner {
+  margin-bottom: var(--space-xs);
+}
+.resume-btn {
+  width: 100%;
+  padding: var(--space-lg) var(--space-xl);
+  font-size: 1.1rem;
+  font-weight: 600;
 }
 .welcome-card {
-  padding: 1.5rem;
+  padding: var(--space-xl);
 }
 .welcome-title {
   font-size: 1.25rem;
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 var(--space-sm) 0;
 }
 .welcome-sub {
-  color: var(--r-color-text-secondary, #666);
+  color: var(--r-color-text-secondary);
   margin: 0;
+  font-size: 0.9rem;
 }
-.actions {
-  display: flex;
-  gap: 0.75rem;
+.free-workout-card {
+  padding: var(--space-xl);
 }
-.block-info {
-  padding: 1rem;
+.free-workout-btn {
+  width: 100%;
+}
+.from-template-btn {
+  width: 100%;
+  margin-top: var(--space-md);
 }
 </style>

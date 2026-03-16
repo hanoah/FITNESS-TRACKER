@@ -2,21 +2,35 @@
  * Workout store: active session state.
  *
  * Session state machine:
- *   idle → in_progress (start) → completed | abandoned
- *   in_progress + app reopen → resume prompt
+ *   idle ──startWorkout──▶ in_progress ──completeWorkout──▶ completed
+ *        │ startFreeWorkout           │
+ *        │                            ├──abandonWorkout──▶ abandoned
+ *        │                            │
+ *        │                            ├──addExercise (free sessions)
+ *        │                            ├──removeExercise (free sessions)
+ *        │                            │
+ *        │                            └──resume (reopen)──▶ in_progress
+ *        │                                 │
+ *        │                                 ├── session.exercises? → use directly
+ *        │                                 ├── session.blockId? → program fallback
+ *        │                                 └── neither → error toast
  */
 
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { db } from '../lib/db'
 import { enqueueSync } from '../lib/sync'
-import type { WorkoutSession, SetLog } from '../types/session'
-import type { ResolvedExercise } from '../lib/programEngine'
+import { getExerciseByName, toSessionExercise } from '../lib/exerciseLibrary'
+import { getExercisesForBlockWeekDay } from '../lib/templateLibrary'
+import type { WorkoutSession, SetLog, SessionExercise } from '../types/session'
+
+export type ResumeResult = { ok: true } | { ok: false; error: string }
 
 export const useWorkoutStore = defineStore('workout', () => {
   const activeSession = ref<WorkoutSession | null>(null)
-  const todayExercises = ref<ResolvedExercise[]>([])
+  const todayExercises = ref<SessionExercise[]>([])
   const completedSets = ref<SetLog[]>([])
+  const resumeError = ref<string | null>(null)
 
   const currentExercise = computed(() => {
     if (!activeSession.value) return null
@@ -42,31 +56,37 @@ export const useWorkoutStore = defineStore('workout', () => {
 
   async function startWorkout(
     dayType: string,
-    exercises: ResolvedExercise[],
-    blockId: string,
-    weekNumber: number
+    exercises: SessionExercise[],
+    blockId?: string,
+    weekNumber?: number
   ): Promise<number | null> {
     const today = new Date().toISOString().slice(0, 10)
+    const exercisesPlain = JSON.parse(JSON.stringify(exercises))
     const session: WorkoutSession = {
       date: today,
       dayType,
-      blockId,
-      weekNumber,
       status: 'in_progress',
       currentExerciseIndex: 0,
       completedSetCount: 0,
       startedAt: Date.now(),
+      exercises: exercisesPlain,
     }
+    if (blockId != null) session.blockId = blockId
+    if (weekNumber != null) session.weekNumber = weekNumber
     try {
       const id = await db.sessions.add(session)
       activeSession.value = { ...session, id: id as number }
-      todayExercises.value = exercises
+      todayExercises.value = exercisesPlain
       completedSets.value = []
       return id as number
     } catch (e) {
       console.error('[workout.startWorkout] Failed to save session', { dayType, blockId, weekNumber }, e)
       return null
     }
+  }
+
+  async function startFreeWorkout(): Promise<number | null> {
+    return startWorkout('free', [])
   }
 
   async function logSet(weight: number, reps: number, rpe: number): Promise<boolean> {
@@ -123,6 +143,7 @@ export const useWorkoutStore = defineStore('workout', () => {
       activeSession.value = null
       todayExercises.value = []
       completedSets.value = []
+      resumeError.value = null
       try {
         await enqueueSync(completedSession, sets)
       } catch (syncErr) {
@@ -149,6 +170,7 @@ export const useWorkoutStore = defineStore('workout', () => {
       activeSession.value = null
       todayExercises.value = []
       completedSets.value = []
+      resumeError.value = null
       return true
     } catch (e) {
       console.error('[workout.abandonWorkout] Failed to abandon session', { sessionId: session.id }, e)
@@ -172,6 +194,7 @@ export const useWorkoutStore = defineStore('workout', () => {
       const sets = await db.sets.where('sessionId').equals(inProgress.id!).toArray()
       activeSession.value = inProgress
       completedSets.value = sets
+      resumeError.value = null
       return inProgress
     } catch (e) {
       console.error('[workout.loadResumableSession] Failed to load session', e)
@@ -179,9 +202,126 @@ export const useWorkoutStore = defineStore('workout', () => {
     }
   }
 
-  async function resumeSession(exercises: ResolvedExercise[]) {
-    todayExercises.value = exercises
-    return activeSession.value
+  /** Resolve exercises for resume. Uses session.exercises first, else program fallback when blockId+weekNumber. Call after loadResumableSession. */
+  async function resumeSession(): Promise<ResumeResult> {
+    const session = activeSession.value
+    if (!session) return { ok: false, error: 'No session to resume' }
+
+    resumeError.value = null
+
+    if (session.exercises && session.exercises.length > 0) {
+      todayExercises.value = session.exercises
+      return { ok: true }
+    }
+
+    if (session.blockId != null && session.weekNumber != null) {
+      const exercises = getExercisesForBlockWeekDay(
+        session.blockId,
+        session.weekNumber,
+        session.dayType
+      )
+      if (exercises && exercises.length > 0) {
+        todayExercises.value = exercises
+        return { ok: true }
+      }
+    }
+
+    resumeError.value = 'Could not restore exercises'
+    return { ok: false, error: resumeError.value }
+  }
+
+  async function addExercise(exercise: SessionExercise): Promise<boolean> {
+    const session = activeSession.value
+    if (!session || session.id == null) return false
+
+    const existing = session.exercises ?? todayExercises.value
+    const freeIndices = existing
+      .map((e) => e.slotKey.startsWith('free:') ? parseInt(e.slotKey.slice(5), 10) : -1)
+      .filter((n) => !isNaN(n) && n >= 0)
+    const nextIndex = freeIndices.length > 0 ? Math.max(...freeIndices) + 1 : 0
+    const slotKey = `free:${nextIndex}`
+    const newEx: SessionExercise = { ...exercise, slotKey }
+
+    const exercises = [...existing, newEx]
+    const updated = { ...session, exercises }
+    const prevExercises = [...todayExercises.value]
+
+    try {
+      todayExercises.value = exercises
+      const exercisesPlain = JSON.parse(JSON.stringify(exercises))
+      await db.sessions.update(session.id, { exercises: exercisesPlain })
+      activeSession.value = updated
+      return true
+    } catch (e) {
+      todayExercises.value = prevExercises
+      console.error('[workout.addExercise] Failed to persist', e)
+      return false
+    }
+  }
+
+  async function removeExercise(slotKey: string): Promise<boolean> {
+    const session = activeSession.value
+    if (!session || session.id == null) return false
+
+    const exercises = session.exercises ?? todayExercises.value
+    const idx = exercises.findIndex((e) => e.slotKey === slotKey)
+    if (idx < 0) return false
+
+    const newExercises = exercises.filter((e) => e.slotKey !== slotKey)
+    const newSession = { ...session, exercises: newExercises }
+    const prevExercises = [...todayExercises.value]
+    const prevIdx = session.currentExerciseIndex
+
+    let newIndex = prevIdx
+    const removedWasAtOrBefore = idx <= prevIdx
+    if (removedWasAtOrBefore && prevIdx > 0) {
+      newIndex = prevIdx - 1
+    } else if (removedWasAtOrBefore) {
+      newIndex = 0
+    }
+
+    try {
+      todayExercises.value = newExercises
+      activeSession.value = { ...newSession, currentExerciseIndex: newIndex }
+      await db.sessions.update(session.id, { exercises: newExercises, currentExerciseIndex: newIndex })
+      return true
+    } catch (e) {
+      todayExercises.value = prevExercises
+      activeSession.value = { ...session, currentExerciseIndex: prevIdx }
+      console.error('[workout.removeExercise] Failed to persist', e)
+      return false
+    }
+  }
+
+  async function substituteExercise(slotKey: string, newExerciseName: string): Promise<boolean> {
+    const session = activeSession.value
+    if (!session || session.id == null) return false
+
+    const info = await getExerciseByName(newExerciseName)
+    if (!info) return false
+
+    const idx = todayExercises.value.findIndex((e) => e.slotKey === slotKey)
+    if (idx < 0) return false
+
+    const original = todayExercises.value[idx]
+    const newEx: SessionExercise = { ...toSessionExercise(info, slotKey), slotKey, dayType: original.dayType }
+
+    const prevExercises = [...todayExercises.value]
+    const newExercises = prevExercises.map((e, i) => (i === idx ? newEx : e))
+    todayExercises.value = newExercises
+
+    const newSubs = { ...(session.substitutions ?? {}), [slotKey]: { name: newExerciseName } }
+    const updated = { ...session, exercises: newExercises, substitutions: newSubs }
+
+    try {
+      await db.sessions.update(session.id, { exercises: newExercises, substitutions: newSubs })
+      activeSession.value = updated
+      return true
+    } catch (e) {
+      todayExercises.value = prevExercises
+      console.error('[workout.substituteExercise] Failed to persist', e)
+      return false
+    }
   }
 
   async function skipExercise(): Promise<boolean> {
@@ -230,7 +370,11 @@ export const useWorkoutStore = defineStore('workout', () => {
     currentExercise,
     currentSetNumber,
     isWarmupSet,
+    resumeError,
     startWorkout,
+    startFreeWorkout,
+    addExercise,
+    removeExercise,
     logSet,
     completeWorkout,
     abandonWorkout,
@@ -238,5 +382,6 @@ export const useWorkoutStore = defineStore('workout', () => {
     resumeSession,
     skipExercise,
     unskipExercise,
+    substituteExercise,
   }
 })

@@ -1,7 +1,7 @@
 {
   "name": "workout-app",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -10,7 +10,8 @@
     "test": "vitest",
     "test:run": "vitest run",
     "generate-icons": "node scripts/generate-pwa-icons.mjs",
-    "fetch-gifs": "npx tsx scripts/fetch-exrx-gifs.ts"
+    "fetch-gifs": "npx tsx scripts/fetch-exrx-gifs.ts",
+    "fetch-wger-images": "npx tsx scripts/fetch-wger-images.ts"
   },
   "dependencies": {
     "dexie": "^4.3.0",

@@ -41,6 +41,13 @@ describe('suggest', () => {
     expect(result.note).toContain('RPE 6-8')
   })
 
+  it('returns reps and rpe defaults when no history', () => {
+    const result = suggest(baseExercise, [], [])
+    expect(result.reps).toBe(6)
+    expect(result.rpe).toBe(8)
+    expect(result.weight).toBeUndefined()
+  })
+
   it('suggests add rep when reps below max', () => {
     const history: SetLog[] = [
       makeSet(135, 6, 8, false),
@@ -91,6 +98,17 @@ describe('suggest', () => {
     const result = suggest(exWithNullRPE, [], [])
     expect(result.note).toBeDefined()
     expect(result.note).toContain('6-8 reps')
-    expect(result.note).toContain('RPE 8-8')
+    expect(result.note).toContain('RPE 8')
+  })
+
+  it('returns lastWeight, lastReps, lastRpe, lastDate when history exists', () => {
+    const ts = new Date('2025-03-11T10:00:00Z').getTime()
+    const history: SetLog[] = [makeSet(150, 12, 9, false)]
+    history[0].timestamp = ts
+    const result = suggest(baseExercise, history, history)
+    expect(result.lastWeight).toBe(150)
+    expect(result.lastReps).toBe(12)
+    expect(result.lastRpe).toBe(9)
+    expect(result.lastDate).toBe('Mar 11')
   })
 })

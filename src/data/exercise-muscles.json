@@ -1,0 +1,372 @@
+{
+  "45° Incline Barbell Press": {
+    "primary": [
+      "Chest"
+    ],
+    "secondary": [
+      "Shoulders",
+      "Triceps"
+    ]
+  },
+  "Cable Crossover Ladder": {
+    "primary": [
+      "Chest"
+    ],
+    "secondary": []
+  },
+  "Wide-Grip Pull-Up": {
+    "primary": [
+      "Lats"
+    ],
+    "secondary": []
+  },
+  "High-Cable Lateral Raise": {
+    "primary": [
+      "Shoulders"
+    ],
+    "secondary": [
+      "Lats",
+      "Serratus anterior"
+    ]
+  },
+  "Pendlay Deficit Row": {
+    "primary": [
+      "Lats",
+      "Trapezius"
+    ],
+    "secondary": [
+      "Biceps",
+      "Triceps"
+    ]
+  },
+  "Overhead Cable Triceps Extension (Bar)": {
+    "primary": [
+      "Triceps"
+    ],
+    "secondary": []
+  },
+  "Bayesian Cable Curl": {
+    "primary": [
+      "Biceps"
+    ],
+    "secondary": []
+  },
+  "Lying Leg Curl": {
+    "primary": [
+      "Hamstrings"
+    ],
+    "secondary": []
+  },
+  "Smith Machine Squat": {
+    "primary": [
+      "Glutes",
+      "Quads"
+    ],
+    "secondary": []
+  },
+  "Barbell RDL": {
+    "primary": [
+      "Lats"
+    ],
+    "secondary": []
+  },
+  "Leg Extension": {
+    "primary": [
+      "Quads"
+    ],
+    "secondary": []
+  },
+  "Standing Calf Raise": {
+    "primary": [
+      "Calves"
+    ],
+    "secondary": [
+      "Soleus"
+    ]
+  },
+  "Cable Crunch": {
+    "primary": [
+      "Abs"
+    ],
+    "secondary": []
+  },
+  "Neutral-Grip Lat Pulldown": {
+    "primary": [
+      "Lats"
+    ],
+    "secondary": []
+  },
+  "Chest-Supported Machine Row": {
+    "primary": [
+      "Lats"
+    ],
+    "secondary": []
+  },
+  "Neutral-Grip Seated Cable Row": {
+    "primary": [
+      "Lats"
+    ],
+    "secondary": []
+  },
+  "1-Arm 45° Cable Rear Delt Flye": {
+    "primary": [
+      "Shoulders"
+    ],
+    "secondary": [
+      "Trapezius"
+    ]
+  },
+  "Machine Shrug": {
+    "primary": [
+      "Shoulders"
+    ],
+    "secondary": [
+      "Triceps"
+    ]
+  },
+  "EZ-Bar Cable Curl": {
+    "primary": [
+      "Biceps"
+    ],
+    "secondary": []
+  },
+  "Machine Preacher Curl": {
+    "primary": [
+      "Brachialis"
+    ],
+    "secondary": [
+      "Brachialis"
+    ]
+  },
+  "Barbell Bench Press": {
+    "primary": [
+      "Chest"
+    ],
+    "secondary": [
+      "Shoulders",
+      "Triceps"
+    ]
+  },
+  "Machine Shoulder Press": {
+    "primary": [
+      "Shoulders"
+    ],
+    "secondary": [
+      "Triceps"
+    ]
+  },
+  "Bottom-Half DB Flye": {
+    "primary": [
+      "Chest"
+    ],
+    "secondary": []
+  },
+  "Cable Triceps Kickback": {
+    "primary": [
+      "Triceps"
+    ],
+    "secondary": []
+  },
+  "Roman Chair Leg Raise": {
+    "primary": [
+      "Abs"
+    ],
+    "secondary": []
+  },
+  "Leg Press": {
+    "primary": [
+      "Hamstrings",
+      "Calves",
+      "Glutes",
+      "Quads"
+    ],
+    "secondary": [
+      "Calves",
+      "Glutes"
+    ]
+  },
+  "Seated Leg Curl": {
+    "primary": [
+      "Hamstrings"
+    ],
+    "secondary": []
+  },
+  "DB Bulgarian Split Squat": {
+    "primary": [
+      "Glutes",
+      "Quads"
+    ],
+    "secondary": [
+      "Hamstrings"
+    ]
+  },
+  "Machine Hip Adduction": {
+    "primary": [
+      "Glutes"
+    ],
+    "secondary": []
+  },
+  "Machine Hip Abduction": {
+    "primary": [
+      "Glutes"
+    ],
+    "secondary": []
+  },
+  "45° Incline DB Press": {
+    "primary": [
+      "Chest"
+    ],
+    "secondary": [
+      "Shoulders",
+      "Triceps"
+    ]
+  },
+  "Pec Deck": {
+    "primary": [
+      "Chest"
+    ],
+    "secondary": [
+      "Shoulders"
+    ]
+  },
+  "Dual-Handle Lat Pulldown": {
+    "primary": [],
+    "secondary": []
+  },
+  "Smith Machine Row": {
+    "primary": [
+      "Lats"
+    ],
+    "secondary": []
+  },
+  "Static Lunge w/ Elevated Front Foot": {
+    "primary": [
+      "Glutes",
+      "Quads"
+    ],
+    "secondary": [
+      "Hamstrings"
+    ]
+  },
+  "Leg Press Calf Press": {
+    "primary": [
+      "Calves",
+      "Soleus"
+    ],
+    "secondary": []
+  },
+  "Machine Crunch": {
+    "primary": [
+      "Abs"
+    ],
+    "secondary": []
+  },
+  "Lean-Back Lat Pulldown": {
+    "primary": [
+      "Lats"
+    ],
+    "secondary": []
+  },
+  "Chest-Supported T-Bar Row": {
+    "primary": [
+      "Lats"
+    ],
+    "secondary": [
+      "Shoulders",
+      "Biceps",
+      "Brachialis"
+    ]
+  },
+  "Elbows-Out Cable Row": {
+    "primary": [
+      "Lats"
+    ],
+    "secondary": []
+  },
+  "Cable Paused Shrug-In": {
+    "primary": [
+      "Shoulders"
+    ],
+    "secondary": [
+      "Triceps"
+    ]
+  },
+  "Cable Rope Hammer Curl": {
+    "primary": [
+      "Biceps"
+    ],
+    "secondary": [
+      "Brachialis"
+    ]
+  },
+  "DB Concentration Curl": {
+    "primary": [
+      "Biceps"
+    ],
+    "secondary": []
+  },
+  "Machine Chest Press": {
+    "primary": [
+      "Chest"
+    ],
+    "secondary": [
+      "Shoulders",
+      "Biceps",
+      "Brachialis",
+      "Triceps"
+    ]
+  },
+  "Seated DB Shoulder Press": {
+    "primary": [
+      "Shoulders"
+    ],
+    "secondary": []
+  },
+  "Bottom-Half Seated Cable Flye": {
+    "primary": [
+      "Chest"
+    ],
+    "secondary": [
+      "Shoulders"
+    ]
+  },
+  "EZ-Bar Skull Crusher": {
+    "primary": [
+      "Triceps"
+    ],
+    "secondary": [
+      "Biceps",
+      "Chest"
+    ]
+  },
+  "Triceps Pressdown (Bar)": {
+    "primary": [
+      "Triceps"
+    ],
+    "secondary": []
+  },
+  "Ab Wheel Rollout": {
+    "primary": [
+      "Abs"
+    ],
+    "secondary": []
+  },
+  "Hack Squat": {
+    "primary": [
+      "Quads"
+    ],
+    "secondary": [
+      "Hamstrings",
+      "Calves",
+      "Glutes"
+    ]
+  },
+  "Walking Lunge": {
+    "primary": [
+      "Quads"
+    ],
+    "secondary": [
+      "Glutes"
+    ]
+  }
+}
