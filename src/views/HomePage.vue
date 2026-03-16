@@ -28,7 +28,7 @@ async function startFromTemplate(exercises: SessionExercise[]) {
     const dayType = exercises[0].dayType
     const id = await workoutStore.startWorkout(dayType, exercises)
     if (id === null) {
-      toast('Failed to start workout')
+      toast("Couldn't start — try again?")
       return
     }
     showTemplatePicker.value = false
@@ -44,7 +44,7 @@ async function startFreeWorkout() {
   try {
     const id = await workoutStore.startFreeWorkout()
     if (id === null) {
-      toast('Failed to start workout')
+      toast("Couldn't start — try again?")
       return
     }
     router.push('/workout')

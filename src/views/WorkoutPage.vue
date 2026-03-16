@@ -9,6 +9,7 @@ import { plateCalc } from '../lib/plateCalc'
 import { suggest } from '../lib/progression'
 import { toSessionExercise } from '../lib/exerciseLibrary'
 import { saveTemplate } from '../lib/templateLibrary'
+import { getCompleteWorkoutMessage } from '../lib/delightCopy'
 import { useUserProfile } from '../composables/useUserProfile'
 import { getGoal } from '../lib/strengthGoals'
 import RestTimer from '../components/RestTimer.vue'
@@ -233,7 +234,7 @@ async function doLogSet(weight: number, reps: number, rpe: number) {
   try {
     const ok = await workoutStore.logSet(weight, reps, rpe)
     if (!ok) {
-      toast('Failed to save set')
+      toast("Couldn't save set — try again?")
       return
     }
     logInput.value = ''
@@ -274,7 +275,7 @@ function onRestTimerDone() {
 async function handleSkip() {
   const ok = await workoutStore.skipExercise()
   if (!ok) {
-    toast('Failed to skip exercise')
+      toast("Couldn't skip — try again?")
     return
   }
   logInput.value = ''
@@ -285,7 +286,7 @@ async function handleSkip() {
 async function handleUnskip() {
   const ok = await workoutStore.unskipExercise()
   if (!ok) {
-    toast('Failed to go back')
+      toast("Couldn't go back — try again?")
     return
   }
   logInput.value = ''
@@ -337,7 +338,7 @@ async function handleSubSelect(info: ExerciseInfo) {
     toast(`Swapped to ${info.name}`)
     closeSubPicker()
   } else {
-    toast('Failed to substitute')
+    toast("Couldn't swap exercise — try again?")
   }
 }
 
@@ -348,7 +349,7 @@ async function handleAddExercise(info: ExerciseInfo) {
     toast(`Added ${info.name}`)
     closeAddPicker()
   } else {
-    toast('Failed to add exercise')
+    toast("Couldn't add exercise — try again?")
   }
 }
 
@@ -358,7 +359,7 @@ async function handleRemoveExercise() {
   if (!confirm(`Remove ${ex.name} from this workout?`)) return
   const ok = await workoutStore.removeExercise(ex.slotKey)
   if (!ok) {
-    toast('Failed to remove exercise')
+    toast("Couldn't remove exercise — try again?")
   }
 }
 
@@ -372,7 +373,7 @@ async function handleSaveAsTemplate() {
     toast('Template saved')
   } catch (e) {
     console.error('[WorkoutPage] Save template failed', e)
-    toast('Failed to save template')
+      toast("Couldn't save template — try again?")
   }
 }
 
@@ -382,10 +383,10 @@ async function handleComplete() {
   try {
     const ok = await workoutStore.completeWorkout()
     if (!ok) {
-      toast('Failed to save workout')
+      toast("Couldn't save — try again?")
       return
     }
-    toast('Workout saved!')
+    toast(getCompleteWorkoutMessage())
     router.push('/')
   } finally {
     completing.value = false
@@ -399,7 +400,7 @@ async function handleAbandon() {
   try {
     const ok = await workoutStore.abandonWorkout()
     if (!ok) {
-      toast('Failed to abandon workout')
+      toast("Couldn't abandon — try again?")
       return
     }
     router.push('/')
@@ -434,7 +435,7 @@ async function handleAbandon() {
     <div v-if="needsAddExercise" class="add-first">
       <RCard>
         <RText tag="h2">Add your first exercise</RText>
-        <RText tag="p" class="add-hint">Start your free workout by adding an exercise.</RText>
+        <RText tag="p" class="add-hint">Your canvas awaits. Pick an exercise to get started.</RText>
         <RButton type="primary" @click="openAddPicker">+ Add Exercise</RButton>
         <RButton variant="secondary" :disabled="abandoning" @click="handleAbandon" class="abandon-free">
           Abandon
@@ -444,6 +445,7 @@ async function handleAbandon() {
     <div v-else-if="!currentExercise" class="done">
       <RCard>
         <RText tag="h2">All done!</RText>
+        <RText tag="p" class="done-sub">Nice work.</RText>
         <RButton v-if="canUnskip" @click="handleUnskip" class="back-btn">Back</RButton>
         <RButton v-if="workoutStore.activeSession?.dayType === 'free'" @click="openAddPicker" class="add-more-btn">
           + Add more
@@ -593,7 +595,7 @@ async function handleAbandon() {
           </div>
         </div>
         <RText tag="p" class="log-hint">
-          {{ canLogSuggested || canLogFirstTime ? 'Or enter manually: ' : 'Enter: ' }}weight reps RPE (e.g. 150 12 9)
+          {{ canLogSuggested || canLogFirstTime ? 'Or enter manually: ' : 'Enter: ' }}weight reps RPE (1–10 effort, e.g. 150 12 9)
         </RText>
         <RInput
           v-model="logInput"
@@ -609,7 +611,7 @@ async function handleAbandon() {
           </RText>
         </div>
         <div v-else-if="plateConfig && plateConfig.perSide.length > 0" class="plate-math">
-          <RText tag="p" class="plate-label">Your input — plates per side</RText>
+          <RText tag="p" class="plate-label">Plates per side (from your weight)</RText>
           <RText tag="p" class="plate-value">
             {{ plateConfig.perSide.map((p) => `${p.count}×${p.weight}`).join(' + ') }}
           </RText>
@@ -901,6 +903,11 @@ async function handleAbandon() {
 .done {
   text-align: center;
   padding: 2rem;
+}
+.done-sub {
+  color: var(--r-color-text-secondary);
+  margin: 0 0 1rem 0;
+  font-size: 0.95rem;
 }
 .done .back-btn,
 .done .add-more-btn {
