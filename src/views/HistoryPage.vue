@@ -2,7 +2,9 @@
 import { ref, onMounted, watch, computed } from 'vue'
 import { RButton, RCard, RText, useToast } from 'roughness'
 import { db } from '../lib/db'
+import { useWorkoutStore } from '../store/workout'
 import ProgressionChart from '../components/ProgressionChart.vue'
+import SetEditModal from '../components/SetEditModal.vue'
 import { useExerciseProgression } from '../composables/useExerciseProgression'
 import { groupByBodyRegion } from '../lib/muscleGroups'
 import type { WorkoutSession, SetLog } from '../types/session'
@@ -19,6 +21,9 @@ const loadingSets = ref<number | null>(null)
 const deleting = ref<number | null>(null)
 const loadError = ref(false)
 const toast = useToast()
+const editingSet = ref<SetLog | null>(null)
+const savingEdit = ref(false)
+const workoutStore = useWorkoutStore()
 
 const progression = useExerciseProgression()
 
@@ -132,10 +137,58 @@ function groupSetsByExercise(sets: SetLog[]): { exerciseName: string; slotKey: s
     return { exerciseName: sorted[0]?.exerciseName ?? slot, slotKey: slot, sets: sorted }
   })
 }
+
+function openEditSet(set: SetLog) {
+  if (!set.id) return
+  editingSet.value = set
+}
+
+function closeEditModal() {
+  editingSet.value = null
+}
+
+async function handleEditSave(weight: number, reps: number, rpe: number) {
+  const set = editingSet.value
+  if (!set?.id) return
+  savingEdit.value = true
+  try {
+    const ok = await workoutStore.updateSetLog(set.id, weight, reps, rpe)
+    if (ok) {
+      const sessionId = set.sessionId
+      const cached = setsBySession.value[sessionId]
+      if (cached) {
+        const idx = cached.findIndex((s) => s.id === set.id)
+        if (idx >= 0) {
+          const updated = { ...cached[idx], weight, reps, rpe, editedAt: Date.now(), prevWeight: set.weight, prevReps: set.reps, prevRpe: set.rpe }
+          setsBySession.value = {
+            ...setsBySession.value,
+            [sessionId]: [...cached.slice(0, idx), updated, ...cached.slice(idx + 1)],
+          }
+        }
+      }
+      if (viewMode.value === 'exercise') {
+        await progression.loadAllSets()
+      }
+      toast('Set updated')
+      closeEditModal()
+    } else {
+      toast("Couldn't save edit — try again?")
+    }
+  } finally {
+    savingEdit.value = false
+  }
+}
 </script>
 
 <template>
   <div class="history-page">
+    <SetEditModal
+      v-if="editingSet"
+      :set="editingSet"
+      :saving="savingEdit"
+      @save="handleEditSave"
+      @cancel="closeEditModal"
+    />
     <RCard class="header-card">
       <RText tag="h2">Workout History</RText>
       <div class="tab-row">
@@ -206,10 +259,23 @@ function groupSetsByExercise(sets: SetLog[]): { exerciseName: string; slotKey: s
                 {{ group.exerciseName }} — {{ group.sets.length }} {{ group.sets.length === 1 ? 'set' : 'sets' }}
               </RText>
               <ul class="set-list">
-                <li v-for="(set, i) in group.sets" :key="set.id" class="set-item">
-                  Set {{ i + 1 }}: {{ set.weight }}×{{ set.reps }}
-                  <span v-if="set.rpe" class="set-rpe">RPE {{ set.rpe }}</span>
-                  <span v-if="set.isWarmup" class="set-warmup">warm-up</span>
+                <li v-for="(set, i) in group.sets" :key="set.id ?? i" class="set-item">
+                  <template v-if="s.status === 'completed' && set.id">
+                    <button
+                      type="button"
+                      class="set-edit-btn"
+                      @click.stop="openEditSet(set)"
+                    >
+                      Set {{ i + 1 }}: {{ set.weight }}×{{ set.reps }}
+                      <span v-if="set.rpe" class="set-rpe">RPE {{ set.rpe }}</span>
+                      <span v-if="set.isWarmup" class="set-warmup">warm-up</span>
+                    </button>
+                  </template>
+                  <template v-else>
+                    Set {{ i + 1 }}: {{ set.weight }}×{{ set.reps }}
+                    <span v-if="set.rpe" class="set-rpe">RPE {{ set.rpe }}</span>
+                    <span v-if="set.isWarmup" class="set-warmup">warm-up</span>
+                  </template>
                 </li>
               </ul>
             </div>
@@ -429,6 +495,20 @@ function groupSetsByExercise(sets: SetLog[]): { exerciseName: string; slotKey: s
 }
 .set-item {
   margin: 0.15rem 0;
+}
+.set-edit-btn {
+  display: inline;
+  padding: 0;
+  background: none;
+  border: none;
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+.set-edit-btn:hover {
+  color: var(--r-color-primary);
 }
 .set-rpe {
   margin-left: 0.35rem;
