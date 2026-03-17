@@ -4,6 +4,8 @@ import { db } from '../lib/db'
 import { getGoal } from '../lib/strengthGoals'
 import { getPendingCount, flushSyncQueue } from '../lib/sync'
 import { downloadBackup, importFromJson, parseSheetCsv, clearAndSeedFromTracker } from '../lib/backup'
+import { exportDebugEventsAsJson, getDebugEvents, clearDebugEvents } from '../lib/debugEvents'
+import { clearExerciseCache } from '../lib/exerciseLibrary'
 import { SAMPLE_TRACKER } from '../data/sampleTracker'
 import { RButton, RCard, RInput, RText, useToast } from 'roughness'
 
@@ -114,6 +116,18 @@ function triggerCsvInput() {
   csvInputRef.value?.click()
 }
 
+function handleExportDebugTrace() {
+  const json = exportDebugEventsAsJson()
+  const blob = new Blob([json], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `workout-debug-${new Date().toISOString().slice(0, 10)}.json`
+  a.click()
+  URL.revokeObjectURL(url)
+  toast(`Exported ${getDebugEvents().length} events`)
+}
+
 async function handleImportJson(e: Event) {
   const input = e.target as HTMLInputElement
   const file = input.files?.[0]
@@ -140,6 +154,7 @@ async function handleImportJson(e: Event) {
       importResult.value = `Restored ${result.sessionsImported} sessions, ${result.setsImported} sets`
       if (result.profileRestored) importResult.value += ', profile'
       if (result.programStateRestored) importResult.value += ', program state'
+      clearExerciseCache()
     }
   } catch (err) {
     toast('Import failed')
@@ -171,6 +186,7 @@ async function handleImportSheet(e: Event) {
     } else {
       toast(`Restored ${result.sessionsImported} sessions, ${result.setsImported} sets from Sheet`)
       importResult.value = `Restored ${result.sessionsImported} sessions, ${result.setsImported} sets`
+      clearExerciseCache()
     }
   } catch (err) {
     toast('Import failed')
@@ -214,6 +230,8 @@ async function handleLoadSample() {
     } else {
       toast(`Loaded ${result.sessionsImported} sessions, ${result.setsImported} sets`)
       importResult.value = `Loaded ${result.sessionsImported} sessions, ${result.setsImported} sets`
+      clearExerciseCache()
+      clearDebugEvents()
     }
   } catch (err) {
     toast('Failed to load sample data')
@@ -404,6 +422,16 @@ const keyLiftGoals = computed(() => {
         >
           {{ seeding ? 'Loading…' : 'Clear & load sample history' }}
         </RButton>
+    </RCard>
+
+    <RCard class="settings-card">
+      <RText tag="h3">Debug</RText>
+      <RText tag="p" class="backup-hint">
+        Export recent debug events for troubleshooting. Contains set edits, timer actions, substitutions.
+      </RText>
+      <RButton variant="secondary" @click="handleExportDebugTrace">
+        Export debug trace
+      </RButton>
     </RCard>
 
     <RCard v-if="keyLiftGoals.length > 0" class="settings-card">

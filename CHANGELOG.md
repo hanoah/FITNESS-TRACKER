@@ -4,6 +4,34 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.1.4] - 2026-03-17
+
+### Added
+
+- Set editing: edit logged set values mid-workout and from History (completed sessions only)
+- Audit metadata on set edits (editedAt, prevWeight/Reps/Rpe)
+- Quick-log clear-X button to clear prefilled input
+- Rest timer: pause/resume, −30s/+15s quick actions, background restore, "Rest complete!" fallback when audio is blocked
+- Rest timer "next exercise" hint (e.g. "Next: Set 2 of Face Pull")
+- Plate reverse input: enter plates per side (e.g. "2 45 1 25") to compute total weight
+- Substitution filtering by relevant muscle groups (e.g. no leg subs for pull-ups)
+- Cached exercise index for faster add/substitute search
+- Add-exercise set count prompt
+- RPE-aware progression: larger increments for easy sets (RPE ≤6), smaller for hard (RPE ≥9)
+- Goal ETA projection: "At +2.5 lb per session, about 8 weeks to reach 135 lb"
+- Debug event stream with Settings export for troubleshooting
+- Navigation labels: "Skip"/"Back" → "Next"/"Previous"
+
+### Changed
+
+- Goal badge styling and prominence
+- logInput wrapped with clear-X affordance
+
+### Fixed
+
+- Rest timer "Next: Set X" hint now uses overall set numbering (matches main UI when warmup sets exist)
+- Mansalva font now applies consistently to teleported overlays and tab bar
+
 ## [0.1.3] - 2026-03-16
 
 ### Added

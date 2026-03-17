@@ -127,18 +127,55 @@ export async function getAllKnownExercises(): Promise<ExerciseInfo[]> {
   return Array.from(byName.values())
 }
 
-/** Case-insensitive substring match */
+let cachedExercises: ExerciseInfo[] | null = null
+
+/** Cached exercise list. Call loadCachedExercises() once, then use this for fast local filtering. */
+export function getCachedExercises(): ExerciseInfo[] {
+  return cachedExercises ?? []
+}
+
+/** Load and cache exercise list. Call on picker mount. */
+export async function loadCachedExercises(): Promise<ExerciseInfo[]> {
+  cachedExercises = await getAllKnownExercises()
+  return cachedExercises
+}
+
+/** Clear cache (e.g. after backup restore). */
+export function clearExerciseCache() {
+  cachedExercises = null
+}
+
+/** Case-insensitive substring match. Uses cache when available. */
 export async function searchExercises(query: string): Promise<ExerciseInfo[]> {
-  const all = await getAllKnownExercises()
+  const all = cachedExercises ?? (await getAllKnownExercises())
   if (!query.trim()) return all
   const q = query.toLowerCase()
   return all.filter((ex) => ex.name.toLowerCase().includes(q))
+}
+
+/** Filter exercises by relevant muscles (primary or secondary). */
+export function filterByMuscles(exercises: ExerciseInfo[], muscles: string[]): ExerciseInfo[] {
+  if (!muscles.length) return exercises
+  const set = new Set(muscles.map((m) => m.toLowerCase()))
+  return exercises.filter((ex) => {
+    const primary = ex.muscles?.primary ?? []
+    const secondary = ex.muscles?.secondary ?? []
+    return primary.some((m) => set.has(m.toLowerCase())) || secondary.some((m) => set.has(m.toLowerCase()))
+  })
 }
 
 /** Lookup by exact name */
 export async function getExerciseByName(name: string): Promise<ExerciseInfo | null> {
   const all = await getAllKnownExercises()
   return all.find((ex) => ex.name === name) ?? null
+}
+
+/** Primary muscles for an exercise (for substitution context filtering) */
+export function getMusclesForExercise(name: string): string[] {
+  const data = exerciseMusclesData as Record<string, { primary?: string[]; secondary?: string[] }>
+  const entry = data[name]
+  if (!entry) return []
+  return [...(entry.primary ?? []), ...(entry.secondary ?? [])]
 }
 
 /** Unique muscle group names from exercise-muscles */

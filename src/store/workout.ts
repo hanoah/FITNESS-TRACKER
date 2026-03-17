@@ -20,14 +20,24 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { db } from '../lib/db'
 import { enqueueSync } from '../lib/sync'
+import { validateSetEdit } from '../lib/parseLogInput'
+import { emitDebugEvent } from '../lib/debugEvents'
 import { getExerciseByName, toSessionExercise } from '../lib/exerciseLibrary'
 import { getExercisesForBlockWeekDay } from '../lib/templateLibrary'
 import type { WorkoutSession, SetLog, SessionExercise } from '../types/session'
 
 export type ResumeResult = { ok: true } | { ok: false; error: string }
 
+export interface RestTimerSnapshot {
+  sessionId: number
+  endTime: number
+  pausedRemaining: number | null
+  initialSeconds: number
+}
+
 export const useWorkoutStore = defineStore('workout', () => {
   const activeSession = ref<WorkoutSession | null>(null)
+  const restTimerSnapshot = ref<RestTimerSnapshot | null>(null)
   const todayExercises = ref<SessionExercise[]>([])
   const completedSets = ref<SetLog[]>([])
   const resumeError = ref<string | null>(null)
@@ -106,8 +116,8 @@ export const useWorkoutStore = defineStore('workout', () => {
       timestamp: Date.now(),
     }
     try {
-      await db.sets.add(setLog)
-      completedSets.value = [...completedSets.value, setLog]
+      const id = (await db.sets.add(setLog)) as number
+      completedSets.value = [...completedSets.value, { ...setLog, id }]
 
       const setsForEx = completedSets.value.filter((s) => s.exerciseSlot === ex.slotKey)
       const workingDone = setsForEx.filter((s) => !s.isWarmup).length
@@ -144,6 +154,7 @@ export const useWorkoutStore = defineStore('workout', () => {
       todayExercises.value = []
       completedSets.value = []
       resumeError.value = null
+      restTimerSnapshot.value = null
       try {
         await enqueueSync(completedSession, sets)
       } catch (syncErr) {
@@ -171,6 +182,7 @@ export const useWorkoutStore = defineStore('workout', () => {
       todayExercises.value = []
       completedSets.value = []
       resumeError.value = null
+      restTimerSnapshot.value = null
       return true
     } catch (e) {
       console.error('[workout.abandonWorkout] Failed to abandon session', { sessionId: session.id }, e)
@@ -363,6 +375,59 @@ export const useWorkoutStore = defineStore('workout', () => {
     }
   }
 
+  /** Centralized set edit: validates, applies audit metadata, updates db and in-memory completedSets if active. */
+  async function updateSetLog(setId: number, weight: number, reps: number, rpe: number): Promise<boolean> {
+    const validated = validateSetEdit(weight, reps, rpe)
+    let set: SetLog | undefined
+    try {
+      set = await db.sets.get(setId)
+    } catch (e) {
+      console.error('[workout.updateSetLog] Failed to fetch set', { setId }, e)
+      return false
+    }
+    if (!set) return false
+
+    const patch = {
+      weight: validated.weight,
+      reps: validated.reps,
+      rpe: validated.rpe,
+      editedAt: Date.now(),
+      prevWeight: set.weight,
+      prevReps: set.reps,
+      prevRpe: set.rpe,
+    }
+    try {
+      await db.sets.update(setId, patch)
+    } catch (e) {
+      emitDebugEvent({ eventName: 'set_edit', setId, status: 'fail', errorCode: 'db_write', meta: { err: String(e) } })
+      console.error('[workout.updateSetLog] Failed to save', { setId, patch }, e)
+      return false
+    }
+
+    emitDebugEvent({ eventName: 'set_edit', setId, sessionId: set.sessionId, status: 'success', meta: { weight: patch.weight, reps: patch.reps, rpe: patch.rpe } })
+    const session = activeSession.value
+    if (session?.id === set.sessionId) {
+      const idx = completedSets.value.findIndex((s) => s.id === setId)
+      if (idx >= 0) {
+        const updated = { ...completedSets.value[idx], ...patch }
+        completedSets.value = [
+          ...completedSets.value.slice(0, idx),
+          updated,
+          ...completedSets.value.slice(idx + 1),
+        ]
+      }
+    }
+    return true
+  }
+
+  function setRestTimerSnapshot(snapshot: RestTimerSnapshot) {
+    restTimerSnapshot.value = snapshot
+  }
+
+  function clearRestTimerSnapshot() {
+    restTimerSnapshot.value = null
+  }
+
   return {
     activeSession,
     todayExercises,
@@ -383,5 +448,9 @@ export const useWorkoutStore = defineStore('workout', () => {
     skipExercise,
     unskipExercise,
     substituteExercise,
+    updateSetLog,
+    restTimerSnapshot,
+    setRestTimerSnapshot,
+    clearRestTimerSnapshot,
   }
 })

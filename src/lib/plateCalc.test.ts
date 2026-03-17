@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { plateCalc } from './plateCalc'
+import { plateCalc, platesToTotal } from './plateCalc'
 
 describe('plateCalc', () => {
   it('165 lbs with 45 lb bar', () => {
@@ -30,5 +30,19 @@ describe('plateCalc', () => {
 
   it('throws on negative weight', () => {
     expect(() => plateCalc(-10)).toThrow()
+  })
+})
+
+describe('platesToTotal', () => {
+  it('reverses plateCalc 165', () => {
+    const perSide = [
+      { weight: 45, count: 1 },
+      { weight: 10, count: 1 },
+      { weight: 5, count: 1 },
+    ]
+    expect(platesToTotal(perSide)).toBe(165)
+  })
+  it('empty per side = bar only', () => {
+    expect(platesToTotal([])).toBe(45)
   })
 })

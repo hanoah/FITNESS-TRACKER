@@ -53,6 +53,11 @@ export interface SetLog {
   rpe: number
   isWarmup: boolean
   timestamp: number
+  /** Audit metadata when set was edited */
+  editedAt?: number
+  prevWeight?: number
+  prevReps?: number
+  prevRpe?: number
 }
 
 export interface WorkoutSession {

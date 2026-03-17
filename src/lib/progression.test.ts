@@ -111,4 +111,18 @@ describe('suggest', () => {
     expect(result.lastRpe).toBe(9)
     expect(result.lastDate).toBe('Mar 11')
   })
+
+  it('uses larger increment when RPE is low (easy set)', () => {
+    const history: SetLog[] = [makeSet(95, 8, 5, false)]
+    const result = suggest(baseExercise, history, history)
+    expect(result.weight).toBe(100)
+    expect(result.note).toContain('Add weight')
+  })
+
+  it('uses smaller increment when RPE is high (hard set)', () => {
+    const history: SetLog[] = [makeSet(95, 8, 10, false)]
+    const result = suggest(baseExercise, history, history)
+    expect(result.weight).toBe(96.25)
+    expect(result.note).toContain('Add weight')
+  })
 })

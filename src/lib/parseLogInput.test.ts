@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { parseLogInput, ParseError } from './parseLogInput'
+import { parseLogInput, validateSetEdit, ParseError } from './parseLogInput'
 
 describe('parseLogInput', () => {
   it('parses valid input "150 12 9"', () => {
@@ -33,5 +33,19 @@ describe('parseLogInput', () => {
   it('throws on RPE out of range', () => {
     expect(() => parseLogInput('150 12 0')).toThrow(ParseError)
     expect(() => parseLogInput('150 12 11')).toThrow(ParseError)
+  })
+})
+
+describe('validateSetEdit', () => {
+  it('accepts valid values', () => {
+    expect(validateSetEdit(150, 12, 9)).toEqual({ weight: 150, reps: 12, rpe: 9 })
+  })
+  it('rounds and normalizes', () => {
+    expect(validateSetEdit(152.54, 11.7, 8.6)).toEqual({ weight: 152.5, reps: 12, rpe: 8.6 })
+  })
+  it('throws on invalid', () => {
+    expect(() => validateSetEdit(0, 12, 9)).toThrow(ParseError)
+    expect(() => validateSetEdit(150, -1, 9)).toThrow(ParseError)
+    expect(() => validateSetEdit(150, 12, 11)).toThrow(ParseError)
   })
 })
