@@ -89,7 +89,14 @@ export function suggest(
     }
   }
 
-  const increment = last.weight >= 135 ? 5 : last.weight >= 45 ? 2.5 : 1.25
+  const baseIncrement = last.weight >= 135 ? 5 : last.weight >= 45 ? 2.5 : 1.25
+  const rpe = last.rpe ?? 8
+  let increment = baseIncrement
+  if (rpe <= 6) {
+    increment = Math.min(baseIncrement * 2, 10)
+  } else if (rpe >= 9) {
+    increment = Math.max(baseIncrement * 0.5, 1.25)
+  }
   const newWeight = last.weight + increment
   return {
     weight: newWeight,
