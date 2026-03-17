@@ -61,3 +61,14 @@ export function plateCalc(
     barWeight,
   }
 }
+
+/**
+ * Reverse: given plates per side, compute total weight.
+ */
+export function platesToTotal(
+  perSide: { weight: number; count: number }[],
+  barWeight: number = DEFAULT_BAR_WEIGHT
+): number {
+  const loadPerSide = perSide.reduce((sum, p) => sum + p.weight * p.count, 0)
+  return barWeight + loadPerSide * 2
+}
