@@ -93,3 +93,17 @@ svg {
   text-decoration-line: none !important;
   opacity: 0.45;
 }
+
+/* Override roughness font — ensure Mansalva applies to r- components, teleported overlays, and tab bar */
+[class^="r-"],
+[class*=" r-"],
+.rest-overlay,
+.rest-modal,
+.edit-overlay,
+.edit-modal,
+.picker-backdrop,
+.picker-panel,
+.bottom-nav .nav-item,
+.bottom-nav .nav-label {
+  font-family: var(--r-common-font-family), 'Mansalva', cursive, system-ui, sans-serif;
+}

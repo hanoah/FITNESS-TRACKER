@@ -1,21 +1,24 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { RButton, RInput, RText } from 'roughness'
 import {
-  searchExercises,
+  loadCachedExercises,
   getRecentExercises,
   getMuscleGroups,
+  filterByMuscles,
   type ExerciseInfo,
 } from '../lib/exerciseLibrary'
-
 const props = withDefaults(
   defineProps<{
     /** Quick-pick options shown at top (e.g. sub1, sub2) */
     quickPicks?: string[]
+    /** When set (substitution mode), filter by relevant muscles */
+    contextMuscles?: string[]
     title?: string
   }>(),
   {
     quickPicks: () => [],
+    contextMuscles: () => [],
     title: 'Add Exercise',
   }
 )
@@ -32,11 +35,30 @@ const muscleGroups = ref<string[]>([])
 const customName = ref('')
 const loading = ref(true)
 
+function filterByContext(list: ExerciseInfo[]): ExerciseInfo[] {
+  if (!props.contextMuscles?.length) return list
+  return filterByMuscles(list, props.contextMuscles)
+}
+
 const searchResults = computed(() => {
-  if (!searchQuery.value.trim()) return []
-  return allExercises.value.filter((ex) =>
-    ex.name.toLowerCase().includes(searchQuery.value.toLowerCase())
-  )
+  const all = allExercises.value
+  const filtered = filterByContext(all)
+  if (!searchQuery.value.trim()) return filtered
+  const q = searchQuery.value.toLowerCase()
+  return filtered.filter((ex) => ex.name.toLowerCase().includes(q))
+})
+
+const filteredRecent = computed(() => filterByContext(recentExercises.value))
+
+const filteredQuickPicks = computed(() => {
+  const picks = props.quickPicks
+  if (!props.contextMuscles?.length) return picks
+  const all = allExercises.value
+  return picks.filter((name) => {
+    const ex = all.find((e) => e.name === name)
+    if (!ex) return true
+    return filterByMuscles([ex], props.contextMuscles).length > 0
+  })
 })
 
 onMounted(async () => {
@@ -44,7 +66,7 @@ onMounted(async () => {
   try {
     const [recent, all] = await Promise.all([
       getRecentExercises(20),
-      searchExercises(''),
+      loadCachedExercises(),
     ])
     recentExercises.value = recent
     allExercises.value = all
@@ -52,11 +74,6 @@ onMounted(async () => {
   } finally {
     loading.value = false
   }
-})
-
-watch(searchQuery, async (q) => {
-  if (!q.trim()) return
-  allExercises.value = await searchExercises(q)
 })
 
 function selectFromInfo(info: ExerciseInfo) {
@@ -104,9 +121,9 @@ function handleCancel() {
             />
           </div>
 
-          <div v-if="quickPicks.length > 0" class="quick-pills">
+          <div v-if="filteredQuickPicks.length > 0" class="quick-pills">
             <button
-              v-for="name in quickPicks"
+              v-for="name in filteredQuickPicks"
               :key="name"
               type="button"
               class="pill"
@@ -121,10 +138,10 @@ function handleCancel() {
           </div>
 
           <div v-else class="picker-scroll">
-            <div v-if="recentExercises.length > 0 && !searchQuery.trim()" class="section">
+            <div v-if="filteredRecent.length > 0 && !searchQuery.trim()" class="section">
               <RText tag="p" class="section-label">Recent</RText>
               <ul class="exercise-list">
-                <li v-for="ex in recentExercises" :key="ex.name">
+                <li v-for="ex in filteredRecent" :key="ex.name">
                   <button type="button" class="list-item" @click="selectFromInfo(ex)">
                     {{ ex.name }}
                   </button>
@@ -181,6 +198,7 @@ function handleCancel() {
   display: flex;
   align-items: flex-end;
   justify-content: center;
+  font-family: var(--r-common-font-family), inherit;
 }
 
 .picker-panel {

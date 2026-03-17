@@ -229,6 +229,7 @@ async function handleDeleteTemplate(e: Event, id: number) {
   display: flex;
   align-items: flex-end;
   justify-content: center;
+  font-family: var(--r-common-font-family), inherit;
 }
 
 .picker-panel {
