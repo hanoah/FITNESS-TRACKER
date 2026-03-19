@@ -23,6 +23,10 @@ export interface SessionExercise {
   demoUrl: string
   intensityTechnique?: IntensityTechnique
   imagePath?: string
+  imageUrl?: string  // CDN URL for ExerciseDB images
+  exerciseDbId?: string
+  bodyPart?: string
+  equipment?: string
   sub1?: string
   sub2?: string
 }

@@ -48,6 +48,12 @@ export interface SyncQueueItem {
   error?: string
 }
 
+export interface CachedExerciseImage {
+  exerciseDbId: string
+  blob: Blob
+  fetchedAt: number
+}
+
 export class WorkoutDb extends Dexie {
   userProfile!: Table<UserProfile, string>
   sessions!: Table<WorkoutSession, number>
@@ -55,6 +61,7 @@ export class WorkoutDb extends Dexie {
   programState!: Table<ProgramState, string>
   syncQueue!: Table<SyncQueueItem, number>
   templates!: Table<WorkoutTemplate, number>
+  exerciseImages!: Table<CachedExerciseImage, string>
 
   constructor() {
     super('WorkoutApp')
@@ -79,6 +86,15 @@ export class WorkoutDb extends Dexie {
       programState: 'id',
       syncQueue: '++id, timestamp, synced',
       templates: '++id, name, createdAt',
+    })
+    this.version(4).stores({
+      userProfile: 'id',
+      sessions: '++id, date, status, dayType, blockId, weekNumber',
+      sets: '++id, sessionId, exerciseSlot, exerciseName, timestamp',
+      programState: 'id',
+      syncQueue: '++id, timestamp, synced',
+      templates: '++id, name, createdAt',
+      exerciseImages: 'exerciseDbId',
     })
   }
 }
