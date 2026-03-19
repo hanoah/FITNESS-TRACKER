@@ -17,6 +17,8 @@
   --color-fill-secondary: #f0ede8;
   --color-fill-tertiary: rgba(45, 42, 38, 0.06);
   --color-error: #b8412a;
+  --color-success: #4a7a3d;
+  --color-success-bg: rgba(74, 122, 61, 0.10);
   --color-stroke: #2d2a26;
 
   /* App tokens (used by components) */
@@ -28,6 +30,8 @@
   --r-color-fill-secondary: var(--color-fill-secondary);
   --r-color-fill-tertiary: var(--color-fill-tertiary);
   --r-color-error: var(--color-error);
+  --r-color-success: var(--color-success);
+  --r-color-success-bg: var(--color-success-bg);
 
   /* Roughness overrides */
   --r-common-color: var(--color-ink);
