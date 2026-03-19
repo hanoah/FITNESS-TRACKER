@@ -302,3 +302,106 @@ describe('substituteExercise', () => {
     expect(workoutStore.todayExercises[0].name).toBe('Bench Press')
   })
 })
+
+describe('goToExercise', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    vi.mocked(mockDb.sessions.add).mockResolvedValue(1)
+    vi.mocked(mockDb.sessions.update).mockClear()
+    vi.mocked(mockDb.sessions.update).mockResolvedValue(undefined)
+  })
+
+  it('jumps to valid index and persists', async () => {
+    const workoutStore = useWorkoutStore()
+    const ex1: SessionExercise = { ...baseExercise, name: 'Ex1', slotKey: 'free:0', dayType: 'free' }
+    const ex2: SessionExercise = { ...baseExercise, name: 'Ex2', slotKey: 'free:1', dayType: 'free' }
+    const ex3: SessionExercise = { ...baseExercise, name: 'Ex3', slotKey: 'free:2', dayType: 'free' }
+    await workoutStore.startWorkout('free', [ex1, ex2, ex3])
+    expect(workoutStore.currentExercise?.name).toBe('Ex1')
+
+    const ok = await workoutStore.goToExercise(2)
+    expect(ok).toBe(true)
+    expect(workoutStore.currentExercise?.name).toBe('Ex3')
+    const updateCalls = vi.mocked(mockDb.sessions.update).mock.calls
+    const lastCall = updateCalls[updateCalls.length - 1]
+    expect(lastCall[1]).toEqual({ currentExerciseIndex: 2 })
+  })
+
+  it('returns true for same index (no-op)', async () => {
+    const workoutStore = useWorkoutStore()
+    await workoutStore.startWorkout('free', [baseExercise])
+    vi.mocked(mockDb.sessions.update).mockClear()
+    const ok = await workoutStore.goToExercise(0)
+    expect(ok).toBe(true)
+    expect(mockDb.sessions.update).not.toHaveBeenCalled()
+  })
+
+  it('returns false for out-of-bounds index', async () => {
+    const workoutStore = useWorkoutStore()
+    await workoutStore.startWorkout('free', [baseExercise])
+    vi.mocked(mockDb.sessions.update).mockClear()
+    const ok = await workoutStore.goToExercise(5)
+    expect(ok).toBe(false)
+    expect(workoutStore.currentExercise?.name).toBe('Bench Press')
+    expect(mockDb.sessions.update).not.toHaveBeenCalled()
+  })
+
+  it('reverts in-memory when DB update fails', async () => {
+    const workoutStore = useWorkoutStore()
+    const ex1: SessionExercise = { ...baseExercise, name: 'Ex1', slotKey: 'free:0', dayType: 'free' }
+    const ex2: SessionExercise = { ...baseExercise, name: 'Ex2', slotKey: 'free:1', dayType: 'free' }
+    await workoutStore.startWorkout('free', [ex1, ex2])
+    vi.mocked(mockDb.sessions.update).mockRejectedValueOnce(new Error('DB fail'))
+
+    const ok = await workoutStore.goToExercise(1)
+    expect(ok).toBe(false)
+    expect(workoutStore.currentExercise?.name).toBe('Ex1')
+  })
+})
+
+describe('workoutProgress', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    vi.mocked(mockDb.sessions.add).mockResolvedValue(1)
+  })
+
+  it('returns 0 when no exercises', async () => {
+    const workoutStore = useWorkoutStore()
+    await workoutStore.startFreeWorkout()
+    expect(workoutStore.workoutProgress).toBe(0)
+  })
+
+  it('returns completed/total ratio', async () => {
+    const workoutStore = useWorkoutStore()
+    const ex: SessionExercise = { ...baseExercise, warmupSets: 1, workingSets: 3, slotKey: 'free:0', dayType: 'free' }
+    await workoutStore.startWorkout('free', [ex])
+    expect(workoutStore.workoutProgress).toBe(0)
+
+    vi.mocked(mockDb.sets.add).mockResolvedValue(1)
+    await workoutStore.logSet(135, 10, 9)
+    await workoutStore.logSet(140, 10, 9)
+    expect(workoutStore.workoutProgress).toBeCloseTo(2 / 4, 5)
+  })
+
+  it('clamps to 1 when completed exceeds total', async () => {
+    const workoutStore = useWorkoutStore()
+    const ex: SessionExercise = { ...baseExercise, warmupSets: 0, workingSets: 2, slotKey: 'free:0', dayType: 'free' }
+    await workoutStore.startWorkout('free', [ex])
+    vi.mocked(mockDb.sets.add).mockResolvedValue(1)
+    await workoutStore.logSet(135, 10, 9)
+    await workoutStore.logSet(140, 10, 9)
+    workoutStore.completedSets.push({
+      id: 99,
+      sessionId: workoutStore.activeSession!.id!,
+      exerciseSlot: ex.slotKey,
+      exerciseName: ex.name,
+      setNumber: 3,
+      weight: 145,
+      reps: 10,
+      rpe: 9,
+      isWarmup: false,
+      timestamp: Date.now(),
+    })
+    expect(workoutStore.workoutProgress).toBe(1)
+  })
+})

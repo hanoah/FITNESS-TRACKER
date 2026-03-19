@@ -1,0 +1,2422 @@
+[
+  {
+    "id": "exr_41n2ha5iPFpN3hEJ",
+    "name": "Bridge - Mountain Climber",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/EsVOYBdhDN.jpg",
+    "bodyPart": "WAIST",
+    "target": "OBLIQUES",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "QUADRICEPS",
+      "PECTINEUS",
+      "ADDUCTOR BREVIS",
+      "TENSOR FASCIAE LATAE",
+      "ILIOPSOAS",
+      "ADDUCTOR LONGUS",
+      "RECTUS ABDOMINIS",
+      "ANTERIOR DELTOID"
+    ]
+  },
+  {
+    "id": "exr_41n2haAabPyN5t8y",
+    "name": "Side Lunge",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/RB7NBcf79I.jpg",
+    "bodyPart": "QUADRICEPS",
+    "target": "GLUTEUS MAXIMUS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "ADDUCTOR MAGNUS",
+      "GLUTEUS MEDIUS",
+      "SOLEUS",
+      "TENSOR FASCIAE LATAE"
+    ]
+  },
+  {
+    "id": "exr_41n2hadPLLFRGvFk",
+    "name": "Sliding Floor Pulldown on Towel",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/9fW96RFqRZ.jpg",
+    "bodyPart": "BACK",
+    "target": "LATISSIMUS DORSI",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "POSTERIOR DELTOID",
+      "TRICEPS BRACHII",
+      "TERES MINOR",
+      "TRAPEZIUS LOWER FIBERS",
+      "TRAPEZIUS MIDDLE FIBERS",
+      "TERES MAJOR",
+      "INFRASPINATUS"
+    ]
+  },
+  {
+    "id": "exr_41n2hadQgEEX8wDN",
+    "name": "Triceps Dip",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/MruSDlnk0M.jpg",
+    "bodyPart": "TRICEPS",
+    "target": "TRICEPS BRACHII",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "PECTORALIS MAJOR STERNAL HEAD",
+      "PECTORALIS MAJOR CLAVICULAR HEAD",
+      "ANTERIOR DELTOID",
+      "LATISSIMUS DORSI",
+      "LEVATOR SCAPULAE"
+    ]
+  },
+  {
+    "id": "exr_41n2haNJ3NA8yCE2",
+    "name": "Dumbbell Incline One Arm Hammer Press",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/qkXo99D6UI.jpg",
+    "bodyPart": "UPPER ARMS",
+    "target": "RECTUS ABDOMINIS",
+    "equipment": "DUMBBELL",
+    "secondaryMuscles": [
+      "TERES MAJOR",
+      "PECTORALIS MAJOR CLAVICULAR HEAD",
+      "TRAPEZIUS MIDDLE FIBERS"
+    ]
+  },
+  {
+    "id": "exr_41n2havo95Y2QpkW",
+    "name": "Feet and Ankles Stretch",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/AwDLoYPc84.jpg",
+    "bodyPart": "CALVES",
+    "target": "SOLEUS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": []
+  },
+  {
+    "id": "exr_41n2hbdZww1thMKz",
+    "name": "Jump Squat",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/YfCTLiECo2.jpg",
+    "bodyPart": "QUADRICEPS",
+    "target": "GLUTEUS MAXIMUS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "SOLEUS",
+      "ADDUCTOR MAGNUS"
+    ]
+  },
+  {
+    "id": "exr_41n2hbLX4XH8xgN7",
+    "name": "Dumbbell Single Leg Calf Raise",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/bAEQLWIqH4.jpg",
+    "bodyPart": "CALVES",
+    "target": "GASTROCNEMIUS",
+    "equipment": "DUMBBELL",
+    "secondaryMuscles": [
+      "SOLEUS"
+    ]
+  },
+  {
+    "id": "exr_41n2hbYPY4jLKxW3",
+    "name": "Peroneals Stretch",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/AcGb20UoJg.jpg",
+    "bodyPart": "CALVES",
+    "target": "SOLEUS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": []
+  },
+  {
+    "id": "exr_41n2hc2VrB8ofxrW",
+    "name": "Lying Double Legs Biceps Curl with Towel",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/sGKkXKxdYy.jpg",
+    "bodyPart": "BICEPS",
+    "target": "BICEPS BRACHII",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "BRACHIALIS",
+      "BRACHIORADIALIS"
+    ]
+  },
+  {
+    "id": "exr_41n2hcFJpBvAkXCP",
+    "name": "Seated Row with Towel",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/XsWkx1qcBC.jpg",
+    "bodyPart": "BACK",
+    "target": "INFRASPINATUS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "POSTERIOR DELTOID",
+      "BRACHIORADIALIS",
+      "BRACHIALIS"
+    ]
+  },
+  {
+    "id": "exr_41n2hcm5HH6H684G",
+    "name": "Calf Raise from Deficit with Chair Supported",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/po63VThsX2.jpg",
+    "bodyPart": "CALVES",
+    "target": "GASTROCNEMIUS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "SOLEUS"
+    ]
+  },
+  {
+    "id": "exr_41n2hcw2FN534HcA",
+    "name": "Dumbbell Stiff Leg Deadlift",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/1aHXOCzatq.jpg",
+    "bodyPart": "HIPS",
+    "target": "ERECTOR SPINAE",
+    "equipment": "DUMBBELL",
+    "secondaryMuscles": [
+      "HAMSTRINGS"
+    ]
+  },
+  {
+    "id": "exr_41n2hd6SThQhAdnZ",
+    "name": "Chin-ups",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/TLX9vGr1dx.jpg",
+    "bodyPart": "BACK",
+    "target": "INFRASPINATUS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "BRACHIORADIALIS",
+      "PECTORALIS MAJOR STERNAL HEAD",
+      "BRACHIALIS",
+      "POSTERIOR DELTOID"
+    ]
+  },
+  {
+    "id": "exr_41n2hd78zujKUEWK",
+    "name": "Single Leg Squat",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/MosYINt7dV.jpg",
+    "bodyPart": "QUADRICEPS",
+    "target": "GLUTEUS MAXIMUS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "SOLEUS",
+      "ADDUCTOR MAGNUS"
+    ]
+  },
+  {
+    "id": "exr_41n2hdCBvmbCPaVE",
+    "name": "Diamond Press",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/6SPVwjalAc.jpg",
+    "bodyPart": "BACK",
+    "target": "PECTORALIS MAJOR STERNAL HEAD",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "ANTERIOR DELTOID"
+    ]
+  },
+  {
+    "id": "exr_41n2hdHtZrMPkcqY",
+    "name": "Dumbbell Lying Floor Skull Crusher",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/LqKaE2JobC.jpg",
+    "bodyPart": "UPPER ARMS",
+    "target": "TRICEPS BRACHII",
+    "equipment": "DUMBBELL",
+    "secondaryMuscles": []
+  },
+  {
+    "id": "exr_41n2hdkBpqwoDmVq",
+    "name": "Suspended Row",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/bXwXW2WUCj.jpg",
+    "bodyPart": "BACK",
+    "target": "INFRASPINATUS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "PECTORALIS MAJOR STERNAL HEAD",
+      "BRACHIORADIALIS",
+      "BRACHIALIS",
+      "POSTERIOR DELTOID",
+      "BICEPS BRACHII"
+    ]
+  },
+  {
+    "id": "exr_41n2hdo2vCtq4F3E",
+    "name": "Right Cross. Boxing",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/NenhkXpa3a.jpg",
+    "bodyPart": "SHOULDERS",
+    "target": "",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": []
+  },
+  {
+    "id": "exr_41n2hdsGcuzs4WrV",
+    "name": "Self Assisted Inverted Pullover",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/n4N7gfo3Ph.jpg",
+    "bodyPart": "BACK",
+    "target": "RECTUS ABDOMINIS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": []
+  },
+  {
+    "id": "exr_41n2hdWu3oaCGdWT",
+    "name": "Standing Calf Raise",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/RfXMrjCG6o.jpg",
+    "bodyPart": "CALVES",
+    "target": "GASTROCNEMIUS",
+    "equipment": "DUMBBELL",
+    "secondaryMuscles": [
+      "SOLEUS"
+    ]
+  },
+  {
+    "id": "exr_41n2he2doZNpmXkX",
+    "name": "Ankle - Plantar Flexion - Articulations",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/cnT7tKYHyl.jpg",
+    "bodyPart": "CALVES",
+    "target": "SOLEUS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "GLUTEUS MAXIMUS",
+      "TERES MAJOR"
+    ]
+  },
+  {
+    "id": "exr_41n2hek6i3exMARx",
+    "name": "Elbow - Flexion - Articulations",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/vIYXc6qul1.jpg",
+    "bodyPart": "UPPER ARMS",
+    "target": "BRACHIALIS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "TRAPEZIUS MIDDLE FIBERS",
+      "ADDUCTOR MAGNUS"
+    ]
+  },
+  {
+    "id": "exr_41n2hezAZ6CdkAcM",
+    "name": "Alternate Punching",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/5XjzsH1SBh.jpg",
+    "bodyPart": "SHOULDERS",
+    "target": "DEEP HIP EXTERNAL ROTATORS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "SERRATUS ANTERIOR",
+      "ANTERIOR DELTOID",
+      "RECTUS ABDOMINIS"
+    ]
+  },
+  {
+    "id": "exr_41n2hfa11fPnk8y9",
+    "name": "Elliptical Machine Walk",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/gLx4xoDVFv.jpg",
+    "bodyPart": "FULL BODY",
+    "target": "ANTERIOR DELTOID",
+    "equipment": "LEVERAGE MACHINE",
+    "secondaryMuscles": []
+  },
+  {
+    "id": "exr_41n2hfnnXz9shkBi",
+    "name": "Lying Lower Back Stretch",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/9w9vjAYwal.jpg",
+    "bodyPart": "BACK",
+    "target": "ERECTOR SPINAE",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "HAMSTRINGS",
+      "GLUTEUS MAXIMUS"
+    ]
+  },
+  {
+    "id": "exr_41n2hftBVLiXgtRQ",
+    "name": "Wide Grip Pull-Up",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/KTxTtuwOqD.jpg",
+    "bodyPart": "BACK",
+    "target": "LATISSIMUS DORSI",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "TERES MAJOR",
+      "BRACHIORADIALIS",
+      "BRACHIALIS",
+      "TRAPEZIUS MIDDLE FIBERS",
+      "BICEPS BRACHII",
+      "TRAPEZIUS LOWER FIBERS"
+    ]
+  },
+  {
+    "id": "exr_41n2hfYD2sH4TRCH",
+    "name": "Hyperextension",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/IAiYz72hHZ.jpg",
+    "bodyPart": "WAIST",
+    "target": "ERECTOR SPINAE",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "HAMSTRINGS",
+      "GLUTEUS MAXIMUS"
+    ]
+  },
+  {
+    "id": "exr_41n2hG9pRT55cGVk",
+    "name": "Calves stretch",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/UnJNN2dVOJ.jpg",
+    "bodyPart": "CALVES",
+    "target": "SOLEUS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": []
+  },
+  {
+    "id": "exr_41n2hGbCptD8Nosk",
+    "name": "Neck Side Stretch",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/OMp0wahtvC.jpg",
+    "bodyPart": "NECK",
+    "target": "STERNOCLEIDOMASTOID",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "LEVATOR SCAPULAE",
+      "SERRATUS ANTERIOR"
+    ]
+  },
+  {
+    "id": "exr_41n2hgCHNgtVLHna",
+    "name": "Cross Body Hammer Curl",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/6vI4gkByYk.jpg",
+    "bodyPart": "FOREARMS",
+    "target": "BRACHIORADIALIS",
+    "equipment": "DUMBBELL",
+    "secondaryMuscles": [
+      "BICEPS BRACHII",
+      "BRACHIALIS"
+    ]
+  },
+  {
+    "id": "exr_41n2hGD4omjWVnbS",
+    "name": "Calves Stretch",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/b2DBiTv92c.jpg",
+    "bodyPart": "CALVES",
+    "target": "GASTROCNEMIUS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": []
+  },
+  {
+    "id": "exr_41n2hGioS8HumEF7",
+    "name": "Hammer Curl",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/kCGgHyMFzA.jpg",
+    "bodyPart": "FOREARMS",
+    "target": "BRACHIORADIALIS",
+    "equipment": "CABLE",
+    "secondaryMuscles": [
+      "BICEPS BRACHII",
+      "BRACHIALIS"
+    ]
+  },
+  {
+    "id": "exr_41n2hGNrmUnF58Yy",
+    "name": "Reverse Lunge",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/XUs62RE49n.jpg",
+    "bodyPart": "QUADRICEPS",
+    "target": "QUADRICEPS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "HAMSTRINGS",
+      "ADDUCTOR MAGNUS"
+    ]
+  },
+  {
+    "id": "exr_41n2hGRSg9WCoTYT",
+    "name": "Jumping Pistol Squat",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/ik43Xn15Kb.jpg",
+    "bodyPart": "HAMSTRINGS",
+    "target": "QUADRICEPS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "GLUTEUS MEDIUS",
+      "ILIOPSOAS",
+      "HAMSTRINGS",
+      "ADDUCTOR BREVIS",
+      "GRACILIS",
+      "GLUTEUS MAXIMUS",
+      "BICEPS BRACHII"
+    ]
+  },
+  {
+    "id": "exr_41n2hGUso7JFmuYR",
+    "name": "Decline Push-Up",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/Fw2auG2NBK.jpg",
+    "bodyPart": "CHEST",
+    "target": "PECTORALIS MAJOR CLAVICULAR HEAD",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "ANTERIOR DELTOID",
+      "TRICEPS BRACHII"
+    ]
+  },
+  {
+    "id": "exr_41n2hGy6zE7fN6v2",
+    "name": "One arm Wrist Curl",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/R7X4eUdaGF.jpg",
+    "bodyPart": "FOREARMS",
+    "target": "WRIST FLEXORS",
+    "equipment": "DUMBBELL",
+    "secondaryMuscles": []
+  },
+  {
+    "id": "exr_41n2hH6VGNz6cNtv",
+    "name": "Extension And Inclination Neck Stretch",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/N09d6OtWGs.jpg",
+    "bodyPart": "NECK",
+    "target": "SERRATUS ANTERIOR",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": []
+  },
+  {
+    "id": "exr_41n2hhBHuvSdAeCJ",
+    "name": "Neck Circle Stretch",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/fSeq0pA6of.jpg",
+    "bodyPart": "NECK",
+    "target": "STERNOCLEIDOMASTOID",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "LEVATOR SCAPULAE",
+      "SPLENIUS"
+    ]
+  },
+  {
+    "id": "exr_41n2hHCXQpZYhxhc",
+    "name": "Calf Stretch With Hands Against Wall",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/vfYUcxlPFc.jpg",
+    "bodyPart": "CALVES",
+    "target": "SOLEUS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": []
+  },
+  {
+    "id": "exr_41n2hHdjQpnyNdie",
+    "name": "One Arm Bent-over Row",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/Ndd2gbg1ko.jpg",
+    "bodyPart": "BACK",
+    "target": "LATISSIMUS DORSI",
+    "equipment": "DUMBBELL",
+    "secondaryMuscles": [
+      "PECTORALIS MAJOR STERNAL HEAD",
+      "BRACHIALIS",
+      "POSTERIOR DELTOID",
+      "BRACHIORADIALIS"
+    ]
+  },
+  {
+    "id": "exr_41n2hHH9bNfi98YU",
+    "name": "Triceps Dips Floor",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/mc56eseHDh.jpg",
+    "bodyPart": "TRICEPS",
+    "target": "TRICEPS BRACHII",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "LEVATOR SCAPULAE",
+      "ANTERIOR DELTOID",
+      "PECTORALIS MAJOR STERNAL HEAD",
+      "LATISSIMUS DORSI",
+      "PECTORALIS MAJOR CLAVICULAR HEAD"
+    ]
+  },
+  {
+    "id": "exr_41n2hhiWL8njJDZe",
+    "name": "Lever Seated Calf Raise",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/9TeNhxGH3F.jpg",
+    "bodyPart": "CALVES",
+    "target": "SOLEUS",
+    "equipment": "LEVERAGE MACHINE",
+    "secondaryMuscles": [
+      "GASTROCNEMIUS"
+    ]
+  },
+  {
+    "id": "exr_41n2hHLE8aJXaxKR",
+    "name": "Cobra Push-up",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/RMvhPtQeG7.jpg",
+    "bodyPart": "CHEST",
+    "target": "PECTORALIS MAJOR STERNAL HEAD",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "HAMSTRINGS",
+      "PECTORALIS MAJOR CLAVICULAR HEAD",
+      "TRICEPS BRACHII",
+      "ANTERIOR DELTOID"
+    ]
+  },
+  {
+    "id": "exr_41n2hHRszDHarrxK",
+    "name": "Split Squats",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/GGahn2Bwpi.jpg",
+    "bodyPart": "QUADRICEPS",
+    "target": "GLUTEUS MAXIMUS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "SOLEUS",
+      "ADDUCTOR MAGNUS"
+    ]
+  },
+  {
+    "id": "exr_41n2hhumxqyAFuTb",
+    "name": "One Leg Floor Calf Raise",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/UxHTb10GjI.jpg",
+    "bodyPart": "CALVES",
+    "target": "GASTROCNEMIUS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "SOLEUS"
+    ]
+  },
+  {
+    "id": "exr_41n2hJ5Harig7K7F",
+    "name": "Seated Shoulder Flexor Depresor Retractor Stretch",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/FIQG6bbnXn.jpg",
+    "bodyPart": "SHOULDERS",
+    "target": "ANTERIOR DELTOID",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "LATISSIMUS DORSI",
+      "PECTORALIS MAJOR CLAVICULAR HEAD"
+    ]
+  },
+  {
+    "id": "exr_41n2hJFwC7ocdiNm",
+    "name": "Forward Flexion Neck Stretch",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/weN7OVwDL7.jpg",
+    "bodyPart": "NECK",
+    "target": "STERNOCLEIDOMASTOID",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": []
+  },
+  {
+    "id": "exr_41n2hjkBReJMbDJk",
+    "name": "Run on Treadmill",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/t8EmH7ry7L.jpg",
+    "bodyPart": "FULL BODY",
+    "target": "HAMSTRINGS",
+    "equipment": "LEVERAGE MACHINE",
+    "secondaryMuscles": []
+  },
+  {
+    "id": "exr_41n2hjuGpcex14w7",
+    "name": "Lateral Raise",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/qODXfaAVcz.jpg",
+    "bodyPart": "SHOULDERS",
+    "target": "LATERAL DELTOID",
+    "equipment": "DUMBBELL",
+    "secondaryMuscles": [
+      "SERRATUS ANTERIOR",
+      "ANTERIOR DELTOID"
+    ]
+  },
+  {
+    "id": "exr_41n2hk3YSCjnZ9um",
+    "name": "Circles Knee Stretch",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/tuh0mSat5W.jpg",
+    "bodyPart": "CALVES",
+    "target": "GLUTEUS MAXIMUS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "ADDUCTOR BREVIS",
+      "HAMSTRINGS",
+      "SOLEUS",
+      "GASTROCNEMIUS",
+      "ADDUCTOR MAGNUS"
+    ]
+  },
+  {
+    "id": "exr_41n2hkB3FeGM3DEL",
+    "name": "Lying Scissor Kick",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/K6npfd9Saj.jpg",
+    "bodyPart": "HIPS",
+    "target": "ILIOPSOAS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "ADDUCTOR LONGUS",
+      "TENSOR FASCIAE LATAE",
+      "QUADRICEPS",
+      "ADDUCTOR BREVIS",
+      "ADDUCTOR MAGNUS",
+      "PECTINEUS",
+      "SARTORIUS"
+    ]
+  },
+  {
+    "id": "exr_41n2hkCHzg1AXdkV",
+    "name": "Walking on Incline Treadmill",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/4MrFg9tuu1.jpg",
+    "bodyPart": "FULL BODY",
+    "target": "GASTROCNEMIUS",
+    "equipment": "LEVERAGE MACHINE",
+    "secondaryMuscles": [
+      "HAMSTRINGS",
+      "SOLEUS"
+    ]
+  },
+  {
+    "id": "exr_41n2hKiaWSZQTqgE",
+    "name": "Lever stepper",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/oA2FarJMAw.jpg",
+    "bodyPart": "QUADRICEPS",
+    "target": "GLUTEUS MAXIMUS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "GASTROCNEMIUS",
+      "SOLEUS",
+      "HAMSTRINGS"
+    ]
+  },
+  {
+    "id": "exr_41n2hkK8hGAcSnW7",
+    "name": "Chest Dip",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/w39q9vcRo1.jpg",
+    "bodyPart": "CHEST",
+    "target": "PECTORALIS MAJOR STERNAL HEAD",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "ANTERIOR DELTOID",
+      "LATISSIMUS DORSI",
+      "TRICEPS BRACHII",
+      "PECTORALIS MAJOR CLAVICULAR HEAD",
+      "LEVATOR SCAPULAE"
+    ]
+  },
+  {
+    "id": "exr_41n2hkknYAEEE3tc",
+    "name": "Front Toe Touching",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/NKv0f4GLQP.jpg",
+    "bodyPart": "BACK",
+    "target": "RECTUS ABDOMINIS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "OBLIQUES",
+      "ILIOPSOAS"
+    ]
+  },
+  {
+    "id": "exr_41n2hkmMrSwcHkZ8",
+    "name": "Clap Push Up",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/lFYWJB9Dmn.jpg",
+    "bodyPart": "CHEST",
+    "target": "PECTORALIS MAJOR CLAVICULAR HEAD",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "TRAPEZIUS UPPER FIBERS",
+      "SERRATUS ANTERIOR"
+    ]
+  },
+  {
+    "id": "exr_41n2hKoQnnSRPZrE",
+    "name": "Front Plank with Leg Lift",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/DxSAe61yWc.jpg",
+    "bodyPart": "HIPS",
+    "target": "RECTUS ABDOMINIS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "SARTORIUS",
+      "TENSOR FASCIAE LATAE"
+    ]
+  },
+  {
+    "id": "exr_41n2hKZmyYXB2UL4",
+    "name": "Elbows Back Stretch",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/ZBbn7b0eVR.jpg",
+    "bodyPart": "BACK",
+    "target": "TRICEPS BRACHII",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": []
+  },
+  {
+    "id": "exr_41n2hLA8xydD4dzE",
+    "name": "Triceps Press",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/Ocsii6p15A.jpg",
+    "bodyPart": "TRICEPS",
+    "target": "TRICEPS BRACHII",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "PECTORALIS MAJOR STERNAL HEAD"
+    ]
+  },
+  {
+    "id": "exr_41n2hLpyk6MsV85U",
+    "name": "Single Leg Bodyweight Deadlift with Arm and Leg Extended",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/pEDkdz8vOS.jpg",
+    "bodyPart": "HIPS",
+    "target": "ERECTOR SPINAE",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "TERES MAJOR",
+      "HAMSTRINGS",
+      "BRACHIORADIALIS",
+      "BICEPS BRACHII",
+      "TIBIALIS ANTERIOR",
+      "SERRATUS ANTERIOR",
+      "ADDUCTOR BREVIS"
+    ]
+  },
+  {
+    "id": "exr_41n2hLUqpev5gSzJ",
+    "name": "Thoracic Bridge",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/HnzSBTWHIN.jpg",
+    "bodyPart": "FULL BODY",
+    "target": "LEVATOR SCAPULAE",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "TRAPEZIUS UPPER FIBERS",
+      "TRAPEZIUS LOWER FIBERS",
+      "QUADRICEPS",
+      "ILIOPSOAS"
+    ]
+  },
+  {
+    "id": "exr_41n2hLx2rvhz95GC",
+    "name": "Feet and Ankles Rotation Stretch",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/h2vROqCsro.jpg",
+    "bodyPart": "CALVES",
+    "target": "SOLEUS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "GASTROCNEMIUS"
+    ]
+  },
+  {
+    "id": "exr_41n2hLZZAH2F2UkS",
+    "name": "Walk Elliptical Cross Trainer",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/ED1WgkKuih.jpg",
+    "bodyPart": "FULL BODY",
+    "target": "HAMSTRINGS",
+    "equipment": "LEVERAGE MACHINE",
+    "secondaryMuscles": [
+      "GLUTEUS MEDIUS",
+      "GLUTEUS MINIMUS",
+      "SOLEUS",
+      "ADDUCTOR BREVIS",
+      "ADDUCTOR MAGNUS"
+    ]
+  },
+  {
+    "id": "exr_41n2hM8vgMA6MREd",
+    "name": "Left hook. Boxing",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/SZeMKod0yD.jpg",
+    "bodyPart": "FULL BODY",
+    "target": "TENSOR FASCIAE LATAE",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": []
+  },
+  {
+    "id": "exr_41n2hmbfYcYtedgz",
+    "name": "Bridge Pose Setu Bandhasana",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/IzBYapPSlM.jpg",
+    "bodyPart": "THIGHS",
+    "target": "GLUTEUS MAXIMUS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "QUADRICEPS",
+      "ERECTOR SPINAE",
+      "GASTROCNEMIUS"
+    ]
+  },
+  {
+    "id": "exr_41n2hmFcGGUCS289",
+    "name": "Walking High Knees Lunge",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/ZxaRouBw7h.jpg",
+    "bodyPart": "THIGHS",
+    "target": "TENSOR FASCIAE LATAE",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "HAMSTRINGS",
+      "BICEPS BRACHII",
+      "GRACILIS",
+      "SARTORIUS"
+    ]
+  },
+  {
+    "id": "exr_41n2hmGR8WuVfe1U",
+    "name": "Squat",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/QBL8IYGdYK.jpg",
+    "bodyPart": "QUADRICEPS",
+    "target": "QUADRICEPS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "ADDUCTOR MAGNUS",
+      "SOLEUS"
+    ]
+  },
+  {
+    "id": "exr_41n2hmhb4jD7H8Qk",
+    "name": "Assault Bike Run",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/Tl37RFX06h.jpg",
+    "bodyPart": "FULL BODY",
+    "target": "",
+    "equipment": "LEVERAGE MACHINE",
+    "secondaryMuscles": []
+  },
+  {
+    "id": "exr_41n2hmhxk35fbHbC",
+    "name": "Push-up on Forearms",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/n3c6WKyggU.jpg",
+    "bodyPart": "TRICEPS",
+    "target": "TRICEPS BRACHII",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "PECTORALIS MAJOR STERNAL HEAD",
+      "ANTERIOR DELTOID",
+      "PECTORALIS MAJOR CLAVICULAR HEAD"
+    ]
+  },
+  {
+    "id": "exr_41n2hMRXm49mM62z",
+    "name": "Arnold Press",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/L0IHjzfG7P.jpg",
+    "bodyPart": "SHOULDERS",
+    "target": "ANTERIOR DELTOID",
+    "equipment": "DUMBBELL",
+    "secondaryMuscles": [
+      "TRICEPS BRACHII",
+      "LATERAL DELTOID",
+      "SERRATUS ANTERIOR"
+    ]
+  },
+  {
+    "id": "exr_41n2hmvGdVRvvnNY",
+    "name": "Pike Push up",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/NPtWT9FuRZ.jpg",
+    "bodyPart": "CHEST",
+    "target": "PECTORALIS MAJOR CLAVICULAR HEAD",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "LATERAL DELTOID",
+      "SERRATUS ANTERIOR",
+      "ANTERIOR DELTOID",
+      "TRICEPS BRACHII"
+    ]
+  },
+  {
+    "id": "exr_41n2hMydkzFvswVX",
+    "name": "Side Two Front Toe Touching",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/jJOZ9F9HyC.jpg",
+    "bodyPart": "BACK",
+    "target": "PECTINEUS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": []
+  },
+  {
+    "id": "exr_41n2hMZCmZBvQApL",
+    "name": "Hanging Straight Leg Raise",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/RAFQMtW2iL.jpg",
+    "bodyPart": "HIPS",
+    "target": "RECTUS ABDOMINIS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "TENSOR FASCIAE LATAE"
+    ]
+  },
+  {
+    "id": "exr_41n2hn2kPMag9WCf",
+    "name": "Cable Seated Neck Extension",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/iqDuGsnDUE.jpg",
+    "bodyPart": "NECK",
+    "target": "STERNOCLEIDOMASTOID",
+    "equipment": "CABLE",
+    "secondaryMuscles": []
+  },
+  {
+    "id": "exr_41n2hN468sP27Sac",
+    "name": "Jump Rope",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/O0qDWx1dPm.jpg",
+    "bodyPart": "FULL BODY",
+    "target": "HAMSTRINGS",
+    "equipment": "ROPE",
+    "secondaryMuscles": []
+  },
+  {
+    "id": "exr_41n2hn8rpbYihzEW",
+    "name": "Romanian Deadlift",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/3wgSOkOkH5.jpg",
+    "bodyPart": "HIPS",
+    "target": "HAMSTRINGS",
+    "equipment": "DUMBBELL",
+    "secondaryMuscles": [
+      "QUADRICEPS",
+      "SOLEUS"
+    ]
+  },
+  {
+    "id": "exr_41n2hnAGfMhp95LQ",
+    "name": "Shoulder Tap Push-up",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/yNystoPkKh.jpg",
+    "bodyPart": "SHOULDERS",
+    "target": "ANTERIOR DELTOID",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "TENSOR FASCIAE LATAE",
+      "WRIST FLEXORS"
+    ]
+  },
+  {
+    "id": "exr_41n2hnbt5GwwY7gr",
+    "name": "Diamond Push up",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/dK9YEfnDTi.jpg",
+    "bodyPart": "UPPER ARMS",
+    "target": "RECTUS ABDOMINIS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "ANTERIOR DELTOID",
+      "PECTORALIS MAJOR CLAVICULAR HEAD"
+    ]
+  },
+  {
+    "id": "exr_41n2hNCTCWtWAqzH",
+    "name": "Cow Stretch",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/YcY5WSzgPD.jpg",
+    "bodyPart": "HIPS",
+    "target": "ERECTOR SPINAE",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "LEVATOR SCAPULAE",
+      "TRAPEZIUS UPPER FIBERS"
+    ]
+  },
+  {
+    "id": "exr_41n2hndkoGHD1ogh",
+    "name": "Triceps Dip",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/MDpZM9TtVE.jpg",
+    "bodyPart": "TRICEPS",
+    "target": "TRICEPS BRACHII",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "ANTERIOR DELTOID",
+      "PECTORALIS MAJOR STERNAL HEAD",
+      "LATISSIMUS DORSI",
+      "LEVATOR SCAPULAE",
+      "PECTORALIS MAJOR CLAVICULAR HEAD"
+    ]
+  },
+  {
+    "id": "exr_41n2hNfaYkEKLQHK",
+    "name": "Elevanted Push-Up",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/6ZttyVFvT1.jpg",
+    "bodyPart": "CHEST",
+    "target": "PECTORALIS MAJOR STERNAL HEAD",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "ANTERIOR DELTOID",
+      "PECTORALIS MAJOR CLAVICULAR HEAD"
+    ]
+  },
+  {
+    "id": "exr_41n2hnFD2bT6sruf",
+    "name": "Sliding Floor Bridge Curl on Towel",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/f1c1Qr2316.jpg",
+    "bodyPart": "HAMSTRINGS",
+    "target": "GLUTEUS MAXIMUS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": []
+  },
+  {
+    "id": "exr_41n2hNifNwh2tbR2",
+    "name": "Ankle - Dorsal Flexion - Articulations",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/hdWEccGhnn.jpg",
+    "bodyPart": "CALVES",
+    "target": "TIBIALIS ANTERIOR",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "GASTROCNEMIUS",
+      "SOLEUS"
+    ]
+  },
+  {
+    "id": "exr_41n2hNjcmNgtPJ1H",
+    "name": "Bodyweight Rear Lunge",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/SmhYqZUV9x.jpg",
+    "bodyPart": "QUADRICEPS",
+    "target": "QUADRICEPS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "ADDUCTOR MAGNUS",
+      "SOLEUS"
+    ]
+  },
+  {
+    "id": "exr_41n2hnougzKKhhqu",
+    "name": "Butterfly Yoga Pose",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/onjy3jQNg6.jpg",
+    "bodyPart": "THIGHS",
+    "target": "SARTORIUS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "PECTINEUS",
+      "BICEPS BRACHII",
+      "ADDUCTOR LONGUS",
+      "ADDUCTOR BREVIS",
+      "ADDUCTOR MAGNUS"
+    ]
+  },
+  {
+    "id": "exr_41n2hNRM1dGGhGYL",
+    "name": "Seated Flexion And Extension Neck",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/4hNSIaF5lP.jpg",
+    "bodyPart": "NECK",
+    "target": "STERNOCLEIDOMASTOID",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "LEVATOR SCAPULAE",
+      "SPLENIUS"
+    ]
+  },
+  {
+    "id": "exr_41n2hnx1hnDdketU",
+    "name": "Feet and Ankles Stretch",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/vHJtDbXlIJ.jpg",
+    "bodyPart": "CALVES",
+    "target": "SOLEUS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": []
+  },
+  {
+    "id": "exr_41n2hNXJadYcfjnd",
+    "name": "Push-up",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/cuG10rd4ea.jpg",
+    "bodyPart": "CHEST",
+    "target": "PECTORALIS MAJOR STERNAL HEAD",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "TRICEPS BRACHII",
+      "ANTERIOR DELTOID",
+      "PECTORALIS MAJOR CLAVICULAR HEAD"
+    ]
+  },
+  {
+    "id": "exr_41n2hoFGGwZDNFT1",
+    "name": "Bench dip on floor",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/6fVd7Ky8BX.jpg",
+    "bodyPart": "TRICEPS",
+    "target": "TRICEPS BRACHII",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "LEVATOR SCAPULAE",
+      "PECTORALIS MAJOR STERNAL HEAD",
+      "ANTERIOR DELTOID",
+      "PECTORALIS MAJOR CLAVICULAR HEAD",
+      "LATISSIMUS DORSI"
+    ]
+  },
+  {
+    "id": "exr_41n2hoifHqpb7WK9",
+    "name": "Supination Bar Suspension Stretch",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/frvDHFYCab.jpg",
+    "bodyPart": "UPPER ARMS",
+    "target": "LATISSIMUS DORSI",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "TERES MAJOR",
+      "SUBSCAPULARIS"
+    ]
+  },
+  {
+    "id": "exr_41n2homrPqqs8coG",
+    "name": "Stair Up",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/N0lIgwPUgz.jpg",
+    "bodyPart": "QUADRICEPS",
+    "target": "QUADRICEPS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "ADDUCTOR MAGNUS",
+      "SOLEUS"
+    ]
+  },
+  {
+    "id": "exr_41n2howQHvcrcrW6",
+    "name": "Front Raise",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/7ap5Us3CPK.jpg",
+    "bodyPart": "SHOULDERS",
+    "target": "ANTERIOR DELTOID",
+    "equipment": "DUMBBELL",
+    "secondaryMuscles": [
+      "SERRATUS ANTERIOR",
+      "LATERAL DELTOID",
+      "PECTORALIS MAJOR CLAVICULAR HEAD"
+    ]
+  },
+  {
+    "id": "exr_41n2hoyHUrhBiEWg",
+    "name": "Walking on Treadmill",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/BhPdab2V0E.jpg",
+    "bodyPart": "FULL BODY",
+    "target": "ADDUCTOR MAGNUS",
+    "equipment": "LEVERAGE MACHINE",
+    "secondaryMuscles": []
+  },
+  {
+    "id": "exr_41n2hozyXuCmDTdZ",
+    "name": "Wrist Circles",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/YnnCW5i4Gg.jpg",
+    "bodyPart": "FOREARMS",
+    "target": "WRIST EXTENSORS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": []
+  },
+  {
+    "id": "exr_41n2hpDWoTxocW8G",
+    "name": "Scissors",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/9wu5xHWC5e.jpg",
+    "bodyPart": "HIPS",
+    "target": "GLUTEUS MEDIUS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "SARTORIUS",
+      "PECTINEUS",
+      "ADDUCTOR MAGNUS",
+      "ADDUCTOR LONGUS",
+      "TENSOR FASCIAE LATAE",
+      "ADDUCTOR BREVIS",
+      "OBLIQUES"
+    ]
+  },
+  {
+    "id": "exr_41n2hpeHAizgtrEw",
+    "name": "One arm Revers Wrist Curl",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/FWJCrJYceH.jpg",
+    "bodyPart": "FOREARMS",
+    "target": "WRIST EXTENSORS",
+    "equipment": "DUMBBELL",
+    "secondaryMuscles": []
+  },
+  {
+    "id": "exr_41n2hPgRbN1KtJuD",
+    "name": "Close-grip Push-up",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/bJE2dLg62R.jpg",
+    "bodyPart": "TRICEPS",
+    "target": "TRICEPS BRACHII",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "PECTORALIS MAJOR STERNAL HEAD",
+      "PECTORALIS MAJOR CLAVICULAR HEAD",
+      "ANTERIOR DELTOID"
+    ]
+  },
+  {
+    "id": "exr_41n2hpJxS5VQKtBL",
+    "name": "Lying Lower Back Stretch",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/4C6IftIpvy.jpg",
+    "bodyPart": "BACK",
+    "target": "ERECTOR SPINAE",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": []
+  },
+  {
+    "id": "exr_41n2hpLLs1uU5atr",
+    "name": "Bulgarian Split Squat",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/HLm5e1fMdO.jpg",
+    "bodyPart": "QUADRICEPS",
+    "target": "GLUTEUS MAXIMUS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "ADDUCTOR MAGNUS",
+      "SOLEUS"
+    ]
+  },
+  {
+    "id": "exr_41n2hpnZ6oASM662",
+    "name": "Kneeling Push up to Child Pose",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/qEMl4mkIFx.jpg",
+    "bodyPart": "BACK",
+    "target": "RECTUS ABDOMINIS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "SUBSCAPULARIS",
+      "QUADRICEPS"
+    ]
+  },
+  {
+    "id": "exr_41n2hPRWorCfCPov",
+    "name": "Flutter Kicks",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/FcL6xSarcV.jpg",
+    "bodyPart": "HIPS",
+    "target": "ILIOPSOAS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "QUADRICEPS",
+      "SARTORIUS",
+      "ADDUCTOR BREVIS",
+      "TENSOR FASCIAE LATAE",
+      "ADDUCTOR LONGUS",
+      "PECTINEUS"
+    ]
+  },
+  {
+    "id": "exr_41n2hpTMDhTxYkvi",
+    "name": "Elliptical Machine Walk",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/tgjIfyDnSH.jpg",
+    "bodyPart": "FULL BODY",
+    "target": "HAMSTRINGS",
+    "equipment": "LEVERAGE MACHINE",
+    "secondaryMuscles": [
+      "GASTROCNEMIUS",
+      "GRACILIS",
+      "ADDUCTOR MAGNUS",
+      "SOLEUS",
+      "ADDUCTOR BREVIS"
+    ]
+  },
+  {
+    "id": "exr_41n2hPvwqp7Pwvks",
+    "name": "Seated Single Leg Hamstring Stretch",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/YdXpEDZsr4.jpg",
+    "bodyPart": "HAMSTRINGS",
+    "target": "HAMSTRINGS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": []
+  },
+  {
+    "id": "exr_41n2hPxDaq9kFjiL",
+    "name": "Side Wrist Pull Stretch",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/MD01vy5NgQ.jpg",
+    "bodyPart": "FOREARMS",
+    "target": "WRIST EXTENSORS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": []
+  },
+  {
+    "id": "exr_41n2hq3Wm6ANkgUz",
+    "name": "Lying Leg Raise and Hold",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/URFCnmUsli.jpg",
+    "bodyPart": "HIPS",
+    "target": "ILIOPSOAS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "RECTUS ABDOMINIS",
+      "QUADRICEPS"
+    ]
+  },
+  {
+    "id": "exr_41n2hQcqPQ37Dmxj",
+    "name": "Wrist - Flexion - Articulations",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/zVIrC3auT7.jpg",
+    "bodyPart": "FOREARMS",
+    "target": "WRIST FLEXORS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": []
+  },
+  {
+    "id": "exr_41n2hQDiSwTZXM4F",
+    "name": "Goblet Squat",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/lwT5fwjbAU.jpg",
+    "bodyPart": "THIGHS",
+    "target": "QUADRICEPS",
+    "equipment": "DUMBBELL",
+    "secondaryMuscles": [
+      "ERECTOR SPINAE",
+      "ADDUCTOR MAGNUS",
+      "GASTROCNEMIUS"
+    ]
+  },
+  {
+    "id": "exr_41n2hQeNyCnt3uFh",
+    "name": "Back Pec Stretch",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/11TGBvhnYQ.jpg",
+    "bodyPart": "BACK",
+    "target": "LATISSIMUS DORSI",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": []
+  },
+  {
+    "id": "exr_41n2hQEqKxuAfV1D",
+    "name": "Pull-up with Bent Knee between Chairs",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/FJuNSNoybI.jpg",
+    "bodyPart": "BACK",
+    "target": "LATISSIMUS DORSI",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "TRAPEZIUS LOWER FIBERS",
+      "TERES MINOR",
+      "BRACHIORADIALIS",
+      "TRAPEZIUS MIDDLE FIBERS",
+      "INFRASPINATUS",
+      "BRACHIALIS",
+      "BICEPS BRACHII",
+      "TERES MAJOR"
+    ]
+  },
+  {
+    "id": "exr_41n2hqfZb8UHBvB9",
+    "name": "Alternate Lying Floor Leg Raise",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/F13NYUkmzS.jpg",
+    "bodyPart": "HIPS",
+    "target": "RECTUS ABDOMINIS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "SARTORIUS",
+      "ADDUCTOR BREVIS",
+      "ADDUCTOR MAGNUS",
+      "QUADRICEPS",
+      "TENSOR FASCIAE LATAE",
+      "PECTINEUS",
+      "OBLIQUES",
+      "ADDUCTOR LONGUS"
+    ]
+  },
+  {
+    "id": "exr_41n2hQHmRSoUkk9F",
+    "name": "Walking Lunge",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/g2s9vxBfWN.jpg",
+    "bodyPart": "QUADRICEPS",
+    "target": "GLUTEUS MAXIMUS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "ADDUCTOR MAGNUS",
+      "SOLEUS"
+    ]
+  },
+  {
+    "id": "exr_41n2hqjVS3nwBoyr",
+    "name": "Two Legs Hammer Curl with Towel",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/FSiUO8Qvgu.jpg",
+    "bodyPart": "BICEPS",
+    "target": "BRACHIORADIALIS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "BRACHIALIS",
+      "BICEPS BRACHII"
+    ]
+  },
+  {
+    "id": "exr_41n2hQp1pR7heQq9",
+    "name": "Dumbbell Stiff Leg Deadlift",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/4TFtrlbBxS.jpg",
+    "bodyPart": "THIGHS",
+    "target": "GLUTEUS MAXIMUS",
+    "equipment": "DUMBBELL",
+    "secondaryMuscles": [
+      "HAMSTRINGS"
+    ]
+  },
+  {
+    "id": "exr_41n2hQtaWxPLNFwX",
+    "name": "Dumbbell Standing Calf Raise",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/fNMPMnyrNL.jpg",
+    "bodyPart": "CALVES",
+    "target": "GASTROCNEMIUS",
+    "equipment": "DUMBBELL",
+    "secondaryMuscles": [
+      "SOLEUS"
+    ]
+  },
+  {
+    "id": "exr_41n2hqw5LsDpeE2i",
+    "name": "Elbow Flexor Stretch",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/SXpaJB2P09.jpg",
+    "bodyPart": "UPPER ARMS",
+    "target": "BRACHIALIS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "BICEPS BRACHII"
+    ]
+  },
+  {
+    "id": "exr_41n2hqYdxG87hXz1",
+    "name": "Burpee",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/Df8GGoa6Yl.jpg",
+    "bodyPart": "FULL BODY",
+    "target": "RECTUS ABDOMINIS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": []
+  },
+  {
+    "id": "exr_41n2hR12rPqdpWP8",
+    "name": "Pike-to-Cobra Push-up",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/879xVSMBvA.jpg",
+    "bodyPart": "CHEST",
+    "target": "GLUTEUS MAXIMUS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "SOLEUS",
+      "HAMSTRINGS",
+      "GASTROCNEMIUS",
+      "ANTERIOR DELTOID"
+    ]
+  },
+  {
+    "id": "exr_41n2hRaLxY7YfNbg",
+    "name": "Side Lunge Stretch",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/b3R4TvyD30.jpg",
+    "bodyPart": "QUADRICEPS",
+    "target": "GLUTEUS MAXIMUS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "TENSOR FASCIAE LATAE",
+      "SOLEUS",
+      "ADDUCTOR MAGNUS",
+      "GLUTEUS MEDIUS"
+    ]
+  },
+  {
+    "id": "exr_41n2hRH4aTB379Tp",
+    "name": "45 degree hyperextension",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/ZuggCImG8H.jpg",
+    "bodyPart": "BACK",
+    "target": "ERECTOR SPINAE",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "HAMSTRINGS"
+    ]
+  },
+  {
+    "id": "exr_41n2hrHSqBnVWRRB",
+    "name": "Bodyweight Single Leg Deadlift",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/VeFtV3UOHd.jpg",
+    "bodyPart": "THIGHS",
+    "target": "GLUTEUS MAXIMUS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "SOLEUS",
+      "ADDUCTOR MAGNUS",
+      "ERECTOR SPINAE",
+      "HAMSTRINGS",
+      "QUADRICEPS"
+    ]
+  },
+  {
+    "id": "exr_41n2hRicz5MdZEns",
+    "name": "Squat Thrust",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/st1x4DMne6.jpg",
+    "bodyPart": "FULL BODY",
+    "target": "WRIST EXTENSORS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": []
+  },
+  {
+    "id": "exr_41n2hrN2RCZBZU9h",
+    "name": "Side Neck Stretch",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/kR1hTPsEum.jpg",
+    "bodyPart": "NECK",
+    "target": "STERNOCLEIDOMASTOID",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "LEVATOR SCAPULAE",
+      "TRAPEZIUS UPPER FIBERS"
+    ]
+  },
+  {
+    "id": "exr_41n2hrSQZRD4yG7P",
+    "name": "Circles Knee Stretch",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/8zRGHzTGH5.jpg",
+    "bodyPart": "CALVES",
+    "target": "GASTROCNEMIUS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "QUADRICEPS"
+    ]
+  },
+  {
+    "id": "exr_41n2hRZ6fgsLyd77",
+    "name": "Diamond Push-up",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/GQfzn89uwq.jpg",
+    "bodyPart": "TRICEPS",
+    "target": "TRICEPS BRACHII",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "PECTORALIS MAJOR STERNAL HEAD",
+      "PECTORALIS MAJOR CLAVICULAR HEAD",
+      "ANTERIOR DELTOID"
+    ]
+  },
+  {
+    "id": "exr_41n2hS5UrMusVCEE",
+    "name": "Lateral Raise with Towel",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/22Tt0d6ekf.jpg",
+    "bodyPart": "SHOULDERS",
+    "target": "LATERAL DELTOID",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "ANTERIOR DELTOID",
+      "SERRATUS ANTERIOR"
+    ]
+  },
+  {
+    "id": "exr_41n2hs6camM22yBG",
+    "name": "Seated Shoulder Press",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/bQUAOjC7qA.jpg",
+    "bodyPart": "SHOULDERS",
+    "target": "ANTERIOR DELTOID",
+    "equipment": "DUMBBELL",
+    "secondaryMuscles": [
+      "PECTORALIS MAJOR CLAVICULAR HEAD",
+      "TRICEPS BRACHII",
+      "SERRATUS ANTERIOR",
+      "LATERAL DELTOID"
+    ]
+  },
+  {
+    "id": "exr_41n2hsBtDXapcADg",
+    "name": "Pull-up",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/g0ZmaTcu2Q.jpg",
+    "bodyPart": "BACK",
+    "target": "LATISSIMUS DORSI",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "TRAPEZIUS LOWER FIBERS",
+      "TERES MINOR",
+      "BRACHIALIS",
+      "POSTERIOR DELTOID",
+      "TERES MAJOR",
+      "TRAPEZIUS MIDDLE FIBERS",
+      "INFRASPINATUS",
+      "BRACHIORADIALIS"
+    ]
+  },
+  {
+    "id": "exr_41n2hSF5U97sFAr8",
+    "name": "Wrist - Extension - Articulations",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/qaZMI54Zab.jpg",
+    "bodyPart": "FOREARMS",
+    "target": "WRIST EXTENSORS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": []
+  },
+  {
+    "id": "exr_41n2hSGs9Q3NVGhs",
+    "name": "Bodyweight Standing Calf Raise",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/HbR3LMueKg.jpg",
+    "bodyPart": "CALVES",
+    "target": "GASTROCNEMIUS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "SOLEUS"
+    ]
+  },
+  {
+    "id": "exr_41n2hSkc2tRLxVVS",
+    "name": "Calf Stretch with Rope",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/qbphLBTjbs.jpg",
+    "bodyPart": "CALVES",
+    "target": "GASTROCNEMIUS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "SOLEUS"
+    ]
+  },
+  {
+    "id": "exr_41n2hskeb9dXgBoC",
+    "name": "Crunch Floor",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/vCL0Cgs8A4.jpg",
+    "bodyPart": "WAIST",
+    "target": "RECTUS ABDOMINIS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "OBLIQUES"
+    ]
+  },
+  {
+    "id": "exr_41n2hSMjcavNjk3c",
+    "name": "Quick Feet",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/lbL11yEndU.jpg",
+    "bodyPart": "THIGHS",
+    "target": "GLUTEUS MAXIMUS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "BRACHIORADIALIS",
+      "ADDUCTOR MAGNUS"
+    ]
+  },
+  {
+    "id": "exr_41n2hSq88Ni3KCny",
+    "name": "Standing Alternate Arms Circling",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/MNEbf0CfLo.jpg",
+    "bodyPart": "CHEST",
+    "target": "ADDUCTOR BREVIS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "SPLENIUS"
+    ]
+  },
+  {
+    "id": "exr_41n2hsSnmS946i2k",
+    "name": "Single Leg Squat with Support",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/cxJSiiWh9N.jpg",
+    "bodyPart": "THIGHS",
+    "target": "QUADRICEPS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "INFRASPINATUS",
+      "TENSOR FASCIAE LATAE",
+      "STERNOCLEIDOMASTOID"
+    ]
+  },
+  {
+    "id": "exr_41n2hSvEPVntpxSG",
+    "name": "Kneeling Rotational Push-up",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/XkwVtgN8dJ.jpg",
+    "bodyPart": "CHEST",
+    "target": "PECTORALIS MAJOR STERNAL HEAD",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "TRICEPS BRACHII",
+      "ANTERIOR DELTOID",
+      "RECTUS ABDOMINIS"
+    ]
+  },
+  {
+    "id": "exr_41n2hsVHu7B1MTdr",
+    "name": "Palms In Incline Bench Press",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/DhC4s2apCJ.jpg",
+    "bodyPart": "UPPER ARMS",
+    "target": "TRICEPS BRACHII",
+    "equipment": "DUMBBELL",
+    "secondaryMuscles": [
+      "BRACHIORADIALIS",
+      "ADDUCTOR BREVIS",
+      "ANTERIOR DELTOID",
+      "BRACHIALIS",
+      "PECTORALIS MAJOR CLAVICULAR HEAD",
+      "BICEPS BRACHII",
+      "ADDUCTOR MAGNUS"
+    ]
+  },
+  {
+    "id": "exr_41n2hSxsNAV8tGS6",
+    "name": "Split Squat",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/SBq6QCqfxq.jpg",
+    "bodyPart": "HIPS",
+    "target": "GLUTEUS MAXIMUS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "ADDUCTOR MAGNUS",
+      "SOLEUS"
+    ]
+  },
+  {
+    "id": "exr_41n2hsZWJA1ujZUd",
+    "name": "Side Push Neck Stretch",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/8u93Maedd1.jpg",
+    "bodyPart": "NECK",
+    "target": "LEVATOR SCAPULAE",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": []
+  },
+  {
+    "id": "exr_41n2hTaeNKWhMQHH",
+    "name": "Dumbbell burpee",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/Hi7uCOg9S1.jpg",
+    "bodyPart": "FULL BODY",
+    "target": "",
+    "equipment": "DUMBBELL",
+    "secondaryMuscles": []
+  },
+  {
+    "id": "exr_41n2hTCBiQVsEfZ7",
+    "name": "Dumbbell Side Bend",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/8WIXy0XUL3.jpg",
+    "bodyPart": "WAIST",
+    "target": "OBLIQUES",
+    "equipment": "DUMBBELL",
+    "secondaryMuscles": []
+  },
+  {
+    "id": "exr_41n2hTkfLWpc57BQ",
+    "name": "Body-Up",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/wOyxNsN3Px.jpg",
+    "bodyPart": "SHOULDERS",
+    "target": "TRICEPS BRACHII",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "PECTORALIS MAJOR CLAVICULAR HEAD",
+      "PECTORALIS MAJOR STERNAL HEAD",
+      "ANTERIOR DELTOID"
+    ]
+  },
+  {
+    "id": "exr_41n2hTs4q3ihihZs",
+    "name": "Seated Calf Raise",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/4TWa5X9NV0.jpg",
+    "bodyPart": "CALVES",
+    "target": "GASTROCNEMIUS",
+    "equipment": "BARBELL",
+    "secondaryMuscles": [
+      "SOLEUS"
+    ]
+  },
+  {
+    "id": "exr_41n2htTnk4CuspZh",
+    "name": "Rotating Neck Stretch",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/p55JG2XnA7.jpg",
+    "bodyPart": "NECK",
+    "target": "STERNOCLEIDOMASTOID",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": []
+  },
+  {
+    "id": "exr_41n2htzPyjcc3Mt2",
+    "name": "Front Plank Toe Tap",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/AQaJ7ysnmD.jpg",
+    "bodyPart": "WAIST",
+    "target": "SERRATUS ANTE",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": []
+  },
+  {
+    "id": "exr_41n2hU3XPwUFSpkC",
+    "name": "L-Sit on Floor",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/KZPZTyNqWB.jpg",
+    "bodyPart": "UPPER ARMS",
+    "target": "GRACILIS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "SARTORIUS",
+      "TERES MAJOR",
+      "RECTUS ABDOMINIS"
+    ]
+  },
+  {
+    "id": "exr_41n2hU4y6EaYXFhr",
+    "name": "Pull up",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/gNdMNPVxAj.jpg",
+    "bodyPart": "BACK",
+    "target": "LATISSIMUS DORSI",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "TERES MAJOR",
+      "BRACHIALIS",
+      "BRACHIORADIALIS",
+      "TRAPEZIUS LOWER FIBERS"
+    ]
+  },
+  {
+    "id": "exr_41n2hu5r8WMaLUkH",
+    "name": "Seated Straight Leg Calf Stretch",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/lnyRErycIc.jpg",
+    "bodyPart": "CALVES",
+    "target": "GASTROCNEMIUS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "SOLEUS",
+      "HAMSTRINGS"
+    ]
+  },
+  {
+    "id": "exr_41n2hUBVSgXaKhau",
+    "name": "Standing Arms Circling",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/2rCXHeJmIA.jpg",
+    "bodyPart": "CHEST",
+    "target": "POSTERIOR DELTOID",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": []
+  },
+  {
+    "id": "exr_41n2huc12BsuDNYQ",
+    "name": "V-up",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/vSN3kahrHa.jpg",
+    "bodyPart": "HIPS",
+    "target": "RECTUS ABDOMINIS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "OBLIQUES",
+      "QUADRICEPS",
+      "SARTORIUS",
+      "ADDUCTOR BREVIS",
+      "PECTINEUS",
+      "ADDUCTOR LONGUS"
+    ]
+  },
+  {
+    "id": "exr_41n2hUDuvCas2EB3",
+    "name": "Cable Seated Neck Flexion",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/yZz9zdVOSq.jpg",
+    "bodyPart": "NECK",
+    "target": "STERNOCLEIDOMASTOID",
+    "equipment": "CABLE",
+    "secondaryMuscles": []
+  },
+  {
+    "id": "exr_41n2huf7mAC2rhfC",
+    "name": "Dumbbell Jumping Squat",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/ABplGdH6C1.jpg",
+    "bodyPart": "FULL BODY",
+    "target": "HAMSTRINGS",
+    "equipment": "DUMBBELL",
+    "secondaryMuscles": [
+      "GRACILIS",
+      "SOLEUS",
+      "GLUTEUS MAXIMUS"
+    ]
+  },
+  {
+    "id": "exr_41n2hUKc7JPrtJQj",
+    "name": "Dip on Floor with Chair",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/nuTgT7bqfw.jpg",
+    "bodyPart": "TRICEPS",
+    "target": "TRICEPS BRACHII",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "LATISSIMUS DORSI",
+      "ANTERIOR DELTOID",
+      "LEVATOR SCAPULAE"
+    ]
+  },
+  {
+    "id": "exr_41n2hupxPcdnktBC",
+    "name": "Jumping Jack",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/DCy2U9crCW.jpg",
+    "bodyPart": "FULL BODY",
+    "target": "GLUTEUS MEDIUS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": []
+  },
+  {
+    "id": "exr_41n2huQw1pHKH9cw",
+    "name": "Front and Back Neck Stretch",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/XzZi7caWZE.jpg",
+    "bodyPart": "NECK",
+    "target": "STERNOCLEIDOMASTOID",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": []
+  },
+  {
+    "id": "exr_41n2hushK9NGVfyK",
+    "name": "Handstand Push-Up",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/qzcFGKedZz.jpg",
+    "bodyPart": "SHOULDERS",
+    "target": "TRICEPS BRACHII",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "LATERAL DELTOID",
+      "TERES MAJOR",
+      "PECTORALIS MAJOR STERNAL HEAD",
+      "PECTORALIS MAJOR CLAVICULAR HEAD",
+      "SERRATUS ANTERIOR",
+      "ANTERIOR DELTOID"
+    ]
+  },
+  {
+    "id": "exr_41n2hUVNhvcS73Dt",
+    "name": "Jump Split",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/6nX5znelOT.jpg",
+    "bodyPart": "FULL BODY",
+    "target": "QUADRICEPS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "SARTORIUS",
+      "GRACILIS",
+      "ADDUCTOR BREVIS",
+      "ADDUCTOR MAGNUS"
+    ]
+  },
+  {
+    "id": "exr_41n2huXeEFSaqo4G",
+    "name": "Standing One Arm Circling",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/N6BYyJC1zl.jpg",
+    "bodyPart": "CHEST",
+    "target": "LATISSIMUS DORSI",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "TRICEPS BRACHII",
+      "LEVATOR SCAPULAE"
+    ]
+  },
+  {
+    "id": "exr_41n2hVCJfpAvJcdU",
+    "name": "Commando Pull-up",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/tczafQq5N0.jpg",
+    "bodyPart": "BACK",
+    "target": "TRAPEZIUS LOWER FIBERS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "BRACHIORADIALIS",
+      "POSTERIOR DELTOID",
+      "BICEPS BRACHII",
+      "BRACHIALIS"
+    ]
+  },
+  {
+    "id": "exr_41n2hvg2FRT5XMyJ",
+    "name": "Forearm - Supination - Articulations",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/0oZ5oxBPNq.jpg",
+    "bodyPart": "FOREARMS",
+    "target": "WRIST FLEXORS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "GASTROCNEMIUS",
+      "BRACHIALIS"
+    ]
+  },
+  {
+    "id": "exr_41n2hvjrFJ2KjzGm",
+    "name": "Sit",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/QjeHnOqQNh.jpg",
+    "bodyPart": "QUADRICEPS",
+    "target": "GLUTEUS MAXIMUS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "ADDUCTOR MAGNUS",
+      "SOLEUS"
+    ]
+  },
+  {
+    "id": "exr_41n2hvrsUaWWb9Mk",
+    "name": "Neck Side Stretch",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/qA8j7pcsEc.jpg",
+    "bodyPart": "NECK",
+    "target": "LEVATOR SCAPULAE",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": []
+  },
+  {
+    "id": "exr_41n2hvzxocyjoGgL",
+    "name": "Standing Leg Calf Raise",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/uA2GpJrwkM.jpg",
+    "bodyPart": "CALVES",
+    "target": "GASTROCNEMIUS",
+    "equipment": "BARBELL",
+    "secondaryMuscles": [
+      "SOLEUS"
+    ]
+  },
+  {
+    "id": "exr_41n2hw1QspZ6uXoW",
+    "name": "Side Toe Touching",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/UX1YlRUBIN.jpg",
+    "bodyPart": "BACK",
+    "target": "SARTORIUS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "TRANSVERSUS ABDOMINIS",
+      "ILIOPSOAS"
+    ]
+  },
+  {
+    "id": "exr_41n2hw4iksLYXESz",
+    "name": "Seated Shoulder Flexor Depresor Retractor Stretch Bent Knee",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/DbYTA0rvWJ.jpg",
+    "bodyPart": "CHEST",
+    "target": "PECTORALIS MAJOR CLAVICULAR HEAD",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "BICEPS BRACHII"
+    ]
+  },
+  {
+    "id": "exr_41n2hw8nSYiaCXW1",
+    "name": "Sissy Squat",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/PMGm7JcwbQ.jpg",
+    "bodyPart": "QUADRICEPS",
+    "target": "QUADRICEPS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": []
+  },
+  {
+    "id": "exr_41n2hW9gDXAJJMmH",
+    "name": "Downward Facing Dog",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/GpSc5Fff18.jpg",
+    "bodyPart": "UPPER ARMS",
+    "target": "GLUTEUS MAXIMUS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "ERECTOR SPINAE",
+      "DEEP HIP EXTERNAL ROTATORS"
+    ]
+  },
+  {
+    "id": "exr_41n2hWbP5uF6PQpU",
+    "name": "Donkey Calf Raise",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/dFa8KAouxh.jpg",
+    "bodyPart": "CALVES",
+    "target": "GASTROCNEMIUS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "SOLEUS"
+    ]
+  },
+  {
+    "id": "exr_41n2hWgAAtQeA3Lh",
+    "name": "Wide Hand Push up",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/PvR5nLWE36.jpg",
+    "bodyPart": "CHEST",
+    "target": "PECTORALIS MAJOR STERNAL HEAD",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "ANTERIOR DELTOID",
+      "PECTORALIS MAJOR CLAVICULAR HEAD",
+      "TRICEPS BRACHII"
+    ]
+  },
+  {
+    "id": "exr_41n2hwio5ECAfLuS",
+    "name": "Right Hook. Boxing",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/NsGBTPFcDo.jpg",
+    "bodyPart": "SHOULDERS",
+    "target": "INFRASPINATUS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "ANTERIOR DELTOID",
+      "TENSOR FASCIAE LATAE",
+      "TRAPEZIUS MIDDLE FIBERS",
+      "STERNOCLEIDOMASTOID",
+      "LEVATOR SCAPULAE"
+    ]
+  },
+  {
+    "id": "exr_41n2hwoc6PkW1UJJ",
+    "name": "Barbell Standing Calf Raise",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/INNldWkUb2.jpg",
+    "bodyPart": "CALVES",
+    "target": "GASTROCNEMIUS",
+    "equipment": "BARBELL",
+    "secondaryMuscles": [
+      "SOLEUS"
+    ]
+  },
+  {
+    "id": "exr_41n2hWQVZanCB1d7",
+    "name": "Circles Arm",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/TrP6PnRn1m.jpg",
+    "bodyPart": "SHOULDERS",
+    "target": "LATERAL DELTOID",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": []
+  },
+  {
+    "id": "exr_41n2hWVVEwU54UtF",
+    "name": "Russian Twist",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/Z50HKjVbLP.jpg",
+    "bodyPart": "WAIST",
+    "target": "OBLIQUES",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "ILIOPSOAS"
+    ]
+  },
+  {
+    "id": "exr_41n2hWxnJoGwbJpa",
+    "name": "Superman Row with Towel",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/ixufDWekVb.jpg",
+    "bodyPart": "BACK",
+    "target": "GLUTEUS MAXIMUS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "BICEPS BRACHII",
+      "TERES MINOR",
+      "HAMSTRINGS",
+      "BRACHIORADIALIS",
+      "TERES MAJOR",
+      "INFRASPINATUS",
+      "BRACHIALIS",
+      "POSTERIOR DELTOID"
+    ]
+  },
+  {
+    "id": "exr_41n2hx6oyEujP1B6",
+    "name": "Two Legs Reverse Biceps Curl with Towel",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/JxwkNMNgXK.jpg",
+    "bodyPart": "BICEPS",
+    "target": "BICEPS BRACHII",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "BRACHIORADIALIS",
+      "BRACHIALIS"
+    ]
+  },
+  {
+    "id": "exr_41n2hx9wyaRGNyvs",
+    "name": "Lying Double Legs Hammer Curl with Towel",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/Ud1cn07ovG.jpg",
+    "bodyPart": "BICEPS",
+    "target": "BRACHIORADIALIS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "BICEPS BRACHII",
+      "BRACHIALIS"
+    ]
+  },
+  {
+    "id": "exr_41n2hXfpvSshoXWG",
+    "name": "Dumbbell Clean and Press",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/1OBFu6DAxW.jpg",
+    "bodyPart": "SHOULDERS",
+    "target": "BICEPS BRACHII",
+    "equipment": "DUMBBELL",
+    "secondaryMuscles": [
+      "SOLEUS",
+      "DEEP HIP EXTERNAL ROTATORS",
+      "LATERAL DELTOID",
+      "ERECTOR SPINAE"
+    ]
+  },
+  {
+    "id": "exr_41n2hxg75dFGERdp",
+    "name": "L-Pull-up",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/DMKexKmHFn.jpg",
+    "bodyPart": "BACK",
+    "target": "LATISSIMUS DORSI",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "ERECTOR SPINAE",
+      "LEVATOR SCAPULAE",
+      "GLUTEUS MEDIUS"
+    ]
+  },
+  {
+    "id": "exr_41n2hxnFMotsXTj3",
+    "name": "Bench Press",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/A8OLBqBa26.jpg",
+    "bodyPart": "CHEST",
+    "target": "PECTORALIS MAJOR STERNAL HEAD",
+    "equipment": "BARBELL",
+    "secondaryMuscles": [
+      "TRICEPS BRACHII",
+      "ANTERIOR DELTOID",
+      "PECTORALIS MAJOR CLAVICULAR HEAD"
+    ]
+  },
+  {
+    "id": "exr_41n2hxqpSU5p6DZv",
+    "name": "Biceps Leg Concentration Curl",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/YXSxsv8zit.jpg",
+    "bodyPart": "BICEPS",
+    "target": "BICEPS BRACHII",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "BRACHIORADIALIS",
+      "BRACHIALIS"
+    ]
+  },
+  {
+    "id": "exr_41n2hXQw5yAbbXL8",
+    "name": "Front Plank",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/mgFlomC4R9.jpg",
+    "bodyPart": "WAIST",
+    "target": "RECTUS ABDOMINIS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "QUADRICEPS",
+      "OBLIQUES",
+      "TENSOR FASCIAE LATAE",
+      "SERRATUS ANTERIOR"
+    ]
+  },
+  {
+    "id": "exr_41n2hXszY7TgwKy4",
+    "name": "Chin-Up",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/S7KbaJxkei.jpg",
+    "bodyPart": "BACK",
+    "target": "LATISSIMUS DORSI",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "TRAPEZIUS MIDDLE FIBERS",
+      "PECTORALIS MAJOR STERNAL HEAD",
+      "POSTERIOR DELTOID",
+      "TRAPEZIUS LOWER FIBERS",
+      "BRACHIALIS",
+      "BRACHIORADIALIS",
+      "TERES MAJOR"
+    ]
+  },
+  {
+    "id": "exr_41n2hXvPyEyMBgNR",
+    "name": "Step-up on Chair",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/j89aek3mZu.jpg",
+    "bodyPart": "QUADRICEPS",
+    "target": "QUADRICEPS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "ADDUCTOR MAGNUS",
+      "GASTROCNEMIUS",
+      "SOLEUS"
+    ]
+  },
+  {
+    "id": "exr_41n2hxxePSdr5oN1",
+    "name": "Hip Thrusts",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/MpLOvIJHP1.jpg",
+    "bodyPart": "HIPS",
+    "target": "GLUTEUS MAXIMUS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "QUADRICEPS",
+      "HAMSTRINGS"
+    ]
+  },
+  {
+    "id": "exr_41n2hXXpvbykPY3q",
+    "name": "Incline Push-up",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/CnQLzYUncF.jpg",
+    "bodyPart": "CHEST",
+    "target": "PECTORALIS MAJOR STERNAL HEAD",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "ANTERIOR DELTOID",
+      "PECTORALIS MAJOR CLAVICULAR HEAD",
+      "TRICEPS BRACHII"
+    ]
+  },
+  {
+    "id": "exr_41n2hXYRxFHnQAD4",
+    "name": "Stationary Bike Run",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/Eh3snzsyct.jpg",
+    "bodyPart": "FULL BODY",
+    "target": "GASTROCNEMIUS",
+    "equipment": "LEVERAGE MACHINE",
+    "secondaryMuscles": []
+  },
+  {
+    "id": "exr_41n2hy8pKXtzuBh8",
+    "name": "Elbow Up and Down Dynamic Plank",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/3tZIhVrazy.jpg",
+    "bodyPart": "UPPER ARMS",
+    "target": "RECTUS ABDOMINIS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "SERRATUS ANTE",
+      "DEEP HIP EXTERNAL ROTATORS"
+    ]
+  },
+  {
+    "id": "exr_41n2hY9EdwkdGz9a",
+    "name": "Dumbbell One Arm Bent-over Row",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/yJd6FeW6VA.jpg",
+    "bodyPart": "BACK",
+    "target": "TERES MINOR",
+    "equipment": "DUMBBELL",
+    "secondaryMuscles": [
+      "BRACHIORADIALIS",
+      "PECTORALIS MAJOR STERNAL HEAD",
+      "POSTERIOR DELTOID",
+      "BRACHIALIS"
+    ]
+  },
+  {
+    "id": "exr_41n2hYAP9oGEZk2P",
+    "name": "Sumo Squat",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/clrq0UgFbo.jpg",
+    "bodyPart": "QUADRICEPS",
+    "target": "GLUTEUS MAXIMUS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "GASTROCNEMIUS",
+      "ADDUCTOR BREVIS",
+      "SOLEUS",
+      "ADDUCTOR MAGNUS",
+      "ADDUCTOR LONGUS",
+      "GRACILIS"
+    ]
+  },
+  {
+    "id": "exr_41n2hynD9srC1kY7",
+    "name": "Standing Arms Flinging",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/vRBM4T9Q3P.jpg",
+    "bodyPart": "CHEST",
+    "target": "TRICEPS BRACHII",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": []
+  },
+  {
+    "id": "exr_41n2hyNf5GebszTf",
+    "name": "Dumbbell Rear Delt Fly",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/6Ak3e2G7EC.jpg",
+    "bodyPart": "SHOULDERS",
+    "target": "POSTERIOR DELTOID",
+    "equipment": "DUMBBELL",
+    "secondaryMuscles": [
+      "INFRASPINATUS",
+      "TRAPEZIUS LOWER FIBERS",
+      "TRAPEZIUS MIDDLE FIBERS",
+      "TERES MINOR",
+      "LATERAL DELTOID"
+    ]
+  },
+  {
+    "id": "exr_41n2hyWsNxNYWpk3",
+    "name": "Kneeling Toe Up Hamstring Stretch",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/81V8lv3nXo.jpg",
+    "bodyPart": "HAMSTRINGS",
+    "target": "HAMSTRINGS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "SERRATUS ANTE",
+      "GLUTEUS MAXIMUS"
+    ]
+  },
+  {
+    "id": "exr_41n2hYWXejezzLjv",
+    "name": "Two Front Toe Touching",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/t87P9KTIH0.jpg",
+    "bodyPart": "BACK",
+    "target": "HAMSTRINGS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "ERECTOR SPINAE"
+    ]
+  },
+  {
+    "id": "exr_41n2hYXWwoxiUk57",
+    "name": "Lunge",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/pY88n4Aoim.jpg",
+    "bodyPart": "HIPS",
+    "target": "QUADRICEPS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "SOLEUS",
+      "ADDUCTOR MAGNUS"
+    ]
+  },
+  {
+    "id": "exr_41n2hZ7uoN5JnUJY",
+    "name": "Dumbbell Decline One Arm Hammer Press",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/hxFWa9nXih.jpg",
+    "bodyPart": "UPPER ARMS",
+    "target": "PECTORALIS MAJOR STERNAL HEAD",
+    "equipment": "DUMBBELL",
+    "secondaryMuscles": [
+      "TRICEPS BRACHII",
+      "PECTORALIS MAJOR CLAVICULAR HEAD",
+      "ANTERIOR DELTOID"
+    ]
+  },
+  {
+    "id": "exr_41n2hzAMXkkQQ5T2",
+    "name": "Inverted Chin Curl with Bent Knee between Chairs",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/bQqmNEEdBJ.jpg",
+    "bodyPart": "BICEPS",
+    "target": "BICEPS BRACHII",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "BRACHIORADIALIS",
+      "BRACHIALIS"
+    ]
+  },
+  {
+    "id": "exr_41n2hzfRXQDaLYJh",
+    "name": "Standing Calf Raise",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/STjlyreDEq.jpg",
+    "bodyPart": "CALVES",
+    "target": "GASTROCNEMIUS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "SOLEUS"
+    ]
+  },
+  {
+    "id": "exr_41n2hZqkvM55qJve",
+    "name": "Shoulder Stretch Behind the Back",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/wlBqBIBrCS.jpg",
+    "bodyPart": "SHOULDERS",
+    "target": "POSTERIOR DELTOID",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "TRAPEZIUS LOWER FIBERS",
+      "TERES MAJOR",
+      "LATISSIMUS DORSI",
+      "TRICEPS BRACHII",
+      "INFRASPINATUS",
+      "TERES MINOR",
+      "TRAPEZIUS MIDDLE FIBERS"
+    ]
+  },
+  {
+    "id": "exr_41n2hZqwsLkCVnzr",
+    "name": "Butt Kicks",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/hC4ijFl55f.jpg",
+    "bodyPart": "THIGHS",
+    "target": "HAMSTRINGS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "GASTROCNEMIUS",
+      "GLUTEUS MAXIMUS"
+    ]
+  },
+  {
+    "id": "exr_41n2hzZBVbWFoLK3",
+    "name": "Feet and Ankles Side to Side Stretch",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/yAOgC2G2r4.jpg",
+    "bodyPart": "CALVES",
+    "target": "GLUTEUS MAXIMUS",
+    "equipment": "BODY WEIGHT",
+    "secondaryMuscles": [
+      "GLUTEUS MEDIUS",
+      "GRACILIS"
+    ]
+  }
+]

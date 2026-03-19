@@ -4,6 +4,33 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.1.5] - 2026-03-18
+
+### Added
+
+- ExerciseDB catalog integration: exercises now cross-reference with ExerciseDB for demo images, body part, and equipment metadata
+- Exercise image caching with IndexedDB (blob cache) and CORS-safe direct URL fallback
+- Enrichment pipeline: program, library, and resumed session exercises inherit ExerciseDB image data
+- Explicit "Include 45 lb bar" toggle on plate calculator
+- Weight rounding: all suggested/target weights round up to nearest 2.5 lb (no more 121.25 or 96.25)
+- Goal hint: "Set weight in Settings" when user profile is missing weight
+- Collapsible sections: Demo, Workout Flow, Plate Calculator, and Logged Sets collapse by default to keep log input above the fold
+
+### Changed
+
+- Distilled WorkoutPage layout: log input is now the first card (no scrolling to log a set)
+- Stats grid replaced with inline text: Target is the hero element, Last and Goal are compact secondary lines
+- Done state simplified: single primary CTA with secondary actions as text links
+- RPE pills now disabled when input is empty (consistent with weight/reps pills)
+- Overflow menu z-index fixed to render above sibling cards
+- Success color palette: warm olive green (#4a7a3d) replaces cold emerald for better harmony with earthy theme
+
+### Removed
+
+- "One line only" badge from Quick Log card
+- "Quick log" heading and "Log set as: weight reps RPE" hint (redundant with placeholder)
+- Duplicate progression banner (was shown in stats grid AND below RPE pills)
+
 ## [0.1.4] - 2026-03-17
 
 ### Added

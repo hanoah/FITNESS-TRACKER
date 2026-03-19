@@ -100,3 +100,34 @@ export function parseLogInput(input: string): ParseResult {
 
   return { weight: Math.round(weight * 10) / 10, reps: Math.round(reps), rpe: Math.round(rpe * 10) / 10 }
 }
+
+/**
+ * Parse a log input string, modify one field, and return the rebuilt string.
+ * Returns the original string unchanged if it can't be parsed.
+ * Returns empty string unchanged (no-op).
+ */
+export function rebuildLogInput(
+  input: string,
+  field: 'weight' | 'reps' | 'rpe',
+  value: number,
+  mode: 'add' | 'set'
+): string {
+  const trimmed = input.trim()
+  if (!trimmed) return input
+  try {
+    const parsed = parseLogInput(trimmed)
+    let w = parsed.weight
+    let r = parsed.reps
+    let rpe = parsed.rpe
+    if (field === 'weight') {
+      w = Math.max(0, mode === 'add' ? w + value : value)
+    } else if (field === 'reps') {
+      r = Math.max(1, mode === 'add' ? r + value : value)
+    } else {
+      rpe = Math.max(RPE_MIN, Math.min(RPE_MAX, mode === 'add' ? rpe + value : value))
+    }
+    return `${w} ${r} ${rpe}`
+  } catch {
+    return input
+  }
+}

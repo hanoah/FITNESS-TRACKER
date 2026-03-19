@@ -9,8 +9,10 @@ const props = withDefaults(
     seconds: number
     sessionId?: number
     nextExerciseHint?: string
+    progressPercent?: number
+    setLabel?: string
   }>(),
-  { sessionId: 0, nextExerciseHint: '' }
+  { sessionId: 0, nextExerciseHint: '', progressPercent: 0, setLabel: '' }
 )
 
 const emit = defineEmits<{
@@ -26,7 +28,7 @@ const showCompleteFallback = ref(false)
 let rafId = 0
 let endTime = 0
 
-const progressPercent = computed(() => {
+const timerProgressPercent = computed(() => {
   const total = props.seconds
   if (total <= 0) return 0
   return (displaySeconds.value / total) * 100
@@ -200,8 +202,15 @@ function handleSkip() {
           <RText tag="p">Rest complete!</RText>
         </div>
         <template v-else>
+          <RText v-if="setLabel" tag="p" class="set-label">{{ setLabel }}</RText>
+          <div v-if="progressPercent > 0" class="workout-progress-wrap">
+            <div class="progress-ring">
+              <div class="workout-progress-bar" :style="{ width: progressPercent + '%' }"></div>
+            </div>
+            <RText tag="span" class="workout-percent">{{ Math.round(progressPercent) }}% complete</RText>
+          </div>
           <div class="progress-ring">
-            <div class="progress-bar" :style="{ width: progressPercent + '%' }"></div>
+            <div class="progress-bar" :style="{ width: timerProgressPercent + '%' }"></div>
           </div>
           <RText tag="p" class="countdown" aria-live="polite" aria-atomic="true">{{ displaySeconds }}</RText>
           <RText tag="p" class="hint">seconds</RText>
@@ -259,6 +268,30 @@ function handleSkip() {
 .next-hint {
   margin: 0 0 var(--space-sm) 0;
   font-size: 0.85rem;
+  color: var(--r-color-text-secondary);
+}
+.set-label {
+  margin: 0 0 var(--space-sm) 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+.workout-progress-wrap {
+  margin-bottom: var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+.workout-progress-wrap .progress-ring {
+  background: var(--r-color-fill-secondary);
+}
+.workout-progress-bar {
+  height: 100%;
+  background: var(--r-color-primary);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+.workout-percent {
+  font-size: 0.75rem;
   color: var(--r-color-text-secondary);
 }
 .complete-fallback {

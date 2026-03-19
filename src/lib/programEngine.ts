@@ -10,6 +10,31 @@
 import type { ScheduleConfig } from '../types/schedule'
 import type { NippardProgram } from '../types/program'
 import type { SessionExercise } from '../types/session'
+import exercisedbCatalogData from '../data/exercisedb-catalog.json'
+
+interface ExerciseDbEntry {
+  id: string
+  name: string
+  imageUrl?: string
+  bodyPart: string
+  target: string
+  equipment: string
+}
+
+const exercisedbByNorm = new Map<string, ExerciseDbEntry>()
+for (const ex of exercisedbCatalogData as ExerciseDbEntry[]) {
+  if (ex?.id && ex?.name) exercisedbByNorm.set(ex.name.toLowerCase().trim(), ex)
+}
+
+function findDbMatch(name: string): ExerciseDbEntry | null {
+  const norm = name.toLowerCase().trim()
+  const exact = exercisedbByNorm.get(norm)
+  if (exact) return exact
+  for (const [key, entry] of exercisedbByNorm) {
+    if (norm.includes(key) || key.includes(norm)) return entry
+  }
+  return null
+}
 
 /** Alias for backward compat; SessionExercise is the canonical type */
 export type ResolvedExercise = SessionExercise
@@ -50,10 +75,17 @@ export function getDayExercises(
       const ex = day.exercises[i]
       if (!ex) continue
 
+      const dbMatch = !ex.imagePath ? findDbMatch(ex.name) : null
       result.push({
         ...ex,
         slotKey: `${entry.day}:${i}`,
         dayType: entry.day,
+        ...(dbMatch && {
+          imageUrl: dbMatch.imageUrl,
+          exerciseDbId: dbMatch.id,
+          bodyPart: dbMatch.bodyPart,
+          equipment: dbMatch.equipment,
+        }),
       })
       globalIndex++
     }

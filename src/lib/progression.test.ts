@@ -87,7 +87,7 @@ describe('suggest', () => {
     const ex: ResolvedExercise = { ...baseExercise, repRange: [10, 10] }
     const history: SetLog[] = [makeSet(30, 10, 8, false)]
     const result = suggest(ex, history, history)
-    expect(result.weight).toBe(31.25)
+    expect(result.weight).toBe(32.5)
   })
 
   it('handles null earlySetRPE without crash, uses lastSetRPE as fallback', () => {
@@ -122,7 +122,7 @@ describe('suggest', () => {
   it('uses smaller increment when RPE is high (hard set)', () => {
     const history: SetLog[] = [makeSet(95, 8, 10, false)]
     const result = suggest(baseExercise, history, history)
-    expect(result.weight).toBe(96.25)
+    expect(result.weight).toBe(97.5)
     expect(result.note).toContain('Add weight')
   })
 })
