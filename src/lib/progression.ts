@@ -7,6 +7,11 @@
 import type { SetLog } from '../types/session'
 import type { ResolvedExercise } from './programEngine'
 
+/** Round weight up to the nearest loadable increment (2.5 lb). */
+export function roundUpToLoadable(weight: number, step: number = 2.5): number {
+  return Math.ceil(weight / step) * step
+}
+
 export interface ProgressionSuggestion {
   weight?: number
   reps?: number
@@ -97,7 +102,7 @@ export function suggest(
   } else if (rpe >= 9) {
     increment = Math.max(baseIncrement * 0.5, 1.25)
   }
-  const newWeight = last.weight + increment
+  const newWeight = roundUpToLoadable(last.weight + increment)
   return {
     weight: newWeight,
     reps: repMin,

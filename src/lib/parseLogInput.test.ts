@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { parseLogInput, validateSetEdit, ParseError } from './parseLogInput'
+import { parseLogInput, validateSetEdit, rebuildLogInput, ParseError } from './parseLogInput'
 
 describe('parseLogInput', () => {
   it('parses valid input "150 12 9"', () => {
@@ -47,5 +47,50 @@ describe('validateSetEdit', () => {
     expect(() => validateSetEdit(0, 12, 9)).toThrow(ParseError)
     expect(() => validateSetEdit(150, -1, 9)).toThrow(ParseError)
     expect(() => validateSetEdit(150, 12, 11)).toThrow(ParseError)
+  })
+})
+
+describe('rebuildLogInput', () => {
+  it('adds weight', () => {
+    expect(rebuildLogInput('140 10 9', 'weight', 5, 'add')).toBe('145 10 9')
+  })
+
+  it('adds fractional weight', () => {
+    expect(rebuildLogInput('140 10 9', 'weight', 2.5, 'add')).toBe('142.5 10 9')
+  })
+
+  it('clamps weight to 0', () => {
+    expect(rebuildLogInput('2 10 9', 'weight', -5, 'add')).toBe('0 10 9')
+  })
+
+  it('adds reps', () => {
+    expect(rebuildLogInput('140 10 9', 'reps', 2, 'add')).toBe('140 12 9')
+  })
+
+  it('subtracts reps', () => {
+    expect(rebuildLogInput('140 10 9', 'reps', -2, 'add')).toBe('140 8 9')
+  })
+
+  it('clamps reps to 1', () => {
+    expect(rebuildLogInput('140 1 9', 'reps', -5, 'add')).toBe('140 1 9')
+  })
+
+  it('sets RPE', () => {
+    expect(rebuildLogInput('140 10 9', 'rpe', 7, 'set')).toBe('140 10 7')
+  })
+
+  it('clamps RPE to valid range', () => {
+    expect(rebuildLogInput('140 10 9', 'rpe', 0, 'set')).toBe('140 10 1')
+    expect(rebuildLogInput('140 10 9', 'rpe', 15, 'set')).toBe('140 10 10')
+  })
+
+  it('returns empty string unchanged', () => {
+    expect(rebuildLogInput('', 'weight', 5, 'add')).toBe('')
+    expect(rebuildLogInput('   ', 'weight', 5, 'add')).toBe('   ')
+  })
+
+  it('returns unparseable input unchanged', () => {
+    expect(rebuildLogInput('abc', 'weight', 5, 'add')).toBe('abc')
+    expect(rebuildLogInput('140 10', 'rpe', 8, 'set')).toBe('140 10')
   })
 })
