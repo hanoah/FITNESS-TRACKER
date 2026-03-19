@@ -22,7 +22,7 @@ import { db } from '../lib/db'
 import { enqueueSync } from '../lib/sync'
 import { validateSetEdit } from '../lib/parseLogInput'
 import { emitDebugEvent } from '../lib/debugEvents'
-import { getExerciseByName, toSessionExercise } from '../lib/exerciseLibrary'
+import { getExerciseByName, toSessionExercise, enrichSessionExercise } from '../lib/exerciseLibrary'
 import { getExercisesForBlockWeekDay } from '../lib/templateLibrary'
 import type { WorkoutSession, SetLog, SessionExercise } from '../types/session'
 
@@ -62,6 +62,16 @@ export const useWorkoutStore = defineStore('workout', () => {
     if (!ex) return false
     const count = completedSets.value.filter((s) => s.exerciseSlot === ex.slotKey).length
     return count < ex.warmupSets
+  })
+
+  /** Overall workout progress: completed sets / total sets across all exercises. 0–1, clamped. */
+  const workoutProgress = computed(() => {
+    const exercises = todayExercises.value
+    if (!exercises.length) return 0
+    const total = exercises.reduce((sum, ex) => sum + ex.warmupSets + ex.workingSets, 0)
+    if (total <= 0) return 0
+    const completed = completedSets.value.length
+    return Math.min(1, completed / total)
   })
 
   async function startWorkout(
@@ -222,7 +232,7 @@ export const useWorkoutStore = defineStore('workout', () => {
     resumeError.value = null
 
     if (session.exercises && session.exercises.length > 0) {
-      todayExercises.value = session.exercises
+      todayExercises.value = session.exercises.map(enrichSessionExercise)
       return { ok: true }
     }
 
@@ -233,7 +243,7 @@ export const useWorkoutStore = defineStore('workout', () => {
         session.dayType
       )
       if (exercises && exercises.length > 0) {
-        todayExercises.value = exercises
+        todayExercises.value = exercises.map(enrichSessionExercise)
         return { ok: true }
       }
     }
@@ -375,6 +385,26 @@ export const useWorkoutStore = defineStore('workout', () => {
     }
   }
 
+  /** Jump to any exercise by index. Bounds-checked; reverts in-memory on DB failure. */
+  async function goToExercise(index: number): Promise<boolean> {
+    const session = activeSession.value
+    if (!session || session.id == null) return false
+    const exercises = todayExercises.value
+    const idx = Math.floor(index)
+    if (idx === session.currentExerciseIndex) return true
+    if (idx < 0 || idx >= exercises.length) return false
+    const prevIdx = session.currentExerciseIndex
+    try {
+      await db.sessions.update(session.id, { currentExerciseIndex: idx })
+      activeSession.value = { ...session, currentExerciseIndex: idx }
+      return true
+    } catch (e) {
+      activeSession.value = { ...session, currentExerciseIndex: prevIdx }
+      console.error('[workout.goToExercise] Failed to persist', { sessionId: session.id, index: idx }, e)
+      return false
+    }
+  }
+
   /** Centralized set edit: validates, applies audit metadata, updates db and in-memory completedSets if active. */
   async function updateSetLog(setId: number, weight: number, reps: number, rpe: number): Promise<boolean> {
     const validated = validateSetEdit(weight, reps, rpe)
@@ -435,6 +465,7 @@ export const useWorkoutStore = defineStore('workout', () => {
     currentExercise,
     currentSetNumber,
     isWarmupSet,
+    workoutProgress,
     resumeError,
     startWorkout,
     startFreeWorkout,
@@ -447,6 +478,7 @@ export const useWorkoutStore = defineStore('workout', () => {
     resumeSession,
     skipExercise,
     unskipExercise,
+    goToExercise,
     substituteExercise,
     updateSetLog,
     restTimerSnapshot,

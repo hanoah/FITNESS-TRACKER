@@ -1,5 +1,5 @@
 /**
- * Exercise library: union of program exercises, exercise-muscles data, and user history.
+ * Exercise library: union of program exercises, ExerciseDB catalog, exercise-muscles data, and user history.
  * Used for: substitution picker, add-exercise during free workout.
  */
 
@@ -10,19 +10,65 @@ import type { NippardProgram } from '../types/program'
 
 import nippardData from '../data/nippard.json'
 import exerciseMusclesData from '../data/exercise-muscles.json'
+import exercisedbCatalogData from '../data/exercisedb-catalog.json'
 
 const nippard = nippardData as NippardProgram
 
-export type ExerciseSource = 'program' | 'library' | 'history'
+interface ExerciseDbEntry {
+  id: string
+  name: string
+  imageUrl?: string
+  bodyPart: string
+  target: string
+  equipment: string
+  secondaryMuscles: string[]
+  instructions?: string[]
+  difficulty?: string
+  category?: string
+}
+
+const exercisedbCatalog = exercisedbCatalogData as ExerciseDbEntry[]
+
+/** Lookup map from normalized name → ExerciseDB entry for cross-referencing. */
+const exercisedbByNormName = new Map<string, ExerciseDbEntry>()
+for (const ex of exercisedbCatalog) {
+  if (ex?.id && ex?.name) {
+    exercisedbByNormName.set(normalizeName(ex.name), ex)
+  }
+}
+
+/**
+ * Find an ExerciseDB match for a given exercise name.
+ * Tries exact normalized match, then substring containment (e.g. "Barbell Bench Press" contains "Bench Press").
+ */
+function findExerciseDbMatch(name: string): ExerciseDbEntry | null {
+  const norm = normalizeName(name)
+  const exact = exercisedbByNormName.get(norm)
+  if (exact) return exact
+  for (const [key, entry] of exercisedbByNormName) {
+    if (norm.includes(key) || key.includes(norm)) return entry
+  }
+  return null
+}
+
+export type ExerciseSource = 'program' | 'library' | 'history' | 'exercisedb'
 
 export interface ExerciseInfo {
   name: string
   muscles?: { primary: string[]; secondary: string[] }
   imagePath?: string
+  imageUrl?: string  // CDN URL for ExerciseDB (direct image, no API key needed)
+  exerciseDbId?: string
+  bodyPart?: string
+  equipment?: string
   source: ExerciseSource
 }
 
-/** Flatten all exercises from nippard blocks */
+function normalizeName(name: string): string {
+  return name.toLowerCase().trim()
+}
+
+/** Flatten all exercises from nippard blocks. Cross-references with ExerciseDB catalog for image data. */
 function getProgramExercises(): ExerciseInfo[] {
   const seen = new Set<string>()
   const result: ExerciseInfo[] = []
@@ -33,10 +79,15 @@ function getProgramExercises(): ExerciseInfo[] {
           if (ex?.name && !seen.has(ex.name)) {
             seen.add(ex.name)
             const muscles = (exerciseMusclesData as Record<string, { primary: string[]; secondary: string[] }>)[ex.name]
+            const dbMatch = !ex.imagePath ? findExerciseDbMatch(ex.name) : null
             result.push({
               name: ex.name,
               muscles: muscles ? { primary: muscles.primary ?? [], secondary: muscles.secondary ?? [] } : undefined,
               imagePath: ex.imagePath,
+              imageUrl: dbMatch?.imageUrl,
+              exerciseDbId: dbMatch?.id,
+              bodyPart: dbMatch?.bodyPart,
+              equipment: dbMatch?.equipment,
               source: 'program',
             })
           }
@@ -47,15 +98,43 @@ function getProgramExercises(): ExerciseInfo[] {
   return result
 }
 
-/** Exercise names + muscles from exercise-muscles.json (library only, no program) */
-function getLibraryExercises(excludeNames: Set<string>): ExerciseInfo[] {
+/** ExerciseDB catalog entries (exclude names already in program) */
+function getExerciseDbExercises(excludeNormalizedNames: Set<string>): ExerciseInfo[] {
+  if (!Array.isArray(exercisedbCatalog) || exercisedbCatalog.length === 0) return []
+  const result: ExerciseInfo[] = []
+  for (const ex of exercisedbCatalog) {
+    if (!ex?.id || !ex?.name) continue
+    const norm = normalizeName(ex.name)
+    if (excludeNormalizedNames.has(norm)) continue
+    const primary = ex.target ? [ex.target] : []
+    const secondary = Array.isArray(ex.secondaryMuscles) ? ex.secondaryMuscles : []
+    result.push({
+      name: ex.name,
+      muscles: { primary, secondary },
+      exerciseDbId: ex.id,
+      imageUrl: ex.imageUrl,
+      bodyPart: ex.bodyPart,
+      equipment: ex.equipment,
+      source: 'exercisedb',
+    })
+  }
+  return result
+}
+
+/** Exercise names + muscles from exercise-muscles.json (library only, exclude if normalized name already taken). Cross-references with ExerciseDB for images. */
+function getLibraryExercises(excludeNormalizedNames: Set<string>): ExerciseInfo[] {
   const data = exerciseMusclesData as Record<string, { primary: string[]; secondary: string[] }>
   const result: ExerciseInfo[] = []
   for (const [name, muscles] of Object.entries(data)) {
-    if (!excludeNames.has(name)) {
+    if (!excludeNormalizedNames.has(normalizeName(name))) {
+      const dbMatch = findExerciseDbMatch(name)
       result.push({
         name,
         muscles: { primary: muscles?.primary ?? [], secondary: muscles?.secondary ?? [] },
+        imageUrl: dbMatch?.imageUrl,
+        exerciseDbId: dbMatch?.id,
+        bodyPart: dbMatch?.bodyPart,
+        equipment: dbMatch?.equipment,
         source: 'library',
       })
     }
@@ -105,26 +184,41 @@ async function getHistoryExerciseNames(): Promise<string[]> {
   }
 }
 
-/** Union of program, library, history. Deduplicates by name (program > library > history). */
+/** Union of program, exercisedb, library, history. Deduplicates by normalized name (program > exercisedb > library > history). */
 export async function getAllKnownExercises(): Promise<ExerciseInfo[]> {
   const program = getProgramExercises()
-  const byName = new Map<string, ExerciseInfo>()
-  const programNames = new Set<string>()
+  const byNormalizedName = new Map<string, ExerciseInfo>()
+  const programNormalizedNames = new Set<string>()
   for (const ex of program) {
-    byName.set(ex.name, ex)
-    programNames.add(ex.name)
+    const norm = normalizeName(ex.name)
+    byNormalizedName.set(norm, ex)
+    programNormalizedNames.add(norm)
   }
-  const library = getLibraryExercises(programNames)
+  const exercisedb = getExerciseDbExercises(programNormalizedNames)
+  const exercisedbNormalizedNames = new Set(exercisedb.map((ex) => normalizeName(ex.name)))
+  for (const ex of exercisedb) {
+    const norm = normalizeName(ex.name)
+    if (!byNormalizedName.has(norm)) byNormalizedName.set(norm, ex)
+  }
+  const excludeForLibrary = new Set([
+    ...programNormalizedNames,
+    ...exercisedbNormalizedNames,
+  ])
+  const library = getLibraryExercises(excludeForLibrary)
   for (const ex of library) {
-    if (!byName.has(ex.name)) byName.set(ex.name, ex)
+    const norm = normalizeName(ex.name)
+    if (!byNormalizedName.has(norm) && !excludeForLibrary.has(norm)) {
+      byNormalizedName.set(norm, ex)
+    }
   }
   const historyNames = await getHistoryExerciseNames()
   for (const name of historyNames) {
-    if (!byName.has(name)) {
-      byName.set(name, { name, source: 'history' })
+    const norm = normalizeName(name)
+    if (!byNormalizedName.has(norm)) {
+      byNormalizedName.set(norm, { name, source: 'history' })
     }
   }
-  return Array.from(byName.values())
+  return Array.from(byNormalizedName.values())
 }
 
 let cachedExercises: ExerciseInfo[] | null = null
@@ -164,29 +258,59 @@ export function filterByMuscles(exercises: ExerciseInfo[], muscles: string[]): E
   })
 }
 
-/** Lookup by exact name */
+/** Lookup by exact name or normalized name */
 export async function getExerciseByName(name: string): Promise<ExerciseInfo | null> {
   const all = await getAllKnownExercises()
-  return all.find((ex) => ex.name === name) ?? null
+  const exact = all.find((ex) => ex.name === name)
+  if (exact) return exact
+  const norm = normalizeName(name)
+  return all.find((ex) => normalizeName(ex.name) === norm) ?? null
 }
 
-/** Primary muscles for an exercise (for substitution context filtering) */
+/** Primary muscles for an exercise (for substitution context filtering). Checks exercise-muscles and ExerciseDB catalog. */
 export function getMusclesForExercise(name: string): string[] {
   const data = exerciseMusclesData as Record<string, { primary?: string[]; secondary?: string[] }>
   const entry = data[name]
-  if (!entry) return []
-  return [...(entry.primary ?? []), ...(entry.secondary ?? [])]
+  if (entry) {
+    return [...(entry.primary ?? []), ...(entry.secondary ?? [])]
+  }
+  const norm = normalizeName(name)
+  const exercisedbEx = exercisedbCatalog.find((ex) => normalizeName(ex.name) === norm)
+  if (exercisedbEx) {
+    const primary = exercisedbEx.target ? [exercisedbEx.target] : []
+    const secondary = Array.isArray(exercisedbEx.secondaryMuscles) ? exercisedbEx.secondaryMuscles : []
+    return [...primary, ...secondary]
+  }
+  return []
 }
 
-/** Unique muscle group names from exercise-muscles */
+/** Unique muscle group names from exercise-muscles and ExerciseDB catalog */
 export function getMuscleGroups(): string[] {
-  const data = exerciseMusclesData as Record<string, { primary: string[]; secondary: string[] }>
   const groups = new Set<string>()
+  const data = exerciseMusclesData as Record<string, { primary?: string[]; secondary?: string[] }>
   for (const entry of Object.values(data)) {
     for (const m of entry?.primary ?? []) groups.add(m)
     for (const m of entry?.secondary ?? []) groups.add(m)
   }
+  for (const ex of exercisedbCatalog) {
+    if (ex.target) groups.add(ex.target)
+    for (const m of ex.secondaryMuscles ?? []) groups.add(m)
+  }
   return Array.from(groups).sort()
+}
+
+/** Backfill imageUrl/exerciseDbId on a session exercise from the ExerciseDB catalog if missing. */
+export function enrichSessionExercise(ex: SessionExercise): SessionExercise {
+  if (ex.imageUrl || ex.imagePath) return ex
+  const dbMatch = findExerciseDbMatch(ex.name)
+  if (!dbMatch) return ex
+  return {
+    ...ex,
+    imageUrl: dbMatch.imageUrl,
+    exerciseDbId: dbMatch.id,
+    bodyPart: ex.bodyPart ?? dbMatch.bodyPart,
+    equipment: ex.equipment ?? dbMatch.equipment,
+  }
 }
 
 /** Build SessionExercise from ExerciseInfo (for add-exercise, substitute) */
@@ -205,5 +329,9 @@ export function toSessionExercise(info: ExerciseInfo, slotKey: string): SessionE
     demoUrl: DEFAULT_EXERCISE_CONFIG.demoUrl,
     intensityTechnique: DEFAULT_EXERCISE_CONFIG.intensityTechnique,
     imagePath: info.imagePath,
+    imageUrl: info.imageUrl,
+    exerciseDbId: info.exerciseDbId,
+    bodyPart: info.bodyPart,
+    equipment: info.equipment,
   }
 }

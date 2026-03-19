@@ -23,13 +23,13 @@ vi.mock('./db', () => ({
 
 describe('exerciseLibrary', () => {
 
-  it('getAllKnownExercises deduplicates across sources with program > library > history priority', async () => {
+  it('getAllKnownExercises deduplicates across sources with program > exercisedb > library > history priority', async () => {
     const all = await getAllKnownExercises()
     const byName = new Map(all.map((e) => [e.name, e]))
     expect(byName.size).toBe(all.length)
     for (const ex of all) {
       expect(ex.name).toBeTruthy()
-      expect(['program', 'library', 'history']).toContain(ex.source)
+      expect(['program', 'library', 'history', 'exercisedb']).toContain(ex.source)
     }
   })
 
@@ -63,5 +63,21 @@ describe('exerciseLibrary', () => {
     expect(session.slotKey).toBe('free:5')
     expect(session.workingSets).toBe(3)
     expect(session.repRange).toEqual([8, 12])
+  })
+
+  it('toSessionExercise passes through exerciseDbId, bodyPart, equipment', () => {
+    const info: ExerciseInfo = {
+      name: 'Barbell Bench Press',
+      source: 'exercisedb',
+      exerciseDbId: 'exr_abc123',
+      imageUrl: 'https://cdn.exercisedb.dev/images/abc123.gif',
+      bodyPart: 'chest',
+      equipment: 'barbell',
+    }
+    const session = toSessionExercise(info, 'template_0')
+    expect(session.exerciseDbId).toBe('exr_abc123')
+    expect(session.imageUrl).toBe('https://cdn.exercisedb.dev/images/abc123.gif')
+    expect(session.bodyPart).toBe('chest')
+    expect(session.equipment).toBe('barbell')
   })
 })
