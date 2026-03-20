@@ -160,16 +160,6 @@ const computedWeightFromPlates = computed(() => {
   }
 })
 
-const suggestedPlateConfig = computed(() => {
-  const weight = suggestedWeight.value
-  if (!weight || !isBarbell.value) return null
-  try {
-    return plateCalc(weight)
-  } catch {
-    return null
-  }
-})
-
 const upcomingExercises = computed(() => {
   const idx = workoutStore.activeSession?.currentExerciseIndex ?? 0
   return workoutStore.todayExercises.slice(idx + 1)
