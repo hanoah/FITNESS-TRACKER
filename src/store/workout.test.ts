@@ -359,6 +359,39 @@ describe('goToExercise', () => {
   })
 })
 
+describe('logSet isWarmup override', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    vi.mocked(mockDb.sessions.add).mockResolvedValue(1)
+    vi.mocked(mockDb.sets.add).mockClear()
+    vi.mocked(mockDb.sets.add).mockResolvedValue(1)
+  })
+
+  it('uses explicit false when auto would mark warm-up', async () => {
+    const workoutStore = useWorkoutStore()
+    const ex: SessionExercise = { ...baseExercise, warmupSets: 2, workingSets: 3, slotKey: 'free:0', dayType: 'free' }
+    await workoutStore.startWorkout('free', [ex])
+    expect(workoutStore.isWarmupSet).toBe(true)
+
+    await workoutStore.logSet(135, 10, 9, false)
+
+    const payload = vi.mocked(mockDb.sets.add).mock.calls[0][0] as { isWarmup: boolean }
+    expect(payload.isWarmup).toBe(false)
+  })
+
+  it('uses explicit true when auto would mark working set', async () => {
+    const workoutStore = useWorkoutStore()
+    const ex: SessionExercise = { ...baseExercise, warmupSets: 0, workingSets: 3, slotKey: 'free:0', dayType: 'free' }
+    await workoutStore.startWorkout('free', [ex])
+    expect(workoutStore.isWarmupSet).toBe(false)
+
+    await workoutStore.logSet(135, 10, 9, true)
+
+    const payload = vi.mocked(mockDb.sets.add).mock.calls[0][0] as { isWarmup: boolean }
+    expect(payload.isWarmup).toBe(true)
+  })
+})
+
 describe('workoutProgress', () => {
   beforeEach(() => {
     setActivePinia(createPinia())

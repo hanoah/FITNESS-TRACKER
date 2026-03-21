@@ -109,7 +109,7 @@ export const useWorkoutStore = defineStore('workout', () => {
     return startWorkout('free', [])
   }
 
-  async function logSet(weight: number, reps: number, rpe: number): Promise<boolean> {
+  async function logSet(weight: number, reps: number, rpe: number, isWarmup?: boolean): Promise<boolean> {
     const session = activeSession.value
     const ex = currentExercise.value
     if (!session || !ex) return false
@@ -122,7 +122,7 @@ export const useWorkoutStore = defineStore('workout', () => {
       weight,
       reps,
       rpe,
-      isWarmup: isWarmupSet.value,
+      isWarmup: isWarmup ?? isWarmupSet.value,
       timestamp: Date.now(),
     }
     try {
