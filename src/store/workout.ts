@@ -313,7 +313,8 @@ export const useWorkoutStore = defineStore('workout', () => {
     try {
       todayExercises.value = newExercises
       activeSession.value = { ...newSession, currentExerciseIndex: newIndex }
-      await db.sessions.update(session.id, { exercises: newExercises, currentExerciseIndex: newIndex })
+      const exercisesPlain = JSON.parse(JSON.stringify(newExercises))
+      await db.sessions.update(session.id, { exercises: exercisesPlain, currentExerciseIndex: newIndex })
       return true
     } catch (e) {
       todayExercises.value = prevExercises
@@ -344,7 +345,8 @@ export const useWorkoutStore = defineStore('workout', () => {
     const updated = { ...session, exercises: newExercises, substitutions: newSubs }
 
     try {
-      await db.sessions.update(session.id, { exercises: newExercises, substitutions: newSubs })
+      const exercisesPlain = JSON.parse(JSON.stringify(newExercises))
+      await db.sessions.update(session.id, { exercises: exercisesPlain, substitutions: newSubs })
       activeSession.value = updated
       return true
     } catch (e) {
