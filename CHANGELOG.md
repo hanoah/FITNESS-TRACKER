@@ -4,6 +4,30 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.1.6] - 2026-03-18
+
+### Added
+
+**Bundle A — Timer & Rest Modal (WO-002, WO-003, WO-005)**
+- Beep sound (triple 880 Hz sine tones) and haptic vibration when rest timer ends
+- "GO" interstitial screen with flame icon and "Start next set" button after countdown
+- "Set X of Y" label displayed on rest timer and GO screen
+- Rest timer unit tests (5 tests covering countdown, GO screen, skip, pause/resume)
+
+**Bundle B — Progression & Quick Log Logic (WO-001)**
+- Body-part-aware progression increments: 2.5 lb base for arm exercises, 5 lb for legs, fallback to weight-tier logic when bodyPart is unknown
+
+**Bundle C — Exercise Card Features (WO-007, WO-010, WO-011)**
+- Exercise history modal: tap exercise name to view last 50 logged sets with date, weight, reps, and RPE
+- Manual warm-up toggle: override auto warm-up detection per exercise, persists across sets until exercise changes
+- Strength level label on goal display (e.g. "Goal: 135 lb / Intermediate")
+- logSet warm-up override parameter for explicit warm-up/working-set control
+
+### Changed
+
+- Rest timer debug event now includes `audio` context availability in metadata
+- Removed manual log re-fill after set logging (reactive prefill watcher handles it cleanly)
+
 ## [0.1.5] - 2026-03-18
 
 ### Added

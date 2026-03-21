@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { suggest } from './progression'
+import { suggest, getBaseIncrement } from './progression'
 import type { ResolvedExercise } from './programEngine'
 import type { SetLog } from '../types/session'
 
@@ -25,6 +25,20 @@ function makeSet(weight: number, reps: number, rpe: number, isWarmup = false): S
     sessionId: 1,
     exerciseSlot: baseExercise.slotKey,
     exerciseName: baseExercise.name,
+    setNumber: 1,
+    weight,
+    reps,
+    rpe,
+    isWarmup,
+    timestamp: Date.now(),
+  }
+}
+
+function makeSetFor(ex: ResolvedExercise, weight: number, reps: number, rpe: number, isWarmup = false): SetLog {
+  return {
+    sessionId: 1,
+    exerciseSlot: ex.slotKey,
+    exerciseName: ex.name,
     setNumber: 1,
     weight,
     reps,
@@ -124,5 +138,84 @@ describe('suggest', () => {
     const result = suggest(baseExercise, history, history)
     expect(result.weight).toBe(97.5)
     expect(result.note).toContain('Add weight')
+  })
+
+  describe('body-part-aware base increment (WO-001)', () => {
+    it('uses 2.5 lb base for upper arms at max reps', () => {
+      const armEx: ResolvedExercise = {
+        ...baseExercise,
+        name: 'Hammer Curl',
+        bodyPart: 'upper arms',
+        repRange: [8, 8],
+      }
+      const history: SetLog[] = [makeSetFor(armEx, 35, 8, 8)]
+      const result = suggest(armEx, history, history)
+      expect(result.weight).toBe(37.5)
+    })
+
+    it('uses 5 lb base for quadriceps at max reps', () => {
+      const legEx: ResolvedExercise = {
+        ...baseExercise,
+        name: 'Leg Press',
+        bodyPart: 'quadriceps',
+        repRange: [5, 5],
+      }
+      const history: SetLog[] = [makeSetFor(legEx, 135, 5, 8)]
+      const result = suggest(legEx, history, history)
+      expect(result.weight).toBe(140)
+    })
+
+    it('falls back to weight-tier logic when bodyPart is missing', () => {
+      expect(getBaseIncrement({ ...baseExercise, bodyPart: undefined }, 100)).toBe(2.5)
+      expect(getBaseIncrement({ ...baseExercise, bodyPart: 'chest' }, 135)).toBe(5)
+    })
+
+    it('arm isolation: low RPE doubles base (2.5 -> 5)', () => {
+      const armEx: ResolvedExercise = {
+        ...baseExercise,
+        name: 'Hammer Curl',
+        bodyPart: 'upper arms',
+        repRange: [8, 8],
+      }
+      const history: SetLog[] = [makeSetFor(armEx, 35, 8, 5)]
+      const result = suggest(armEx, history, history)
+      expect(result.weight).toBe(40)
+    })
+
+    it('arm isolation: high RPE halves base (rounds up)', () => {
+      const armEx: ResolvedExercise = {
+        ...baseExercise,
+        name: 'Hammer Curl',
+        bodyPart: 'upper arms',
+        repRange: [8, 8],
+      }
+      const history: SetLog[] = [makeSetFor(armEx, 35, 8, 10)]
+      const result = suggest(armEx, history, history)
+      expect(result.weight).toBe(37.5)
+    })
+
+    it('leg: low RPE doubles base (5 -> 10, capped)', () => {
+      const legEx: ResolvedExercise = {
+        ...baseExercise,
+        name: 'Leg Press',
+        bodyPart: 'quadriceps',
+        repRange: [5, 5],
+      }
+      const history: SetLog[] = [makeSetFor(legEx, 135, 5, 5)]
+      const result = suggest(legEx, history, history)
+      expect(result.weight).toBe(145)
+    })
+
+    it('leg: high RPE halves base', () => {
+      const legEx: ResolvedExercise = {
+        ...baseExercise,
+        name: 'Leg Press',
+        bodyPart: 'quadriceps',
+        repRange: [5, 5],
+      }
+      const history: SetLog[] = [makeSetFor(legEx, 135, 5, 10)]
+      const result = suggest(legEx, history, history)
+      expect(result.weight).toBe(137.5)
+    })
   })
 })

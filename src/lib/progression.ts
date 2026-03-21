@@ -12,6 +12,23 @@ export function roundUpToLoadable(weight: number, step: number = 2.5): number {
   return Math.ceil(weight / step) * step
 }
 
+/** ExerciseDB-style body parts: isolation arm work uses smaller jumps. */
+const ARM_PARTS = new Set(['upper arms', 'forearms', 'biceps', 'triceps'])
+
+/** Leg / lower-body isolation: larger jumps when RPE allows. */
+const LEG_PARTS = new Set(['upper legs', 'quadriceps', 'hamstrings', 'calves', 'thighs', 'hips'])
+
+/**
+ * Base weight increment (before RPE modifiers) from body part, then weight tier.
+ * Arm isolation: 2.5 lb. Leg: 5 lb. Compound / unknown: same as historical weight-threshold logic.
+ */
+export function getBaseIncrement(exercise: ResolvedExercise, lastWeight: number): number {
+  const part = exercise.bodyPart?.toLowerCase()
+  if (part && ARM_PARTS.has(part)) return 2.5
+  if (part && LEG_PARTS.has(part)) return 5
+  return lastWeight >= 135 ? 5 : lastWeight >= 45 ? 2.5 : 1.25
+}
+
 export interface ProgressionSuggestion {
   weight?: number
   reps?: number
@@ -94,7 +111,7 @@ export function suggest(
     }
   }
 
-  const baseIncrement = last.weight >= 135 ? 5 : last.weight >= 45 ? 2.5 : 1.25
+  const baseIncrement = getBaseIncrement(exercise, last.weight)
   const rpe = last.rpe ?? 8
   let increment = baseIncrement
   if (rpe <= 6) {

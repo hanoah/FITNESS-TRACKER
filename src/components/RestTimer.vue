@@ -1,4 +1,13 @@
 <script setup lang="ts">
+/**
+ * Rest timer overlay: countdown -> GO interstitial -> user confirms "Start next set".
+ *
+ * State machine:
+ *   counting --(remaining<=0)--> go --(confirm/skip)--> emit done|skip
+ *
+ * Audio: single AudioContext created on mount (user-gesture chain from Log set) so
+ * mobile Safari can play the triple beep. Beep is best-effort; GO always shows.
+ */
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { RButton, RText } from 'roughness'
 import { useWorkoutStore } from '../store/workout'
@@ -23,10 +32,13 @@ const emit = defineEmits<{
 const workoutStore = useWorkoutStore()
 const displaySeconds = ref(props.seconds)
 const isPaused = ref(false)
-const beepSucceeded = ref<boolean | null>(null)
-const showCompleteFallback = ref(false)
+/** 'counting' = rest countdown; 'go' = interstitial after timer hits zero */
+const timerPhase = ref<'counting' | 'go'>('counting')
 let rafId = 0
 let endTime = 0
+
+/** Reused for triple beep; created once on mount (within user-gesture chain). */
+let audioCtx: AudioContext | null = null
 
 const timerProgressPercent = computed(() => {
   const total = props.seconds
@@ -34,49 +46,52 @@ const timerProgressPercent = computed(() => {
   return (displaySeconds.value / total) * 100
 })
 
+function vibrateRestComplete(): void {
+  try {
+    navigator.vibrate?.([200, 100, 200, 100, 200])
+  } catch {
+    /* ignore */
+  }
+}
+
+/** Triple 880Hz sine tones, 0.15s each, spaced 0.3s apart. Fire-and-forget. */
+function playBeep(): void {
+  if (!audioCtx) return
+  try {
+    const t0 = audioCtx.currentTime
+    const toneDuration = 0.15
+    const gap = 0.3
+    for (let i = 0; i < 3; i++) {
+      const startAt = t0 + i * gap
+      const osc = audioCtx.createOscillator()
+      const gain = audioCtx.createGain()
+      osc.connect(gain)
+      gain.connect(audioCtx.destination)
+      osc.frequency.value = 880
+      osc.type = 'sine'
+      gain.gain.setValueAtTime(0.5, startAt)
+      gain.gain.exponentialRampToValueAtTime(0.01, startAt + toneDuration)
+      osc.start(startAt)
+      osc.stop(startAt + toneDuration)
+    }
+  } catch {
+    /* best-effort audio */
+  }
+}
+
 function tick() {
   if (isPaused.value) return
   const remaining = Math.max(0, Math.ceil((endTime - Date.now()) / 1000))
   displaySeconds.value = remaining
   if (remaining <= 0) {
-    const ok = beep()
-    if (!ok) {
-      emitDebugEvent({ eventName: 'timer_completed', status: 'fail', errorCode: 'audio_blocked' })
-      beepSucceeded.value = false
-      showCompleteFallback.value = true
-      setTimeout(() => {
-        showCompleteFallback.value = false
-        emit('done')
-      }, 1500)
-    } else {
-      emitDebugEvent({ eventName: 'timer_completed', status: 'success' })
-      beepSucceeded.value = true
-      emit('done')
-    }
+    playBeep()
+    vibrateRestComplete()
+    timerPhase.value = 'go'
+    emitDebugEvent({ eventName: 'timer_completed', status: 'success', meta: { audio: !!audioCtx } })
     return
   }
   persistSnapshot()
   rafId = requestAnimationFrame(tick)
-}
-
-function beep(): boolean {
-  try {
-    const Ctx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
-    const ctx = new Ctx()
-    const osc = ctx.createOscillator()
-    const gain = ctx.createGain()
-    osc.connect(gain)
-    gain.connect(ctx.destination)
-    osc.frequency.value = 880
-    osc.type = 'sine'
-    gain.gain.setValueAtTime(0.3, ctx.currentTime)
-    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2)
-    osc.start(ctx.currentTime)
-    osc.stop(ctx.currentTime + 0.2)
-    return true
-  } catch {
-    return false
-  }
 }
 
 function persistSnapshot() {
@@ -99,6 +114,7 @@ function persistSnapshot() {
 
 function start(initialSeconds?: number) {
   if (rafId) cancelAnimationFrame(rafId)
+  timerPhase.value = 'counting'
   const secs = initialSeconds ?? displaySeconds.value
   emitDebugEvent({ eventName: 'timer_started', meta: { seconds: secs } })
   endTime = Date.now() + secs * 1000
@@ -153,6 +169,7 @@ function tryRestore() {
   if (snap.pausedRemaining != null) {
     displaySeconds.value = snap.pausedRemaining
     isPaused.value = true
+    timerPhase.value = 'counting'
     emitDebugEvent({ eventName: 'timer_restored', meta: { paused: true, remaining: snap.pausedRemaining } })
     persistSnapshot()
     return true
@@ -161,12 +178,26 @@ function tryRestore() {
   if (remaining <= 0 || Date.now() - snap.endTime > maxAge) return false
   displaySeconds.value = remaining
   endTime = snap.endTime
+  timerPhase.value = 'counting'
   emitDebugEvent({ eventName: 'timer_restored', meta: { paused: false, remaining } })
   rafId = requestAnimationFrame(tick)
   return true
 }
 
+function initAudioContext(): void {
+  try {
+    const Ctx =
+      window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
+    if (!Ctx) return
+    audioCtx = new Ctx()
+    void audioCtx.resume()
+  } catch {
+    audioCtx = null
+  }
+}
+
 onMounted(() => {
+  initAudioContext()
   if (props.seconds <= 0) return
   const restored = tryRestore()
   if (!restored) {
@@ -185,6 +216,11 @@ watch(
   }
 )
 
+function handleGoConfirm() {
+  stop()
+  emit('done')
+}
+
 function handleSkip() {
   emitDebugEvent({ eventName: 'timer_skipped' })
   stop()
@@ -196,12 +232,26 @@ function handleSkip() {
   <Teleport to="body">
     <div class="rest-overlay" role="dialog" aria-modal="true" aria-label="Rest timer" @click.self="handleSkip">
       <div class="rest-modal">
-        <RText tag="h3">Rest</RText>
-        <RText v-if="nextExerciseHint" tag="p" class="next-hint">{{ nextExerciseHint }}</RText>
-        <div v-if="showCompleteFallback" class="complete-fallback">
-          <RText tag="p">Rest complete!</RText>
-        </div>
+        <template v-if="timerPhase === 'go'">
+          <div class="go-screen">
+            <div class="go-icon" aria-hidden="true">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" width="28" height="28">
+                <path
+                  d="M8 16c3.314 0 6-2 6-5.5 0-1.5-.5-4-2.5-6 .25 3.5-1.6 4.9-2.5 6-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5-2.5 1.5-5.5 1.5-7.5 0-2-1.6-3.5-4-4-6.5 2.224 1.946 2.072 3.857 2 6-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5C2 11 4.5 13 8 16z"
+                />
+              </svg>
+            </div>
+            <RText tag="p" class="go-text">GO</RText>
+            <RText v-if="setLabel" tag="p" class="set-label">{{ setLabel }}</RText>
+            <RText v-if="nextExerciseHint" tag="p" class="next-hint">{{ nextExerciseHint }}</RText>
+            <div class="timer-controls go-controls">
+              <RButton type="primary" @click="handleGoConfirm">Start next set</RButton>
+            </div>
+          </div>
+        </template>
         <template v-else>
+          <RText tag="h3">Rest</RText>
+          <RText v-if="nextExerciseHint" tag="p" class="next-hint">{{ nextExerciseHint }}</RText>
           <RText v-if="setLabel" tag="p" class="set-label">{{ setLabel }}</RText>
           <div v-if="progressPercent > 0" class="workout-progress-wrap">
             <div class="progress-ring">
@@ -275,6 +325,37 @@ function handleSkip() {
   font-size: 0.9rem;
   font-weight: 600;
 }
+.go-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-sm) 0;
+}
+.go-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--r-color-warning, #d97706) 18%, transparent);
+  color: var(--r-color-warning, #b45309);
+}
+.go-text {
+  margin: 0;
+  font-size: 3rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: var(--r-color-primary);
+}
+.go-controls {
+  margin-top: var(--space-sm);
+  width: 100%;
+}
+.go-controls :deep(button) {
+  width: 100%;
+}
 .workout-progress-wrap {
   margin-bottom: var(--space-md);
   display: flex;
@@ -293,14 +374,6 @@ function handleSkip() {
 .workout-percent {
   font-size: 0.75rem;
   color: var(--r-color-text-secondary);
-}
-.complete-fallback {
-  padding: var(--space-lg) 0;
-}
-.complete-fallback p {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--r-color-primary);
 }
 .progress-ring {
   width: 100%;
