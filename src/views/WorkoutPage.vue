@@ -18,6 +18,7 @@ import { emitDebugEvent } from '../lib/debugEvents'
 import RestTimer from '../components/RestTimer.vue'
 import ExercisePicker from '../components/ExercisePicker.vue'
 import SetEditModal from '../components/SetEditModal.vue'
+import ExerciseHistoryModal from '../components/ExerciseHistoryModal.vue'
 import { RButton, RCard, RInput, RText, useToast } from 'roughness'
 import type { ExerciseInfo } from '../lib/exerciseLibrary'
 import type { SetLog } from '../types/session'
@@ -44,6 +45,8 @@ const showPlateCalc = ref(false)
 const showFlowList = ref(false)
 const editingSet = ref<SetLog | null>(null)
 const savingEdit = ref(false)
+const showHistory = ref(false)
+const warmupOverride = ref<boolean | null>(null)
 
 const { profile: userProfile } = useUserProfile()
 const strengthGoal = computed(() => {
@@ -53,8 +56,12 @@ const strengthGoal = computed(() => {
   const bodyWeightLbs = profile.weightKg * 2.205
   const level = (profile.strengthLevel ?? 'intermediate') as 'beginner' | 'novice' | 'intermediate' | 'advanced' | 'elite'
   const goal = getGoal(ex.name, bodyWeightLbs, level)
-  return goal != null ? { weight: goal } : null
+  return goal != null ? { weight: goal, level } : null
 })
+
+function formatStrengthLevel(level: string): string {
+  return level.charAt(0).toUpperCase() + level.slice(1)
+}
 
 /** ETA to goal: "At +2.5 lb per session, about 8 weeks to reach 135" */
 const goalProjection = computed(() => {
@@ -74,6 +81,19 @@ const goalProjection = computed(() => {
 const currentExercise = computed(() => workoutStore.currentExercise)
 const currentSetNumber = computed(() => workoutStore.currentSetNumber)
 const isWarmupSet = computed(() => workoutStore.isWarmupSet)
+
+/** When null, use store auto warm-up detection; otherwise user override (persists across sets until exercise changes). */
+const effectiveIsWarmup = computed(() =>
+  warmupOverride.value !== null ? warmupOverride.value : isWarmupSet.value
+)
+
+function toggleWarmup() {
+  if (warmupOverride.value === null) {
+    warmupOverride.value = !isWarmupSet.value
+  } else {
+    warmupOverride.value = !warmupOverride.value
+  }
+}
 
 const { slotHistory: pastSlotHistory, exerciseHistory: pastExerciseHistory } =
   useProgressionHistory(
@@ -376,11 +396,18 @@ watch(
   { immediate: true }
 )
 
+watch(
+  () => currentExercise.value?.slotKey,
+  () => {
+    warmupOverride.value = null
+  }
+)
+
 async function doLogSet(weight: number, reps: number, rpe: number) {
   const ex = currentExercise.value
   logging.value = true
   try {
-    const ok = await workoutStore.logSet(weight, reps, rpe)
+    const ok = await workoutStore.logSet(weight, reps, rpe, effectiveIsWarmup.value)
     if (!ok) {
       toast("Couldn't save set — try again?")
       return
@@ -632,6 +659,11 @@ async function handleAbandon() {
       @save="handleEditSave"
       @cancel="closeEditModal"
     />
+    <ExerciseHistoryModal
+      v-if="showHistory && currentExercise"
+      :exercise-name="currentExercise.name"
+      @close="showHistory = false"
+    />
     <div v-if="needsAddExercise" class="add-first">
       <RCard>
         <RText tag="h2">Add your first exercise</RText>
@@ -663,7 +695,14 @@ async function handleAbandon() {
         <div class="info-header">
           <div class="info-header-left">
             <button v-if="canUnskip" type="button" class="back-link" @click="handleUnskip">← Previous</button>
-            <RText tag="h2" class="exercise-name">{{ currentExercise.name }}</RText>
+            <button
+              type="button"
+              class="exercise-name-btn"
+              :aria-label="`History for ${currentExercise.name}`"
+              @click="showHistory = true"
+            >
+              <RText tag="span" class="exercise-name">{{ currentExercise.name }}</RText>
+            </button>
           </div>
           <div class="overflow-wrapper">
             <RButton class="overflow-btn" variant="secondary" :disabled="abandoning" @click.stop="showOverflowMenu = !showOverflowMenu">⋯</RButton>
@@ -687,7 +726,9 @@ async function handleAbandon() {
           </div>
           <div class="stat-secondary-row">
             <span v-if="suggestion?.lastWeight" class="stat-secondary">Last: {{ suggestion.lastWeight }} × {{ suggestion.lastReps }} @ RPE {{ suggestion.lastRpe }}</span>
-            <span v-if="strengthGoal" class="stat-secondary">Goal: {{ strengthGoal.weight }} lb</span>
+            <span v-if="strengthGoal" class="stat-secondary"
+              >Goal: {{ strengthGoal.weight }} lb / {{ formatStrengthLevel(strengthGoal.level) }}</span
+            >
             <span v-else-if="!userProfile?.weightKg" class="stat-secondary stat-hint">Set weight in Settings for goals</span>
           </div>
           <div class="stat-secondary-row" v-if="goalProjection">
@@ -697,12 +738,28 @@ async function handleAbandon() {
 
         <!-- Set progress -->
         <div class="set-progress-row">
-          <span class="set-info">Set {{ currentSetNumber }} of {{ currentExercise.warmupSets + currentExercise.workingSets }}{{ isWarmupSet ? ' (warm-up)' : '' }}</span>
+          <span class="set-info">Set {{ currentSetNumber }} of {{ currentExercise.warmupSets + currentExercise.workingSets }}{{ effectiveIsWarmup ? ' (warm-up)' : '' }}</span>
           <span class="progress-percent">{{ Math.round(workoutProgress * 100) }}%</span>
         </div>
         <div class="progress-bar-wrap">
           <div class="progress-bar-fill" :style="{ width: (workoutProgress * 100) + '%' }" />
         </div>
+
+        <button
+          type="button"
+          class="warmup-toggle"
+          :aria-pressed="effectiveIsWarmup"
+          aria-label="Mark next set as warm-up"
+          @click="toggleWarmup"
+        >
+          <div class="warmup-toggle-text">
+            <span class="warmup-toggle-title">Warm-up set</span>
+            <span class="warmup-toggle-hint">Tap to override auto (stays for this exercise)</span>
+          </div>
+          <span class="toggle-track" :class="{ on: effectiveIsWarmup }" aria-hidden="true">
+            <span class="toggle-knob" />
+          </span>
+        </button>
       </RCard>
 
       <!-- Log input (always visible, no card wrapper needed but keeping for roughness style) -->
@@ -886,6 +943,27 @@ async function handleAbandon() {
 }
 .back-link:hover { text-decoration: underline; }
 
+.exercise-name-btn {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  padding: 0;
+  margin: 0;
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+.exercise-name-btn:hover .exercise-name {
+  text-decoration: underline;
+}
+.exercise-name-btn:focus-visible {
+  outline: 2px solid var(--r-color-primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
 /* Inline stats */
 .inline-stats {
   margin: var(--space-md) 0 var(--space-sm);
@@ -943,6 +1021,66 @@ async function handleAbandon() {
   border-radius: 3px;
   overflow: hidden;
 }
+.warmup-toggle {
+  display: flex;
+  margin-top: var(--space-md);
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding: var(--space-sm) var(--space-md);
+  border-radius: 16px;
+  border: 1px solid var(--r-color-border, #e7e5e4);
+  background: var(--r-color-bg);
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+}
+.warmup-toggle:hover {
+  background: var(--r-color-surface-muted, #fafaf9);
+}
+.warmup-toggle-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 0;
+}
+.warmup-toggle-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--r-color-text);
+}
+.warmup-toggle-hint {
+  font-size: 0.7rem;
+  color: var(--r-color-text-secondary);
+}
+.toggle-track {
+  flex-shrink: 0;
+  width: 2.75rem;
+  height: 1.5rem;
+  border-radius: 999px;
+  background: var(--r-color-fill-secondary, #d6d3d1);
+  position: relative;
+  transition: background 0.15s ease;
+}
+.toggle-track.on {
+  background: var(--r-color-primary, #2d2a26);
+}
+.toggle-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 1.125rem;
+  height: 1.125rem;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+  transition: transform 0.15s ease;
+}
+.toggle-track.on .toggle-knob {
+  transform: translateX(1.25rem);
+}
+
 .progress-bar-fill {
   height: 100%;
   background: var(--r-color-primary);
