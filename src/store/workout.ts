@@ -49,6 +49,14 @@ export const useWorkoutStore = defineStore('workout', () => {
   })
 
   const currentSetNumber = computed(() => {
+    return completedSets.value.length + 1
+  })
+
+  const totalWorkoutSets = computed(() => {
+    return todayExercises.value.reduce((sum, ex) => sum + ex.warmupSets + ex.workingSets, 0)
+  })
+
+  const currentExerciseSetNumber = computed(() => {
     const ex = currentExercise.value
     if (!ex) return 0
     const setsForThisExercise = completedSets.value.filter(
@@ -285,7 +293,7 @@ export const useWorkoutStore = defineStore('workout', () => {
     const session = activeSession.value
     if (!session || session.id == null) return false
 
-    const exercises = session.exercises ?? todayExercises.value
+    const exercises = todayExercises.value.length > 0 ? todayExercises.value : (session.exercises ?? [])
     const idx = exercises.findIndex((e) => e.slotKey === slotKey)
     if (idx < 0) return false
 
@@ -305,7 +313,8 @@ export const useWorkoutStore = defineStore('workout', () => {
     try {
       todayExercises.value = newExercises
       activeSession.value = { ...newSession, currentExerciseIndex: newIndex }
-      await db.sessions.update(session.id, { exercises: newExercises, currentExerciseIndex: newIndex })
+      const exercisesPlain = JSON.parse(JSON.stringify(newExercises))
+      await db.sessions.update(session.id, { exercises: exercisesPlain, currentExerciseIndex: newIndex })
       return true
     } catch (e) {
       todayExercises.value = prevExercises
@@ -336,7 +345,8 @@ export const useWorkoutStore = defineStore('workout', () => {
     const updated = { ...session, exercises: newExercises, substitutions: newSubs }
 
     try {
-      await db.sessions.update(session.id, { exercises: newExercises, substitutions: newSubs })
+      const exercisesPlain = JSON.parse(JSON.stringify(newExercises))
+      await db.sessions.update(session.id, { exercises: exercisesPlain, substitutions: newSubs })
       activeSession.value = updated
       return true
     } catch (e) {
@@ -464,6 +474,8 @@ export const useWorkoutStore = defineStore('workout', () => {
     completedSets,
     currentExercise,
     currentSetNumber,
+    totalWorkoutSets,
+    currentExerciseSetNumber,
     isWarmupSet,
     workoutProgress,
     resumeError,

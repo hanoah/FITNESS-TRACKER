@@ -282,15 +282,22 @@ async function handleSave() {
       ? (unit.value === 'kg' ? wVal : toKg(wVal))
       : undefined
 
-    await db.userProfile.put({
-      id: 'current',
-      heightCm,
-      weightKg,
+    const patch: Record<string, unknown> = {
       unit: unit.value,
       strengthLevel: strengthLevel.value,
-      appsScriptUrl: appsScriptUrl.value.trim() || undefined,
       updatedAt: Date.now(),
-    })
+    }
+    if (heightCm !== undefined) patch.heightCm = heightCm
+    if (weightKg !== undefined) patch.weightKg = weightKg
+    const url = appsScriptUrl.value.trim()
+    if (url) patch.appsScriptUrl = url
+
+    const existing = await db.userProfile.get('current')
+    if (existing) {
+      await db.userProfile.update('current', patch)
+    } else {
+      await db.userProfile.put({ id: 'current', ...patch })
+    }
     toast('Settings saved')
   } catch (e) {
     console.error('[SettingsPage] Failed to save', e)

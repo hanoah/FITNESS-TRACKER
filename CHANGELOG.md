@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.1.7.1] - 2026-03-18
+
+### Fixed
+
+- Exercise removal and substitution now strip Vue reactive proxies before writing to IndexedDB, preventing DataCloneError that silently rolled back deletions
+
+## [0.1.7] - 2026-03-18
+
+### Fixed
+
+- Profile settings (weight, height, strength level) now persist correctly across sessions — partial saves no longer wipe existing fields
+- Deleting exercises from an active workout now works reliably (fixed stale exercise list reference)
+- Adding 3 sets no longer creates 4 — removed implicit warmup set from user-added exercises
+- Set counter now shows cumulative workout progress ("Set 5 of 12") instead of per-exercise count
+
 ## [0.1.6] - 2026-03-18
 
 ### Added
