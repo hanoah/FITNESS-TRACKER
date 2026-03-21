@@ -80,6 +80,7 @@ const goalProjection = computed(() => {
 
 const currentExercise = computed(() => workoutStore.currentExercise)
 const currentSetNumber = computed(() => workoutStore.currentSetNumber)
+const totalWorkoutSets = computed(() => workoutStore.totalWorkoutSets)
 const isWarmupSet = computed(() => workoutStore.isWarmupSet)
 
 /** When null, use store auto warm-up detection; otherwise user override (persists across sets until exercise changes). */
@@ -226,11 +227,8 @@ const restTimerNextHint = computed(() => {
 const workoutProgress = computed(() => workoutStore.workoutProgress)
 
 const restTimerSetLabel = computed(() => {
-  const ex = currentExercise.value
-  if (!ex) return ''
-  const n = currentSetNumber.value
-  const total = ex.warmupSets + ex.workingSets
-  return `Set ${n} of ${total}`
+  if (!currentExercise.value) return ''
+  return `Set ${currentSetNumber.value} of ${totalWorkoutSets.value}`
 })
 
 const canUnskip = computed(() => (workoutStore.activeSession?.currentExerciseIndex ?? 0) > 0)
@@ -413,6 +411,10 @@ async function doLogSet(weight: number, reps: number, rpe: number) {
       return
     }
     resetInputState()
+    const source = prefillSource.value
+    if (source) {
+      logInput.value = `${source.weight} ${source.reps} ${source.rpe}`
+    }
     if (ex?.restSeconds?.[0]) {
       restTimerSeconds.value = ex.restSeconds[0]
       restTimerKey.value++
@@ -526,10 +528,11 @@ async function handleSubSelect(info: ExerciseInfo) {
 
 async function handleAddExercise(info: ExerciseInfo) {
   const base = toSessionExercise(info, '')
-  const setCountStr = prompt('How many working sets? (default 3)', '3')
+  const setCountStr = prompt('How many sets? (default 3)', '3')
   if (setCountStr !== null) {
     const n = parseInt(setCountStr, 10)
     if (Number.isInteger(n) && n >= 1 && n <= 10) {
+      base.warmupSets = 0
       base.workingSets = n
     }
   }
@@ -738,7 +741,7 @@ async function handleAbandon() {
 
         <!-- Set progress -->
         <div class="set-progress-row">
-          <span class="set-info">Set {{ currentSetNumber }} of {{ currentExercise.warmupSets + currentExercise.workingSets }}{{ effectiveIsWarmup ? ' (warm-up)' : '' }}</span>
+          <span class="set-info">Set {{ currentSetNumber }} of {{ totalWorkoutSets }}{{ effectiveIsWarmup ? ' (warm-up)' : '' }}</span>
           <span class="progress-percent">{{ Math.round(workoutProgress * 100) }}%</span>
         </div>
         <div class="progress-bar-wrap">
