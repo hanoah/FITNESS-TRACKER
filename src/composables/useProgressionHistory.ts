@@ -3,7 +3,7 @@
  * Queries by exerciseSlot (program position) and exerciseName.
  */
 
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
 import { db } from '../lib/db'
 import type { SetLog } from '../types/session'
 
@@ -47,5 +47,12 @@ export function useProgressionHistory(
     { immediate: true }
   )
 
-  return { slotHistory, exerciseHistory, load }
+  /** Max weight on any prior working set (slot + name history, excluding current session). For PR baseline. */
+  const bestWeight = computed(() => {
+    const combined = [...slotHistory.value, ...exerciseHistory.value].filter((s) => !s.isWarmup)
+    if (combined.length === 0) return 0
+    return Math.max(...combined.map((s) => s.weight))
+  })
+
+  return { slotHistory, exerciseHistory, bestWeight, load }
 }

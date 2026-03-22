@@ -28,6 +28,11 @@ import type { WorkoutSession, SetLog, SessionExercise } from '../types/session'
 
 export type ResumeResult = { ok: true } | { ok: false; error: string }
 
+/** Result of logging a set; includes PR detection when historical baseline is passed from the UI. */
+export type LogSetResult =
+  | { ok: true; isPR: boolean; previousBest?: number }
+  | { ok: false }
+
 export interface RestTimerSnapshot {
   sessionId: number
   endTime: number
@@ -35,11 +40,25 @@ export interface RestTimerSnapshot {
   initialSeconds: number
 }
 
+/** Active rest timer UI payload (full + mini share this). */
+export interface RestTimerPanel {
+  seconds: number
+  nextExerciseHint: string
+  progressPercent: number
+  setLabel: string
+}
+
 export const useWorkoutStore = defineStore('workout', () => {
   const activeSession = ref<WorkoutSession | null>(null)
   const restTimerSnapshot = ref<RestTimerSnapshot | null>(null)
+  /** When set, App.vue shows RestTimer / MiniTimer; survives leaving WorkoutPage. */
+  const restTimerPanel = ref<RestTimerPanel | null>(null)
+  const restTimerMinimized = ref(false)
+  const restTimerKey = ref(0)
   const todayExercises = ref<SessionExercise[]>([])
   const completedSets = ref<SetLog[]>([])
+  /** Set IDs logged as weight PRs this session (cleared on complete/abandon). */
+  const prSetIds = ref<number[]>([])
   const resumeError = ref<string | null>(null)
 
   const currentExercise = computed(() => {
@@ -106,6 +125,7 @@ export const useWorkoutStore = defineStore('workout', () => {
       activeSession.value = { ...session, id: id as number }
       todayExercises.value = exercisesPlain
       completedSets.value = []
+      prSetIds.value = []
       return id as number
     } catch (e) {
       console.error('[workout.startWorkout] Failed to save session', { dayType, blockId, weekNumber }, e)
@@ -117,10 +137,36 @@ export const useWorkoutStore = defineStore('workout', () => {
     return startWorkout('free', [])
   }
 
-  async function logSet(weight: number, reps: number, rpe: number, isWarmup?: boolean): Promise<boolean> {
+  /**
+   * @param historicalBestWeight — max weight from prior sessions for this exercise (from useProgressionHistory.bestWeight). Used for PR detection; omit or pass 0 if unknown.
+   */
+  async function logSet(
+    weight: number,
+    reps: number,
+    rpe: number,
+    isWarmup?: boolean,
+    historicalBestWeight?: number
+  ): Promise<LogSetResult> {
     const session = activeSession.value
     const ex = currentExercise.value
-    if (!session || !ex) return false
+    if (!session || !ex) return { ok: false }
+
+    const resolvedWarmup = isWarmup ?? isWarmupSet.value
+    const priorWorking = completedSets.value.filter(
+      (s) => s.exerciseSlot === ex.slotKey && !s.isWarmup
+    )
+    const sessionBestBefore = priorWorking.length
+      ? Math.max(...priorWorking.map((s) => s.weight))
+      : 0
+    const hist = historicalBestWeight ?? 0
+    const bestBefore = Math.max(hist, sessionBestBefore)
+    const hasPriorHistory = hist > 0 || priorWorking.length > 0
+    let isPR = false
+    let previousBest: number | undefined
+    if (!resolvedWarmup && hasPriorHistory && weight > bestBefore) {
+      isPR = true
+      previousBest = bestBefore
+    }
 
     const setLog: SetLog = {
       sessionId: session.id!,
@@ -130,12 +176,15 @@ export const useWorkoutStore = defineStore('workout', () => {
       weight,
       reps,
       rpe,
-      isWarmup: isWarmup ?? isWarmupSet.value,
+      isWarmup: resolvedWarmup,
       timestamp: Date.now(),
     }
     try {
       const id = (await db.sets.add(setLog)) as number
       completedSets.value = [...completedSets.value, { ...setLog, id }]
+      if (isPR) {
+        prSetIds.value = [...prSetIds.value, id]
+      }
 
       const setsForEx = completedSets.value.filter((s) => s.exerciseSlot === ex.slotKey)
       const workingDone = setsForEx.filter((s) => !s.isWarmup).length
@@ -151,10 +200,10 @@ export const useWorkoutStore = defineStore('workout', () => {
           completedSetCount: session.completedSetCount + 1,
         }
       }
-      return true
+      return { ok: true, isPR, previousBest }
     } catch (e) {
       console.error('[workout.logSet] Failed to save set', { weight, reps, rpe, sessionId: session.id }, e)
-      return false
+      return { ok: false }
     }
   }
 
@@ -171,8 +220,11 @@ export const useWorkoutStore = defineStore('workout', () => {
       activeSession.value = null
       todayExercises.value = []
       completedSets.value = []
+      prSetIds.value = []
       resumeError.value = null
       restTimerSnapshot.value = null
+      restTimerPanel.value = null
+      restTimerMinimized.value = false
       try {
         await enqueueSync(completedSession, sets)
       } catch (syncErr) {
@@ -199,8 +251,11 @@ export const useWorkoutStore = defineStore('workout', () => {
       activeSession.value = null
       todayExercises.value = []
       completedSets.value = []
+      prSetIds.value = []
       resumeError.value = null
       restTimerSnapshot.value = null
+      restTimerPanel.value = null
+      restTimerMinimized.value = false
       return true
     } catch (e) {
       console.error('[workout.abandonWorkout] Failed to abandon session', { sessionId: session.id }, e)
@@ -320,6 +375,85 @@ export const useWorkoutStore = defineStore('workout', () => {
       todayExercises.value = prevExercises
       activeSession.value = { ...session, currentExerciseIndex: prevIdx }
       console.error('[workout.removeExercise] Failed to persist', e)
+      return false
+    }
+  }
+
+  /** Only current or future exercises (index >= currentExerciseIndex). Increments workingSets. */
+  async function addSetToExercise(slotKey: string): Promise<boolean> {
+    const session = activeSession.value
+    if (!session || session.id == null) return false
+
+    const exercises = todayExercises.value
+    const idx = exercises.findIndex((e) => e.slotKey === slotKey)
+    if (idx < 0) return false
+    if (idx < session.currentExerciseIndex) return false
+
+    const newExercises = exercises.map((e, i) =>
+      i === idx ? { ...e, workingSets: e.workingSets + 1 } : e
+    )
+    const prevExercises = [...todayExercises.value]
+    const updatedSession = { ...session, exercises: newExercises }
+
+    try {
+      todayExercises.value = newExercises
+      activeSession.value = updatedSession
+      const exercisesPlain = JSON.parse(JSON.stringify(newExercises))
+      await db.sessions.update(session.id, { exercises: exercisesPlain })
+      return true
+    } catch (e) {
+      todayExercises.value = prevExercises
+      activeSession.value = { ...session, exercises: prevExercises }
+      console.error('[workout.addSetToExercise] Failed to persist', e)
+      return false
+    }
+  }
+
+  /**
+   * Removes one planned set (prefers decreasing workingSets, then warmupSets).
+   * Cannot go below completed set count for this exercise or below 1 total set.
+   */
+  async function removeSetFromExercise(slotKey: string): Promise<boolean> {
+    const session = activeSession.value
+    if (!session || session.id == null) return false
+
+    const exercises = todayExercises.value
+    const idx = exercises.findIndex((e) => e.slotKey === slotKey)
+    if (idx < 0) return false
+    if (idx < session.currentExerciseIndex) return false
+
+    const ex = exercises[idx]
+    const completedCount = completedSets.value.filter((s) => s.exerciseSlot === slotKey).length
+    const total = ex.warmupSets + ex.workingSets
+
+    if (total <= 1) return false
+    if (total - 1 < completedCount) return false
+
+    let { warmupSets, workingSets } = ex
+    if (workingSets > 0) {
+      workingSets -= 1
+    } else if (warmupSets > 0) {
+      warmupSets -= 1
+    } else {
+      return false
+    }
+
+    const newExercises = exercises.map((e, i) =>
+      i === idx ? { ...e, warmupSets, workingSets } : e
+    )
+    const prevExercises = [...todayExercises.value]
+    const updatedSession = { ...session, exercises: newExercises }
+
+    try {
+      todayExercises.value = newExercises
+      activeSession.value = updatedSession
+      const exercisesPlain = JSON.parse(JSON.stringify(newExercises))
+      await db.sessions.update(session.id, { exercises: exercisesPlain })
+      return true
+    } catch (e) {
+      todayExercises.value = prevExercises
+      activeSession.value = { ...session, exercises: prevExercises }
+      console.error('[workout.removeSetFromExercise] Failed to persist', e)
       return false
     }
   }
@@ -468,10 +602,38 @@ export const useWorkoutStore = defineStore('workout', () => {
     restTimerSnapshot.value = null
   }
 
+  function startRestTimer(opts: RestTimerPanel) {
+    restTimerSnapshot.value = null
+    restTimerPanel.value = opts
+    restTimerMinimized.value = false
+    restTimerKey.value++
+  }
+
+  function minimizeRestTimer() {
+    restTimerMinimized.value = true
+  }
+
+  function expandRestTimer() {
+    restTimerMinimized.value = false
+  }
+
+  function stopRestTimer() {
+    restTimerPanel.value = null
+    restTimerMinimized.value = false
+    restTimerSnapshot.value = null
+  }
+
+  function isPRSet(setId: number | undefined): boolean {
+    if (setId == null) return false
+    return prSetIds.value.includes(setId)
+  }
+
   return {
     activeSession,
     todayExercises,
     completedSets,
+    prSetIds,
+    isPRSet,
     currentExercise,
     currentSetNumber,
     totalWorkoutSets,
@@ -492,9 +654,18 @@ export const useWorkoutStore = defineStore('workout', () => {
     unskipExercise,
     goToExercise,
     substituteExercise,
+    addSetToExercise,
+    removeSetFromExercise,
     updateSetLog,
     restTimerSnapshot,
+    restTimerPanel,
+    restTimerMinimized,
+    restTimerKey,
     setRestTimerSnapshot,
     clearRestTimerSnapshot,
+    startRestTimer,
+    minimizeRestTimer,
+    expandRestTimer,
+    stopRestTimer,
   }
 })

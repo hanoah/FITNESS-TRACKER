@@ -113,7 +113,7 @@ function persistSnapshot() {
 }
 
 function start(initialSeconds?: number) {
-  if (rafId) cancelAnimationFrame(rafId)
+  cancelRaf()
   timerPhase.value = 'counting'
   const secs = initialSeconds ?? displaySeconds.value
   emitDebugEvent({ eventName: 'timer_started', meta: { seconds: secs } })
@@ -123,19 +123,17 @@ function start(initialSeconds?: number) {
   rafId = requestAnimationFrame(tick)
 }
 
-function stop() {
+function cancelRaf() {
   if (rafId) {
     cancelAnimationFrame(rafId)
     rafId = 0
   }
-  workoutStore.clearRestTimerSnapshot()
 }
 
 function handlePause() {
   if (isPaused.value) return
   emitDebugEvent({ eventName: 'timer_paused', meta: { remaining: displaySeconds.value } })
-  if (rafId) cancelAnimationFrame(rafId)
-  rafId = 0
+  cancelRaf()
   isPaused.value = true
   persistSnapshot()
 }
@@ -154,7 +152,7 @@ function adjustSeconds(delta: number) {
     displaySeconds.value = Math.max(0, Math.min(999, displaySeconds.value + delta))
     persistSnapshot()
   } else {
-    if (rafId) cancelAnimationFrame(rafId)
+    cancelRaf()
     const newRemaining = Math.max(0, Math.min(999, displaySeconds.value + delta))
     displaySeconds.value = newRemaining
     endTime = Date.now() + newRemaining * 1000
@@ -206,7 +204,9 @@ onMounted(() => {
   }
 })
 
-onUnmounted(stop)
+onUnmounted(() => {
+  cancelRaf()
+})
 
 watch(
   () => props.seconds,
@@ -217,20 +217,26 @@ watch(
 )
 
 function handleGoConfirm() {
-  stop()
+  cancelRaf()
+  workoutStore.stopRestTimer()
   emit('done')
 }
 
 function handleSkip() {
   emitDebugEvent({ eventName: 'timer_skipped' })
-  stop()
+  cancelRaf()
+  workoutStore.stopRestTimer()
   emit('skip')
+}
+
+function handleMinimize() {
+  workoutStore.minimizeRestTimer()
 }
 </script>
 
 <template>
   <Teleport to="body">
-    <div class="rest-overlay" role="dialog" aria-modal="true" aria-label="Rest timer" @click.self="handleSkip">
+    <div v-show="!workoutStore.restTimerMinimized" class="rest-overlay" role="dialog" aria-modal="true" aria-label="Rest timer" @click.self="handleSkip">
       <div class="rest-modal">
         <template v-if="timerPhase === 'go'">
           <div class="go-screen">
@@ -269,6 +275,7 @@ function handleSkip() {
             <RButton variant="secondary" class="adj-btn" @click="adjustSeconds(15)">+15s</RButton>
           </div>
           <div class="timer-controls">
+            <RButton variant="secondary" @click="handleMinimize">Minimize</RButton>
             <RButton
               v-if="!isPaused"
               variant="secondary"

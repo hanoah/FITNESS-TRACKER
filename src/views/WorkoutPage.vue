@@ -15,7 +15,6 @@ import { getGoal } from '../lib/strengthGoals'
 import { getMusclesForExercise } from '../lib/exerciseLibrary'
 import { getExerciseImage } from '../lib/exerciseImageCache'
 import { emitDebugEvent } from '../lib/debugEvents'
-import RestTimer from '../components/RestTimer.vue'
 import ExercisePicker from '../components/ExercisePicker.vue'
 import SetEditModal from '../components/SetEditModal.vue'
 import ExerciseHistoryModal from '../components/ExerciseHistoryModal.vue'
@@ -32,9 +31,7 @@ const logInput = ref('')
 const parseError = ref('')
 const plateConfig = ref<ReturnType<typeof plateCalc> | null>(null)
 const logging = ref(false)
-const showRestTimer = ref(false)
-const restTimerSeconds = ref(0)
-const restTimerKey = ref(0)
+const setAdjusting = ref(false)
 const gifLoaded = ref<boolean | undefined>(undefined)
 const exerciseDbImageUrl = ref<string | null>(null)
 const exerciseImageLoading = ref(false)
@@ -96,7 +93,7 @@ function toggleWarmup() {
   }
 }
 
-const { slotHistory: pastSlotHistory, exerciseHistory: pastExerciseHistory } =
+const { slotHistory: pastSlotHistory, exerciseHistory: pastExerciseHistory, bestWeight: historicalBestWeight } =
   useProgressionHistory(
     () => currentExercise.value?.slotKey,
     () => currentExercise.value?.name,
@@ -108,6 +105,16 @@ const completedSetsForExercise = computed(() => {
   if (!ex) return []
   return workoutStore.completedSets.filter((s) => s.exerciseSlot === ex.slotKey)
 })
+
+/** Max weight this session (working sets) for current exercise — combined with history for "Best" display. */
+const sessionBestWeight = computed(() => {
+  const w = completedSetsForExercise.value.filter((s) => !s.isWarmup).map((s) => s.weight)
+  return w.length ? Math.max(...w) : 0
+})
+
+const overallBestWeight = computed(() =>
+  Math.max(historicalBestWeight.value, sessionBestWeight.value)
+)
 
 const slotHistoryForSuggestion = computed(() => {
   const ex = currentExercise.value
@@ -198,6 +205,7 @@ const workoutFlowItems = computed(() => {
     const workingDone = setsForEx.filter((s) => !s.isWarmup).length
     const isComplete = workingDone >= ex.workingSets
     const isActive = idx === currentIdx
+    const hasPR = setsForEx.some((s) => s.id != null && workoutStore.isPRSet(s.id))
     return {
       index: idx,
       name: ex.name,
@@ -206,6 +214,7 @@ const workoutFlowItems = computed(() => {
       total,
       isActive,
       isComplete,
+      hasPR,
     }
   })
 })
@@ -405,8 +414,14 @@ async function doLogSet(weight: number, reps: number, rpe: number) {
   const ex = currentExercise.value
   logging.value = true
   try {
-    const ok = await workoutStore.logSet(weight, reps, rpe, effectiveIsWarmup.value)
-    if (!ok) {
+    const result = await workoutStore.logSet(
+      weight,
+      reps,
+      rpe,
+      effectiveIsWarmup.value,
+      historicalBestWeight.value
+    )
+    if (!result.ok) {
       toast("Couldn't save set — try again?")
       return
     }
@@ -416,11 +431,18 @@ async function doLogSet(weight: number, reps: number, rpe: number) {
       logInput.value = `${source.weight} ${source.reps} ${source.rpe}`
     }
     if (ex?.restSeconds?.[0]) {
-      restTimerSeconds.value = ex.restSeconds[0]
-      restTimerKey.value++
-      showRestTimer.value = true
+      workoutStore.startRestTimer({
+        seconds: ex.restSeconds[0],
+        nextExerciseHint: restTimerNextHint.value,
+        progressPercent: workoutProgress.value * 100,
+        setLabel: restTimerSetLabel.value,
+      })
     }
-    toast(`${weight}×${reps} @ RPE ${rpe} logged`)
+    if (result.isPR) {
+      toast(`New PR — ${weight} lb!`)
+    } else {
+      toast(`${weight}×${reps} @ RPE ${rpe} logged`)
+    }
   } finally {
     logging.value = false
   }
@@ -437,8 +459,37 @@ async function handleSubmit() {
   }
 }
 
-function onRestTimerDone() {
-  showRestTimer.value = false
+async function handleAddSet() {
+  const ex = currentExercise.value
+  if (!ex) return
+  setAdjusting.value = true
+  try {
+    const ok = await workoutStore.addSetToExercise(ex.slotKey)
+    if (ok) toast('Set added')
+    else toast("Couldn't add set")
+  } finally {
+    setAdjusting.value = false
+  }
+}
+
+async function handleRemoveSet() {
+  const ex = currentExercise.value
+  if (!ex) return
+  const completed = completedSetsForExercise.value.length
+  const total = ex.warmupSets + ex.workingSets
+  if (total <= completed) {
+    toast("Can't remove — all sets logged or minimum reached.")
+    return
+  }
+  if (completed > 0 && !confirm('Remove one planned set from the end?')) return
+  setAdjusting.value = true
+  try {
+    const ok = await workoutStore.removeSetFromExercise(ex.slotKey)
+    if (ok) toast('Set removed')
+    else toast("Couldn't remove set")
+  } finally {
+    setAdjusting.value = false
+  }
 }
 
 async function handleSkip() {
@@ -630,17 +681,6 @@ async function handleAbandon() {
 
 <template>
   <div class="workout-page">
-    <RestTimer
-      v-if="showRestTimer"
-      :key="restTimerKey"
-      :seconds="restTimerSeconds"
-      :session-id="workoutStore.activeSession?.id ?? 0"
-      :next-exercise-hint="restTimerNextHint"
-      :progress-percent="workoutProgress * 100"
-      :set-label="restTimerSetLabel"
-      @done="onRestTimerDone"
-      @skip="onRestTimerDone"
-    />
     <ExercisePicker
       v-if="showSubPicker && currentExercise"
       title="Substitute exercise"
@@ -721,14 +761,14 @@ async function handleAbandon() {
           </div>
         </div>
 
-        <!-- Inline stats: Target hero, Last + Goal secondary -->
+        <!-- Inline stats: Target hero + Best/Goal secondary -->
         <div class="inline-stats">
           <div class="stat-target" v-if="suggestedWeight">
             <span class="target-weight">{{ suggestedWeight }} × {{ suggestedReps }}</span>
             <span class="target-label">target</span>
           </div>
           <div class="stat-secondary-row">
-            <span v-if="suggestion?.lastWeight" class="stat-secondary">Last: {{ suggestion.lastWeight }} × {{ suggestion.lastReps }} @ RPE {{ suggestion.lastRpe }}</span>
+            <span v-if="overallBestWeight > 0" class="stat-secondary stat-best">Best: {{ overallBestWeight }} lb</span>
             <span v-if="strengthGoal" class="stat-secondary"
               >Goal: {{ strengthGoal.weight }} lb / {{ formatStrengthLevel(strengthGoal.level) }}</span
             >
@@ -742,6 +782,26 @@ async function handleAbandon() {
         <!-- Set progress -->
         <div class="set-progress-row">
           <span class="set-info">Set {{ currentSetNumber }} of {{ totalWorkoutSets }}{{ effectiveIsWarmup ? ' (warm-up)' : '' }}</span>
+          <div class="set-progress-actions">
+            <button
+              type="button"
+              class="set-count-btn"
+              :disabled="setAdjusting || abandoning"
+              aria-label="Remove one planned set"
+              @click="handleRemoveSet"
+            >
+              −
+            </button>
+            <button
+              type="button"
+              class="set-count-btn"
+              :disabled="setAdjusting || abandoning"
+              aria-label="Add one working set"
+              @click="handleAddSet"
+            >
+              +
+            </button>
+          </div>
           <span class="progress-percent">{{ Math.round(workoutProgress * 100) }}%</span>
         </div>
         <div class="progress-bar-wrap">
@@ -820,6 +880,7 @@ async function handleAbandon() {
                 </span>
                 <span class="flow-index">{{ item.index + 1 }}.</span>
                 <span class="flow-name">{{ item.name }}</span>
+                <span v-if="item.hasPR" class="flow-pr" title="PR this session">★</span>
                 <span class="flow-sets">{{ item.completed }}/{{ item.total }}</span>
               </button>
             </li>
@@ -1012,11 +1073,43 @@ async function handleAbandon() {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 0.5rem;
   margin: var(--space-sm) 0 var(--space-xs);
   font-size: 0.85rem;
 }
-.set-info { font-weight: 600; }
-.progress-percent { color: var(--r-color-text-secondary); }
+.set-info { font-weight: 600; flex: 1; min-width: 0; }
+.set-progress-actions {
+  display: flex;
+  gap: 0.25rem;
+  flex-shrink: 0;
+}
+.set-count-btn {
+  min-width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border-radius: 6px;
+  border: 1px solid var(--r-color-stroke);
+  background: var(--r-color-fill-secondary);
+  font-size: 1.1rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--r-color-text);
+}
+.set-count-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.progress-percent { color: var(--r-color-text-secondary); flex-shrink: 0; }
+.stat-best {
+  font-weight: 600;
+  color: var(--r-color-primary);
+}
+.flow-pr {
+  color: var(--r-color-warning, #d97706);
+  font-size: 0.85rem;
+  margin-left: 0.15rem;
+}
 .progress-bar-wrap {
   width: 100%;
   height: 5px;
