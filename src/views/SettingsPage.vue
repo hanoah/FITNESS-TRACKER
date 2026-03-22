@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
-import { db } from '../lib/db'
+import { db, type UserProfile } from '../lib/db'
 import { getGoal } from '../lib/strengthGoals'
 import { getPendingCount, flushSyncQueue } from '../lib/sync'
 import { downloadBackup, importFromJson, parseSheetCsv, clearAndSeedFromTracker } from '../lib/backup'
@@ -296,7 +296,7 @@ async function handleSave() {
     if (existing) {
       await db.userProfile.update('current', patch)
     } else {
-      await db.userProfile.put({ id: 'current', ...patch })
+      await db.userProfile.put({ id: 'current', ...patch } as UserProfile)
     }
     toast('Settings saved')
   } catch (e) {
