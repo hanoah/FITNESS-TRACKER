@@ -4,7 +4,7 @@
  * Session state machine:
  *   idle ──startWorkout──▶ in_progress ──completeWorkout──▶ completed
  *        │ startFreeWorkout           │
- *        │                            ├──abandonWorkout──▶ abandoned
+ *        │                            ├──endWorkout──▶ completed (early)
  *        │                            │
  *        │                            ├──addExercise (free sessions)
  *        │                            ├──removeExercise (free sessions)
@@ -57,7 +57,7 @@ export const useWorkoutStore = defineStore('workout', () => {
   const restTimerKey = ref(0)
   const todayExercises = ref<SessionExercise[]>([])
   const completedSets = ref<SetLog[]>([])
-  /** Set IDs logged as weight PRs this session (cleared on complete/abandon). */
+  /** Set IDs logged as weight PRs this session (cleared on complete/end). */
   const prSetIds = ref<number[]>([])
   const resumeError = ref<string | null>(null)
 
@@ -243,11 +243,11 @@ export const useWorkoutStore = defineStore('workout', () => {
     }
   }
 
-  async function abandonWorkout(): Promise<boolean> {
+  async function endWorkout(): Promise<boolean> {
     const session = activeSession.value
     if (!session) return false
     try {
-      await db.sessions.update(session.id!, { status: 'abandoned' })
+      await db.sessions.update(session.id!, { status: 'completed', completedAt: Date.now() })
       activeSession.value = null
       todayExercises.value = []
       completedSets.value = []
@@ -258,7 +258,7 @@ export const useWorkoutStore = defineStore('workout', () => {
       restTimerMinimized.value = false
       return true
     } catch (e) {
-      console.error('[workout.abandonWorkout] Failed to abandon session', { sessionId: session.id }, e)
+      console.error('[workout.endWorkout] Failed to end session', { sessionId: session.id }, e)
       return false
     }
   }
@@ -647,7 +647,7 @@ export const useWorkoutStore = defineStore('workout', () => {
     removeExercise,
     logSet,
     completeWorkout,
-    abandonWorkout,
+    endWorkout,
     loadResumableSession,
     resumeSession,
     skipExercise,
