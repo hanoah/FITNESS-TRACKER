@@ -107,6 +107,16 @@ function formatDayType(dayType: string) {
     .replace(/\b\w/g, (c) => c.toUpperCase())
 }
 
+function formatStatus(status: string) {
+  const labels: Record<string, string> = {
+    completed: 'Completed',
+    in_progress: 'In Progress',
+    abandoned: 'Abandoned',
+    idle: 'Not Started',
+  }
+  return labels[status] ?? status
+}
+
 const exerciseList = computed(() => progression.exercisesSortedByRecent.value ?? [])
 
 const groupedExercises = computed(() => groupByBodyRegion(exerciseList.value))
@@ -236,7 +246,7 @@ async function handleEditSave(weight: number, reps: number, rpe: number) {
           <div class="session-info">
             <RText tag="p" class="session-date">{{ s.date }}</RText>
             <RText tag="p" class="session-meta">
-              {{ formatDayType(s.dayType) }}{{ s.weekNumber != null ? ' · Week ' + s.weekNumber : '' }} · {{ s.status }}
+              {{ formatDayType(s.dayType) }}{{ s.weekNumber != null ? ' · Week ' + s.weekNumber : '' }} · {{ formatStatus(s.status) }}
             </RText>
           </div>
           <span class="expand-icon" :class="{ open: expandedId === s.id }">

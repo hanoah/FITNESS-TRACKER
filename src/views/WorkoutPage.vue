@@ -523,7 +523,7 @@ async function handleGoToExercise(index: number) {
 }
 
 const completing = ref(false)
-const abandoning = ref(false)
+const ending = ref(false)
 const showSubPicker = ref(false)
 const showAddPicker = ref(false)
 
@@ -662,19 +662,19 @@ async function handleComplete() {
   }
 }
 
-async function handleAbandon() {
-  if (!confirm('Abandon this workout? Your logged sets will still be saved.')) return
-  if (abandoning.value) return
-  abandoning.value = true
+async function handleEndWorkout() {
+  if (!confirm('End this workout? Your logged sets will be saved.')) return
+  if (ending.value) return
+  ending.value = true
   try {
-    const ok = await workoutStore.abandonWorkout()
+    const ok = await workoutStore.endWorkout()
     if (!ok) {
-      toast("Couldn't abandon — try again?")
+      toast("Couldn't end workout — try again?")
       return
     }
     router.push('/')
   } finally {
-    abandoning.value = false
+    ending.value = false
   }
 }
 </script>
@@ -712,8 +712,8 @@ async function handleAbandon() {
         <RText tag="h2">Add your first exercise</RText>
         <RText tag="p" class="add-hint">Your canvas awaits. Pick an exercise to get started.</RText>
         <RButton type="primary" @click="openAddPicker">+ Add Exercise</RButton>
-        <RButton variant="secondary" :disabled="abandoning" @click="handleAbandon" class="abandon-free">
-          Abandon
+        <RButton variant="secondary" :disabled="ending" @click="handleEndWorkout" class="abandon-free">
+          End Workout
         </RButton>
       </RCard>
     </div>
@@ -727,7 +727,7 @@ async function handleAbandon() {
         <div class="done-secondary">
           <button v-if="canUnskip" type="button" class="done-link" @click="handleUnskip">← Back</button>
           <button v-if="workoutStore.activeSession?.dayType === 'free'" type="button" class="done-link" @click="openAddPicker">+ Add more</button>
-          <button type="button" class="done-link done-link-danger" :disabled="abandoning" @click="handleAbandon">Abandon</button>
+          <button type="button" class="done-link done-link-danger" :disabled="ending" @click="handleEndWorkout">End Workout</button>
         </div>
       </RCard>
     </div>
@@ -748,14 +748,14 @@ async function handleAbandon() {
             </button>
           </div>
           <div class="overflow-wrapper">
-            <RButton class="overflow-btn" variant="secondary" :disabled="abandoning" @click.stop="showOverflowMenu = !showOverflowMenu">⋯</RButton>
+            <RButton class="overflow-btn" variant="secondary" :disabled="ending" @click.stop="showOverflowMenu = !showOverflowMenu">⋯</RButton>
             <Transition name="dropdown">
               <div v-if="showOverflowMenu" class="overflow-menu">
                 <button v-if="todayExercises.length > 0" type="button" class="overflow-item" @click="handleSaveAsTemplate(); closeOverflowMenu()">Save as Template</button>
                 <button type="button" class="overflow-item" @click="openSubPicker(); closeOverflowMenu()">Substitute</button>
                 <button type="button" class="overflow-item" @click="openAddPicker(); closeOverflowMenu()">Add Exercise</button>
                 <button type="button" class="overflow-item" @click="handleRemoveExercise(); closeOverflowMenu()">Remove</button>
-                <button type="button" class="overflow-item" @click="handleAbandon(); closeOverflowMenu()">End Workout</button>
+                <button type="button" class="overflow-item" @click="handleEndWorkout(); closeOverflowMenu()">End Workout</button>
               </div>
             </Transition>
           </div>
@@ -786,7 +786,7 @@ async function handleAbandon() {
             <button
               type="button"
               class="set-count-btn"
-              :disabled="setAdjusting || abandoning"
+              :disabled="setAdjusting || ending"
               aria-label="Remove one planned set"
               @click="handleRemoveSet"
             >
@@ -795,7 +795,7 @@ async function handleAbandon() {
             <button
               type="button"
               class="set-count-btn"
-              :disabled="setAdjusting || abandoning"
+              :disabled="setAdjusting || ending"
               aria-label="Add one working set"
               @click="handleAddSet"
             >
