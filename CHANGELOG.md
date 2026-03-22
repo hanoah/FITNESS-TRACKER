@@ -4,6 +4,28 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.1.8.0] - 2026-03-18
+
+### Added
+
+- Minimized rest timer: tap "Minimize" to collapse the full-screen overlay into a floating chip; tap chip to re-expand; auto-minimizes when navigating to History or Settings
+- Real-time PR tracking: sets that beat your historical best weight are flagged with a toast ("New PR — X lb!") and a star in the workout flow sidebar
+- "Best" weight display in inline stats (replaces "Last") showing max weight across all prior sessions and current session
+- Dynamic set management: +/- buttons on the set progress row to add or remove planned sets mid-workout
+- MiniTimer component for compact timer chip UI
+
+### Changed
+
+- Rest timer lifecycle managed globally via store (`startRestTimer`, `stopRestTimer`, `minimizeRestTimer`, `expandRestTimer`) instead of per-page state
+- `logSet` now returns `LogSetResult` with `isPR` and `previousBest` fields for PR detection
+- `RestTimer` refactored: `stop()` split into `cancelRaf()` (animation cleanup) and `stopRestTimer()` (state reset)
+
+### Fixed
+
+- Rest timer minimize now works correctly with Vue `Teleport` — `v-show` applied to teleported DOM elements instead of component wrappers
+- Sequential rest timers no longer restore stale snapshots from previous rest periods
+- Settings page type assertion for `UserProfile` on initial save
+
 ## [0.1.7.1] - 2026-03-18
 
 ### Fixed

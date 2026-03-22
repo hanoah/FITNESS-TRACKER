@@ -17,7 +17,9 @@ Personal workout tracker based on Jeff Nippard's Bodybuilding Transformation Sys
 - Exercise queue with form cues and progression suggestions
 - Log sets: `150 12 9` (weight reps RPE)
 - Plate math for barbell lifts (45 lb default)
-- Rest timer overlay with beep
+- Rest timer overlay with beep, pause/resume, minimize to floating chip
+- Real-time PR tracking with toast notifications and flow sidebar markers
+- Dynamic add/remove sets mid-workout
 - Session persist and resume on interrupt
 - History page (by workout and by exercise)
 - Backup and restore (JSON export/import)

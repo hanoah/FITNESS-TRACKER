@@ -5,12 +5,16 @@ import RestTimer from './RestTimer.vue'
 
 const mockSetRestTimerSnapshot = vi.fn()
 const mockClearRestTimerSnapshot = vi.fn()
+const mockStopRestTimer = vi.fn()
+const mockMinimizeRestTimer = vi.fn()
 
 vi.mock('../store/workout', () => ({
   useWorkoutStore: () => ({
     restTimerSnapshot: null,
     setRestTimerSnapshot: mockSetRestTimerSnapshot,
     clearRestTimerSnapshot: mockClearRestTimerSnapshot,
+    stopRestTimer: mockStopRestTimer,
+    minimizeRestTimer: mockMinimizeRestTimer,
   }),
 }))
 
@@ -67,6 +71,8 @@ describe('RestTimer', () => {
     vi.stubGlobal('AudioContext', MockAudioContext as unknown as typeof AudioContext)
     mockSetRestTimerSnapshot.mockClear()
     mockClearRestTimerSnapshot.mockClear()
+    mockStopRestTimer.mockClear()
+    mockMinimizeRestTimer.mockClear()
 
     rafId = 0
     globalThis.requestAnimationFrame = (cb: FrameRequestCallback) => {
@@ -131,7 +137,7 @@ describe('RestTimer', () => {
     await btn!.trigger('click')
 
     expect(wrapper.emitted('done')).toHaveLength(1)
-    expect(mockClearRestTimerSnapshot).toHaveBeenCalled()
+    expect(mockStopRestTimer).toHaveBeenCalled()
   })
 
   it('emits skip when Skip is clicked during countdown', async () => {
@@ -143,7 +149,7 @@ describe('RestTimer', () => {
     await skip!.trigger('click')
 
     expect(wrapper.emitted('skip')).toHaveLength(1)
-    expect(mockClearRestTimerSnapshot).toHaveBeenCalled()
+    expect(mockStopRestTimer).toHaveBeenCalled()
   })
 
   it('pauses and resumes countdown', async () => {

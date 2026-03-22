@@ -416,6 +416,108 @@ describe('workoutProgress', () => {
     expect(workoutStore.workoutProgress).toBeCloseTo(2 / 4, 5)
   })
 
+  it('addSetToExercise increments workingSets for current exercise', async () => {
+    const workoutStore = useWorkoutStore()
+    const ex: SessionExercise = { ...baseExercise, warmupSets: 0, workingSets: 3, slotKey: 'free:0', dayType: 'free' }
+    await workoutStore.startWorkout('free', [ex])
+    const ok = await workoutStore.addSetToExercise('free:0')
+    expect(ok).toBe(true)
+    expect(workoutStore.todayExercises[0].workingSets).toBe(4)
+  })
+
+  it('addSetToExercise returns false for past exercise index', async () => {
+    const workoutStore = useWorkoutStore()
+    const ex1: SessionExercise = { ...baseExercise, name: 'A', slotKey: 'free:0', dayType: 'free', workingSets: 2, warmupSets: 0 }
+    const ex2: SessionExercise = { ...baseExercise, name: 'B', slotKey: 'free:1', dayType: 'free', workingSets: 2, warmupSets: 0 }
+    await workoutStore.startWorkout('free', [ex1, ex2])
+    workoutStore.activeSession!.currentExerciseIndex = 1
+    const ok = await workoutStore.addSetToExercise('free:0')
+    expect(ok).toBe(false)
+  })
+
+  it('removeSetFromExercise decrements when sets remain unlogged', async () => {
+    const workoutStore = useWorkoutStore()
+    const ex: SessionExercise = { ...baseExercise, warmupSets: 0, workingSets: 4, slotKey: 'free:0', dayType: 'free' }
+    await workoutStore.startWorkout('free', [ex])
+    const ok = await workoutStore.removeSetFromExercise('free:0')
+    expect(ok).toBe(true)
+    expect(workoutStore.todayExercises[0].workingSets).toBe(3)
+  })
+
+  it('removeSetFromExercise returns false when all sets logged', async () => {
+    const workoutStore = useWorkoutStore()
+    const ex: SessionExercise = { ...baseExercise, warmupSets: 0, workingSets: 1, slotKey: 'free:0', dayType: 'free' }
+    await workoutStore.startWorkout('free', [ex])
+    vi.mocked(mockDb.sets.add).mockResolvedValue(1)
+    await workoutStore.logSet(100, 10, 8)
+    const ok = await workoutStore.removeSetFromExercise('free:0')
+    expect(ok).toBe(false)
+  })
+
+  it('logSet marks PR when weight beats historical and session prior', async () => {
+    const workoutStore = useWorkoutStore()
+    const ex: SessionExercise = { ...baseExercise, warmupSets: 0, workingSets: 3, slotKey: 'free:0', dayType: 'free' }
+    await workoutStore.startWorkout('free', [ex])
+    vi.mocked(mockDb.sets.add).mockResolvedValue(1)
+    const r1 = await workoutStore.logSet(130, 10, 8, false, 125)
+    expect(r1.ok).toBe(true)
+    if (r1.ok) expect(r1.isPR).toBe(true)
+    const r2 = await workoutStore.logSet(130, 10, 8, false, 125)
+    expect(r2.ok).toBe(true)
+    if (r2.ok) expect(r2.isPR).toBe(false)
+  })
+
+  it('logSet does not mark PR without prior history', async () => {
+    const workoutStore = useWorkoutStore()
+    const ex: SessionExercise = { ...baseExercise, warmupSets: 0, workingSets: 3, slotKey: 'free:0', dayType: 'free' }
+    await workoutStore.startWorkout('free', [ex])
+    vi.mocked(mockDb.sets.add).mockResolvedValue(1)
+    const r = await workoutStore.logSet(200, 5, 8, false, 0)
+    expect(r.ok).toBe(true)
+    if (r.ok) expect(r.isPR).toBe(false)
+  })
+
+  it('isPRSet returns true for logged PR set IDs', async () => {
+    const workoutStore = useWorkoutStore()
+    const ex: SessionExercise = { ...baseExercise, warmupSets: 0, workingSets: 3, slotKey: 'free:0', dayType: 'free' }
+    await workoutStore.startWorkout('free', [ex])
+    vi.mocked(mockDb.sets.add).mockResolvedValue(42)
+    await workoutStore.logSet(200, 5, 8, false, 150)
+    expect(workoutStore.isPRSet(42)).toBe(true)
+    expect(workoutStore.isPRSet(999)).toBe(false)
+    expect(workoutStore.isPRSet(undefined)).toBe(false)
+  })
+
+  it('addSetToExercise rolls back on DB failure', async () => {
+    const workoutStore = useWorkoutStore()
+    const ex: SessionExercise = { ...baseExercise, warmupSets: 0, workingSets: 3, slotKey: 'free:0', dayType: 'free' }
+    await workoutStore.startWorkout('free', [ex])
+    vi.mocked(mockDb.sessions.update).mockRejectedValueOnce(new Error('DB fail'))
+    const ok = await workoutStore.addSetToExercise('free:0')
+    expect(ok).toBe(false)
+    expect(workoutStore.todayExercises[0].workingSets).toBe(3)
+  })
+
+  it('removeSetFromExercise decrements warmupSets when workingSets is 0', async () => {
+    const workoutStore = useWorkoutStore()
+    const ex: SessionExercise = { ...baseExercise, warmupSets: 2, workingSets: 0, slotKey: 'free:0', dayType: 'free' }
+    await workoutStore.startWorkout('free', [ex])
+    const ok = await workoutStore.removeSetFromExercise('free:0')
+    expect(ok).toBe(true)
+    expect(workoutStore.todayExercises[0].warmupSets).toBe(1)
+    expect(workoutStore.todayExercises[0].workingSets).toBe(0)
+  })
+
+  it('removeSetFromExercise rolls back on DB failure', async () => {
+    const workoutStore = useWorkoutStore()
+    const ex: SessionExercise = { ...baseExercise, warmupSets: 0, workingSets: 4, slotKey: 'free:0', dayType: 'free' }
+    await workoutStore.startWorkout('free', [ex])
+    vi.mocked(mockDb.sessions.update).mockRejectedValueOnce(new Error('DB fail'))
+    const ok = await workoutStore.removeSetFromExercise('free:0')
+    expect(ok).toBe(false)
+    expect(workoutStore.todayExercises[0].workingSets).toBe(4)
+  })
+
   it('clamps to 1 when completed exceeds total', async () => {
     const workoutStore = useWorkoutStore()
     const ex: SessionExercise = { ...baseExercise, warmupSets: 0, workingSets: 2, slotKey: 'free:0', dayType: 'free' }

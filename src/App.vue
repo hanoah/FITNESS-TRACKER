@@ -1,16 +1,30 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { storeToRefs } from 'pinia'
 import { useWorkoutStore } from './store/workout'
 import { seedBuiltInTemplates } from './lib/templateLibrary'
+import RestTimer from './components/RestTimer.vue'
+import MiniTimer from './components/MiniTimer.vue'
 
 const router = useRouter()
 const route = useRoute()
 const workoutStore = useWorkoutStore()
+const { restTimerPanel, restTimerMinimized, restTimerKey } = storeToRefs(workoutStore)
 
 onMounted(() => {
   seedBuiltInTemplates()
 })
+
+/** Browse History/Settings while resting: collapse to chip (timer keeps running). */
+watch(
+  () => route.path,
+  (path) => {
+    if (path !== '/workout' && workoutStore.restTimerPanel) {
+      workoutStore.minimizeRestTimer()
+    }
+  }
+)
 
 const hasActiveWorkout = computed(() => !!workoutStore.activeSession)
 
@@ -34,6 +48,16 @@ const firstTabActive = computed(() =>
           <h1 class="title">Workout</h1>
         </header>
         <main class="main">
+          <RestTimer
+            v-if="restTimerPanel"
+            :key="restTimerKey"
+            :seconds="restTimerPanel.seconds"
+            :session-id="workoutStore.activeSession?.id ?? 0"
+            :next-exercise-hint="restTimerPanel.nextExerciseHint"
+            :progress-percent="restTimerPanel.progressPercent"
+            :set-label="restTimerPanel.setLabel"
+          />
+          <MiniTimer v-if="restTimerPanel" />
           <RouterView v-slot="{ Component }">
             <Transition name="fade" mode="out-in">
               <component :is="Component" />
