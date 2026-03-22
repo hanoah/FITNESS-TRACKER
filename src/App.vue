@@ -10,7 +10,7 @@ import MiniTimer from './components/MiniTimer.vue'
 const router = useRouter()
 const route = useRoute()
 const workoutStore = useWorkoutStore()
-const { restTimerPanel, restTimerMinimized, restTimerKey } = storeToRefs(workoutStore)
+const { restTimerPanel, restTimerKey } = storeToRefs(workoutStore)
 
 onMounted(() => {
   seedBuiltInTemplates()
