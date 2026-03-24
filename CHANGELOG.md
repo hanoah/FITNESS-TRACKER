@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.1.8.2] - 2026-03-24
+
+### Added
+
+- Built-in "Going Heavy" workout template: full-body session with 12 exercises organized as a warm-up circuit (3 sets) followed by 4 supersets (2 sets each), using stretch band, barbell, bench, dumbbell, and pull-up bar
+
 ## [0.1.8.1] - 2026-03-18
 
 ### Changed
