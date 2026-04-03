@@ -4,6 +4,32 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.1.9.0] - 2026-04-02
+
+### Added
+
+- Plate calculator modal: tap plates to build weight visually, type a target to auto-decompose, cycle between bar weights (45/35/15/none), and apply the result to your log input
+- Delete individual logged sets with confirmation and automatic exercise rollback when the deleted set triggered an auto-advance
+- Edit warm-up status on any logged set (workout and history pages) with audit trail (prevIsWarmup)
+- 35 lb plate support in plate calculator
+- "Custom / Unclassified" section in exercise picker when substituting, so exercises without muscle data still appear
+- Per-exercise set progress ("Set 2 of 4") replaces the previous whole-workout counter
+- Last session weight/reps display under the suggested weight for quick comparison
+- Muscle data now attached to history-only exercises for better substitute filtering
+
+### Changed
+
+- Workout flow redesigned: exercises shown as expandable groups with inline set rows, replacing the collapsible list + separate logged-sets section
+- Plate math moved from inline collapsible to a dedicated modal (cleaner log card, faster access)
+- Set progress shows per-exercise count with overall workout progress bar and percentage below
+- Warm-up toggle moved from stats card to log card (closer to the action)
+- Exercise picker filters out exercises without muscle data from the main results when in substitute mode (shows them in a separate section)
+- plateCalc no longer throws when weight is at or below bar weight (returns empty plates instead)
+
+### Fixed
+
+- completedSetCount on session now decrements correctly when deleting a set (was silently out of sync with actual set count)
+
 ## [0.1.8.2] - 2026-03-24
 
 ### Added
