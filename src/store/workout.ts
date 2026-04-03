@@ -645,24 +645,28 @@ export const useWorkoutStore = defineStore('workout', () => {
       prevIndex > 0 &&
       !(completedSetsBySlot.value.get(currentEx.slotKey)?.length)
 
+    const newCount = Math.max(0, session.completedSetCount - 1)
+
     if (shouldRollBack) {
       const rolledBackIdx = todayExercises.value.findIndex((e) => e.slotKey === deletedSlot)
       if (rolledBackIdx >= 0) {
-        activeSession.value = { ...session, currentExerciseIndex: rolledBackIdx }
+        activeSession.value = { ...session, currentExerciseIndex: rolledBackIdx, completedSetCount: newCount }
       }
+    } else {
+      activeSession.value = { ...session, completedSetCount: newCount }
     }
 
     try {
       await db.sets.delete(setId)
+      const sessionPatch: Record<string, unknown> = { completedSetCount: newCount }
       if (shouldRollBack && activeSession.value) {
-        await db.sessions.update(session.id!, {
-          currentExerciseIndex: activeSession.value.currentExerciseIndex,
-        })
+        sessionPatch.currentExerciseIndex = activeSession.value.currentExerciseIndex
       }
+      await db.sessions.update(session.id!, sessionPatch)
       return true
     } catch (e) {
       completedSets.value = prevSets
-      activeSession.value = { ...session, currentExerciseIndex: prevIndex }
+      activeSession.value = { ...session, currentExerciseIndex: prevIndex, completedSetCount: session.completedSetCount }
       console.error('[workout.deleteSetLog] Failed to delete', { setId }, e)
       return false
     }
