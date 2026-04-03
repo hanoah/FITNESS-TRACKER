@@ -215,7 +215,11 @@ export async function getAllKnownExercises(): Promise<ExerciseInfo[]> {
   for (const name of historyNames) {
     const norm = normalizeName(name)
     if (!byNormalizedName.has(norm)) {
-      byNormalizedName.set(norm, { name, source: 'history' })
+      const rawMuscles = getMusclesForExercise(name)
+      const muscles = rawMuscles.length > 0
+        ? { primary: rawMuscles.slice(0, 1), secondary: rawMuscles.slice(1) }
+        : undefined
+      byNormalizedName.set(norm, { name, source: 'history', muscles })
     }
   }
   return Array.from(byNormalizedName.values())
@@ -247,13 +251,15 @@ export async function searchExercises(query: string): Promise<ExerciseInfo[]> {
   return all.filter((ex) => ex.name.toLowerCase().includes(q))
 }
 
-/** Filter exercises by relevant muscles (primary or secondary). */
+/** Filter exercises by relevant muscles (primary or secondary). Exercises with no muscle data pass through. */
 export function filterByMuscles(exercises: ExerciseInfo[], muscles: string[]): ExerciseInfo[] {
   if (!muscles.length) return exercises
   const set = new Set(muscles.map((m) => m.toLowerCase()))
   return exercises.filter((ex) => {
-    const primary = ex.muscles?.primary ?? []
-    const secondary = ex.muscles?.secondary ?? []
+    if (!ex.muscles) return true
+    const primary = ex.muscles.primary ?? []
+    const secondary = ex.muscles.secondary ?? []
+    if (primary.length === 0 && secondary.length === 0) return true
     return primary.some((m) => set.has(m.toLowerCase())) || secondary.some((m) => set.has(m.toLowerCase()))
   })
 }

@@ -10,13 +10,14 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  save: [weight: number, reps: number, rpe: number]
+  save: [weight: number, reps: number, rpe: number, isWarmup: boolean]
   cancel: []
 }>()
 
 const weightInput = ref('')
 const repsInput = ref('')
 const rpeInput = ref('')
+const warmupInput = ref(false)
 const errorMsg = ref('')
 
 watch(
@@ -26,6 +27,7 @@ watch(
       weightInput.value = String(set.weight)
       repsInput.value = String(set.reps)
       rpeInput.value = String(set.rpe)
+      warmupInput.value = set.isWarmup
       errorMsg.value = ''
     }
   },
@@ -39,7 +41,7 @@ function handleSave() {
   const rpe = parseFloat(rpeInput.value)
   try {
     const validated = validateSetEdit(w, r, rpe)
-    emit('save', validated.weight, validated.reps, validated.rpe)
+    emit('save', validated.weight, validated.reps, validated.rpe, warmupInput.value)
   } catch (e) {
     errorMsg.value = e instanceof ParseError ? e.message : 'Invalid values'
   }
@@ -70,6 +72,18 @@ function handleCancel() {
             <RInput v-model="rpeInput" type="number" min="1" max="10" step="0.5" placeholder="9" />
           </div>
         </div>
+        <button
+          type="button"
+          class="warmup-toggle"
+          :aria-pressed="warmupInput"
+          aria-label="Mark set as warm-up"
+          @click="warmupInput = !warmupInput"
+        >
+          <span class="warmup-toggle-label">Warm-up set</span>
+          <span class="toggle-track" :class="{ on: warmupInput }" aria-hidden="true">
+            <span class="toggle-knob" />
+          </span>
+        </button>
         <RText v-if="errorMsg" tag="p" class="error">{{ errorMsg }}</RText>
         <div class="edit-actions">
           <RButton variant="secondary" :disabled="saving" @click="handleCancel">Cancel</RButton>
@@ -127,6 +141,55 @@ function handleCancel() {
   color: var(--r-color-error);
   font-size: 0.9rem;
   margin: 0 0 var(--space-md) 0;
+}
+.warmup-toggle {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding: var(--space-sm) var(--space-md);
+  margin-bottom: var(--space-md);
+  border-radius: 12px;
+  border: 1px solid var(--r-color-border, #e7e5e4);
+  background: var(--r-color-bg);
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+}
+.warmup-toggle:hover {
+  background: var(--r-color-surface-muted, #fafaf9);
+}
+.warmup-toggle-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--r-color-text);
+}
+.toggle-track {
+  flex-shrink: 0;
+  width: 2.75rem;
+  height: 1.5rem;
+  border-radius: 999px;
+  background: var(--r-color-fill-secondary, #d6d3d1);
+  position: relative;
+  transition: background 0.15s ease;
+}
+.toggle-track.on {
+  background: var(--r-color-primary, #2d2a26);
+}
+.toggle-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 1.125rem;
+  height: 1.125rem;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+  transition: transform 0.15s ease;
+}
+.toggle-track.on .toggle-knob {
+  transform: translateX(1.25rem);
 }
 .edit-actions {
   display: flex;

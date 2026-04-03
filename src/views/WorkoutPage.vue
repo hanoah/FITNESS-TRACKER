@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
-import { useWorkoutStore } from '../store/workout'
+import { useWorkoutStore, isExerciseComplete } from '../store/workout'
 import { useProgressionHistory } from '../composables/useProgressionHistory'
 import { parseLogInput, ParseError, rebuildLogInput } from '../lib/parseLogInput'
-import { plateCalc, platesToTotal } from '../lib/plateCalc'
+import PlateCalculator from '../components/PlateCalculator.vue'
 import { suggest } from '../lib/progression'
 import { toSessionExercise } from '../lib/exerciseLibrary'
 import { saveTemplate } from '../lib/templateLibrary'
@@ -13,11 +13,12 @@ import { getCompleteWorkoutMessage } from '../lib/delightCopy'
 import { useUserProfile } from '../composables/useUserProfile'
 import { getGoal } from '../lib/strengthGoals'
 import { getMusclesForExercise } from '../lib/exerciseLibrary'
-import { getExerciseImage } from '../lib/exerciseImageCache'
+
 import { emitDebugEvent } from '../lib/debugEvents'
 import ExercisePicker from '../components/ExercisePicker.vue'
 import SetEditModal from '../components/SetEditModal.vue'
 import ExerciseHistoryModal from '../components/ExerciseHistoryModal.vue'
+import ExerciseSetsGroup from '../components/ExerciseSetsGroup.vue'
 import { RButton, RCard, RInput, RText, useToast } from 'roughness'
 import type { ExerciseInfo } from '../lib/exerciseLibrary'
 import type { SetLog } from '../types/session'
@@ -29,16 +30,10 @@ const toast = useToast()
 
 const logInput = ref('')
 const parseError = ref('')
-const plateConfig = ref<ReturnType<typeof plateCalc> | null>(null)
 const logging = ref(false)
 const setAdjusting = ref(false)
-const gifLoaded = ref<boolean | undefined>(undefined)
-const exerciseDbImageUrl = ref<string | null>(null)
-const exerciseImageLoading = ref(false)
-const includeBar = ref(true)
 const showOverflowMenu = ref(false)
-const showDemo = ref(false)
-const showPlateCalc = ref(false)
+const showPlateModal = ref(false)
 const showFlowList = ref(false)
 const editingSet = ref<SetLog | null>(null)
 const savingEdit = ref(false)
@@ -78,6 +73,8 @@ const goalProjection = computed(() => {
 const currentExercise = computed(() => workoutStore.currentExercise)
 const currentSetNumber = computed(() => workoutStore.currentSetNumber)
 const totalWorkoutSets = computed(() => workoutStore.totalWorkoutSets)
+const currentExerciseSetNumber = computed(() => workoutStore.currentExerciseSetNumber)
+const totalSetsForCurrentExercise = computed(() => workoutStore.totalSetsForCurrentExercise)
 const isWarmupSet = computed(() => workoutStore.isWarmupSet)
 
 /** When null, use store auto warm-up detection; otherwise user override (persists across sets until exercise changes). */
@@ -103,7 +100,7 @@ const { slotHistory: pastSlotHistory, exerciseHistory: pastExerciseHistory, best
 const completedSetsForExercise = computed(() => {
   const ex = currentExercise.value
   if (!ex) return []
-  return workoutStore.completedSets.filter((s) => s.exerciseSlot === ex.slotKey)
+  return workoutStore.completedSetsBySlot.get(ex.slotKey) ?? []
 })
 
 /** Max weight this session (working sets) for current exercise — combined with history for "Best" display. */
@@ -145,8 +142,6 @@ const suggestedRpe = computed(() => {
   return ex?.lastSetRPE ?? 9
 })
 
-const plateInput = ref('')
-
 const lastCompletedSetForPreload = computed(() => {
   const sets = completedSetsForExercise.value
   if (sets.length === 0) return null
@@ -173,21 +168,6 @@ const prefillSource = computed(() => {
   return null
 })
 
-const computedWeightFromPlates = computed(() => {
-  if (!isBarbell.value || !plateInput.value.trim()) return null
-  const tokens = plateInput.value.trim().split(/\s+/).map((t) => parseFloat(t))
-  if (tokens.length % 2 !== 0 || tokens.some((n) => !Number.isFinite(n) || n <= 0)) return null
-  const perSide: { weight: number; count: number }[] = []
-  for (let i = 0; i < tokens.length; i += 2) {
-    perSide.push({ count: Math.round(tokens[i]), weight: tokens[i + 1] })
-  }
-  try {
-    return platesToTotal(perSide, includeBar.value ? 45 : 0)
-  } catch {
-    return null
-  }
-})
-
 const upcomingExercises = computed(() => {
   const idx = workoutStore.activeSession?.currentExerciseIndex ?? 0
   return workoutStore.todayExercises.slice(idx + 1)
@@ -197,13 +177,11 @@ const upcomingExercises = computed(() => {
 const workoutFlowItems = computed(() => {
   const exercises = todayExercises.value
   const currentIdx = workoutStore.activeSession?.currentExerciseIndex ?? 0
-  const completed = workoutStore.completedSets
+  const bySlot = workoutStore.completedSetsBySlot
   return exercises.map((ex, idx) => {
-    const setsForEx = completed.filter((s) => s.exerciseSlot === ex.slotKey)
+    const setsForEx = bySlot.get(ex.slotKey) ?? []
     const total = ex.warmupSets + ex.workingSets
     const done = setsForEx.length
-    const workingDone = setsForEx.filter((s) => !s.isWarmup).length
-    const isComplete = workingDone >= ex.workingSets
     const isActive = idx === currentIdx
     const hasPR = setsForEx.some((s) => s.id != null && workoutStore.isPRSet(s.id))
     return {
@@ -213,8 +191,10 @@ const workoutFlowItems = computed(() => {
       completed: done,
       total,
       isActive,
-      isComplete,
+      isComplete: isExerciseComplete(ex, setsForEx),
       hasPR,
+      sets: setsForEx,
+      exercise: ex,
     }
   })
 })
@@ -237,7 +217,7 @@ const workoutProgress = computed(() => workoutStore.workoutProgress)
 
 const restTimerSetLabel = computed(() => {
   if (!currentExercise.value) return ''
-  return `Set ${currentSetNumber.value} of ${totalWorkoutSets.value}`
+  return `Set ${currentExerciseSetNumber.value} of ${totalSetsForCurrentExercise.value}`
 })
 
 const canUnskip = computed(() => (workoutStore.activeSession?.currentExerciseIndex ?? 0) > 0)
@@ -291,50 +271,9 @@ watch(showOverflowMenu, (open) => {
   setTimeout(() => document.addEventListener('click', handler, { once: true }), 0)
 })
 
-watch(
-  () => currentExercise.value?.imagePath,
-  () => {
-    gifLoaded.value = undefined
-  }
-)
-
-watch(
-  () => [currentExercise.value?.slotKey, currentExercise.value?.imagePath, currentExercise.value?.exerciseDbId, currentExercise.value?.imageUrl] as const,
-  async ([slotKey, imagePath, exerciseDbId, imageUrl]) => {
-    if (exerciseDbImageUrl.value) {
-      URL.revokeObjectURL(exerciseDbImageUrl.value)
-      exerciseDbImageUrl.value = null
-    }
-    if (exerciseDbId && !imagePath && imageUrl) {
-      exerciseImageLoading.value = true
-      const url = await getExerciseImage(exerciseDbId, imageUrl)
-      exerciseImageLoading.value = false
-      if (currentExercise.value?.slotKey === slotKey) {
-        if (url) {
-          exerciseDbImageUrl.value = url
-        }
-      } else if (url) {
-        URL.revokeObjectURL(url)
-      }
-    } else {
-      exerciseDbImageUrl.value = null
-    }
-  },
-  { immediate: true }
-)
-
-onBeforeUnmount(() => {
-  if (exerciseDbImageUrl.value) {
-    URL.revokeObjectURL(exerciseDbImageUrl.value)
-    exerciseDbImageUrl.value = null
-  }
-})
-
 function resetInputState() {
   logInput.value = ''
   parseError.value = ''
-  plateConfig.value = null
-  plateInput.value = ''
 }
 
 watch(
@@ -367,30 +306,15 @@ const parsedLogValues = computed(() => {
   }
 })
 
-function applyPlateWeight() {
-  const w = computedWeightFromPlates.value
-  if (w == null) return
+function onUsePlateWeight(weight: number) {
   const r = suggestedReps.value || 8
   const rpe = suggestedRpe.value || 9
-  logInput.value = `${w} ${r} ${rpe}`
+  logInput.value = `${weight} ${r} ${rpe}`
+  showPlateModal.value = false
 }
 
-watch(logInput, (val) => {
+watch(logInput, () => {
   parseError.value = ''
-  if (!val.trim()) {
-    plateConfig.value = null
-    return
-  }
-  try {
-    const parsed = parseLogInput(val)
-    if (isBarbell.value) {
-      plateConfig.value = plateCalc(parsed.weight)
-    } else {
-      plateConfig.value = null
-    }
-  } catch {
-    plateConfig.value = null
-  }
 })
 
 /** Pre-fill from prefillSource when exercise changes or source updates. Don't overwrite user input. */
@@ -426,6 +350,8 @@ async function doLogSet(weight: number, reps: number, rpe: number) {
       return
     }
     resetInputState()
+    // Per-set override: reset so next set falls back to auto-detection
+    warmupOverride.value = null
     const source = prefillSource.value
     if (source) {
       logInput.value = `${source.weight} ${source.reps} ${source.rpe}`
@@ -489,6 +415,21 @@ async function handleRemoveSet() {
     else toast("Couldn't remove set")
   } finally {
     setAdjusting.value = false
+  }
+}
+
+const deleting = ref(false)
+
+async function handleDeleteSet(setId: number) {
+  const set = workoutStore.completedSets.find((s) => s.id === setId)
+  if (!set) return
+  if (!confirm(`Delete ${set.weight} × ${set.reps} @ RPE ${set.rpe}?`)) return
+  deleting.value = true
+  try {
+    const ok = await workoutStore.deleteSetLog(setId)
+    if (!ok) toast("Couldn't delete set")
+  } finally {
+    deleting.value = false
   }
 }
 
@@ -615,12 +556,12 @@ function closeEditModal() {
   editingSet.value = null
 }
 
-async function handleEditSave(weight: number, reps: number, rpe: number) {
+async function handleEditSave(weight: number, reps: number, rpe: number, isWarmup: boolean) {
   const set = editingSet.value
   if (!set?.id) return
   savingEdit.value = true
   try {
-    const ok = await workoutStore.updateSetLog(set.id, weight, reps, rpe)
+    const ok = await workoutStore.updateSetLog(set.id, weight, reps, rpe, isWarmup)
     if (ok) {
       toast(`Updated to ${weight}×${reps} @ RPE ${rpe}`)
       closeEditModal()
@@ -761,14 +702,18 @@ async function handleEndWorkout() {
           </div>
         </div>
 
-        <!-- Inline stats: Target hero + Best/Goal secondary -->
+        <!-- Inline stats: Suggested hero + PR/Goal secondary -->
         <div class="inline-stats">
           <div class="stat-target" v-if="suggestedWeight">
             <span class="target-weight">{{ suggestedWeight }} × {{ suggestedReps }}</span>
-            <span class="target-label">target</span>
+            <span class="target-label">Suggested</span>
+          </div>
+          <div v-if="suggestion?.note" class="stat-note">{{ suggestion.note }}</div>
+          <div v-if="suggestion?.lastDate" class="stat-note stat-last-session">
+            Last: {{ suggestion.lastWeight }} × {{ suggestion.lastReps }}<template v-if="suggestion.lastRpe"> @ RPE {{ suggestion.lastRpe }}</template> · {{ suggestion.lastDate }}
           </div>
           <div class="stat-secondary-row">
-            <span v-if="overallBestWeight > 0" class="stat-secondary stat-best">Best: {{ overallBestWeight }} lb</span>
+            <span v-if="overallBestWeight > 0" class="stat-secondary stat-best">PR: {{ overallBestWeight }} lb</span>
             <span v-if="strengthGoal" class="stat-secondary"
               >Goal: {{ strengthGoal.weight }} lb / {{ formatStrengthLevel(strengthGoal.level) }}</span
             >
@@ -779,9 +724,16 @@ async function handleEndWorkout() {
           </div>
         </div>
 
-        <!-- Set progress -->
+        <!-- Set progress (per-exercise) -->
         <div class="set-progress-row">
-          <span class="set-info">Set {{ currentSetNumber }} of {{ totalWorkoutSets }}{{ effectiveIsWarmup ? ' (warm-up)' : '' }}</span>
+          <span class="set-info">Set {{ currentExerciseSetNumber }} of {{ totalSetsForCurrentExercise }}{{ effectiveIsWarmup ? ' (warm-up)' : '' }}</span>
+          <span class="progress-percent">{{ Math.round(workoutProgress * 100) }}%</span>
+        </div>
+        <div class="progress-bar-wrap">
+          <div class="progress-bar-fill" :style="{ width: (workoutProgress * 100) + '%' }" />
+        </div>
+        <div class="set-progress-row planned-set-row">
+          <span class="planned-label">{{ totalSetsForCurrentExercise }} sets planned</span>
           <div class="set-progress-actions">
             <button
               type="button"
@@ -802,27 +754,9 @@ async function handleEndWorkout() {
               +
             </button>
           </div>
-          <span class="progress-percent">{{ Math.round(workoutProgress * 100) }}%</span>
         </div>
-        <div class="progress-bar-wrap">
-          <div class="progress-bar-fill" :style="{ width: (workoutProgress * 100) + '%' }" />
-        </div>
+        <span class="overall-progress-label">{{ currentSetNumber - 1 }} of {{ totalWorkoutSets }} total</span>
 
-        <button
-          type="button"
-          class="warmup-toggle"
-          :aria-pressed="effectiveIsWarmup"
-          aria-label="Mark next set as warm-up"
-          @click="toggleWarmup"
-        >
-          <div class="warmup-toggle-text">
-            <span class="warmup-toggle-title">Warm-up set</span>
-            <span class="warmup-toggle-hint">Tap to override auto (stays for this exercise)</span>
-          </div>
-          <span class="toggle-track" :class="{ on: effectiveIsWarmup }" aria-hidden="true">
-            <span class="toggle-knob" />
-          </span>
-        </button>
       </RCard>
 
       <!-- Log input (always visible, no card wrapper needed but keeping for roughness style) -->
@@ -860,97 +794,53 @@ async function handleEndWorkout() {
           </div>
         </div>
         <RText v-if="parseError" tag="p" class="error">{{ parseError }}</RText>
+        <button
+          type="button"
+          class="warmup-toggle"
+          :aria-pressed="effectiveIsWarmup"
+          aria-label="Mark this set as warm-up"
+          @click="toggleWarmup"
+        >
+          <div class="warmup-toggle-text">
+            <span class="warmup-toggle-title">Warm-up set</span>
+            <span class="warmup-toggle-hint">Mark this set as warm-up</span>
+          </div>
+          <span class="toggle-track" :class="{ on: effectiveIsWarmup }" aria-hidden="true">
+            <span class="toggle-knob" />
+          </span>
+        </button>
+        <button v-if="isBarbell" type="button" class="plate-math-trigger" @click="showPlateModal = true">Plate math</button>
         <RButton type="primary" class="log-set-cta" @click="handleSubmit" :disabled="!logInput.trim() || logging">Log set →</RButton>
       </RCard>
 
-      <!-- Collapsible: Workout flow summary -->
-      <div class="collapsible-section">
-        <button type="button" class="collapsible-toggle" @click="showFlowList = !showFlowList">
-          <span>Exercise {{ (workoutStore.activeSession?.currentExerciseIndex ?? 0) + 1 }} of {{ todayExercises.length }}</span>
-          <span class="toggle-arrow">{{ showFlowList ? '▾' : '▸' }}</span>
-        </button>
-        <div v-if="showFlowList" class="collapsible-body">
-          <ul class="workout-flow-list">
-            <li v-for="item in workoutFlowItems" :key="item.slotKey" class="workout-flow-row" :class="{ active: item.isActive, complete: item.isComplete }">
-              <button type="button" class="workout-flow-btn" @click="handleGoToExercise(item.index)">
-                <span class="flow-icon">
-                  <template v-if="item.isComplete">✓</template>
-                  <template v-else-if="item.isActive">▶</template>
-                  <template v-else>○</template>
-                </span>
-                <span class="flow-index">{{ item.index + 1 }}.</span>
-                <span class="flow-name">{{ item.name }}</span>
-                <span v-if="item.hasPR" class="flow-pr" title="PR this session">★</span>
-                <span class="flow-sets">{{ item.completed }}/{{ item.total }}</span>
-              </button>
-            </li>
-          </ul>
-        </div>
-      </div>
+      <PlateCalculator
+        v-if="showPlateModal"
+        :initial-weight="parsedLogValues?.weight"
+        @use="onUsePlateWeight"
+        @close="showPlateModal = false"
+      />
 
-      <!-- Collapsible: Logged sets -->
-      <div v-if="completedSetsForExercise.length > 0" class="collapsible-section">
-        <div class="logged-sets-compact">
-          <span class="logged-label">{{ completedSetsForExercise.length }} set{{ completedSetsForExercise.length > 1 ? 's' : '' }} logged</span>
-        </div>
-        <ul class="logged-sets-list">
-          <li v-for="(s, i) in completedSetsForExercise" :key="s.id ?? i" class="set-item-clickable">
-            <button type="button" class="set-edit-btn" @click="openEditSet(s)">
-              {{ s.weight }} × {{ s.reps }} @ RPE {{ s.rpe }}{{ s.isWarmup ? ' (warm-up)' : '' }}
-            </button>
-          </li>
-        </ul>
-      </div>
-
-      <!-- Collapsible: Plate calculator -->
-      <div v-if="isBarbell" class="collapsible-section">
-        <button type="button" class="collapsible-toggle" @click="showPlateCalc = !showPlateCalc">
-          <span>Plate math</span>
-          <span v-if="plateConfig && plateConfig.perSide.length > 0 && !showPlateCalc" class="toggle-preview">{{ plateConfig.perSide.map((p) => `${p.count}×${p.weight}`).join(' + ') }}</span>
-          <span class="toggle-arrow">{{ showPlateCalc ? '▾' : '▸' }}</span>
-        </button>
-        <div v-if="showPlateCalc" class="collapsible-body">
-          <div v-if="plateConfig && plateConfig.perSide.length > 0" class="plate-math">
-            <RText tag="p" class="plate-label">Plates per side</RText>
-            <RText tag="p" class="plate-value">{{ plateConfig.perSide.map((p) => `${p.count}×${p.weight}`).join(' + ') }}</RText>
-          </div>
-          <div class="plate-reverse">
-            <label class="bar-toggle">
-              <input type="checkbox" v-model="includeBar" />
-              <span>Include 45 lb bar</span>
-            </label>
-            <div class="plate-reverse-row">
-              <RInput v-model="plateInput" placeholder="2 45 1 25" :disabled="logging" class="plate-input" />
-              <RButton v-if="computedWeightFromPlates != null" variant="secondary" :disabled="logging" @click="applyPlateWeight">Use {{ computedWeightFromPlates }} lb</RButton>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Collapsible: Demo -->
-      <div class="collapsible-section">
-        <button type="button" class="collapsible-toggle" @click="showDemo = !showDemo">
-          <span>Demo</span>
-          <span class="toggle-arrow">{{ showDemo ? '▾' : '▸' }}</span>
-        </button>
-        <div v-if="showDemo" class="collapsible-body">
-          <div class="exercise-gif">
-            <img v-if="currentExercise.imagePath && gifLoaded !== false" :src="currentExercise.imagePath" :alt="currentExercise.name" @load="gifLoaded = true" @error="gifLoaded = false" />
-            <img v-else-if="exerciseDbImageUrl && !exerciseImageLoading" :src="exerciseDbImageUrl" :alt="currentExercise.name" />
-            <div v-else-if="exerciseImageLoading" class="exercise-gif-placeholder">
-              <span class="placeholder-icon">⏳</span>
-              <RText tag="p">Loading…</RText>
-            </div>
-            <div v-else-if="currentExercise.bodyPart || currentExercise.equipment" class="exercise-metadata-card">
-              <RText tag="p" class="metadata-row"><span v-if="currentExercise.bodyPart" class="metadata-label">Body part:</span> {{ currentExercise.bodyPart }}</RText>
-              <RText tag="p" class="metadata-row"><span v-if="currentExercise.equipment" class="metadata-label">Equipment:</span> {{ currentExercise.equipment }}</RText>
-            </div>
-            <div v-else class="exercise-gif-placeholder">
-              <span class="placeholder-icon">🏋️</span>
-              <RText tag="p">No demo available</RText>
-            </div>
-          </div>
-        </div>
+      <!-- Grouped exercises with sets -->
+      <div class="exercise-groups">
+        <ExerciseSetsGroup
+          v-for="item in workoutFlowItems"
+          :key="item.slotKey"
+          :index="item.index"
+          :name="item.name"
+          :slot-key="item.slotKey"
+          :completed="item.completed"
+          :total="item.total"
+          :is-active="item.isActive"
+          :is-complete="item.isComplete"
+          :has-p-r="item.hasPR"
+          :sets="item.sets"
+          :exercise="item.exercise"
+          :deleting="deleting"
+          :is-p-r-set="workoutStore.isPRSet"
+          @go-to="handleGoToExercise(item.index)"
+          @edit-set="openEditSet"
+          @delete-set="handleDeleteSet"
+        />
       </div>
 
       <!-- Skip / Next button at bottom -->
@@ -1049,6 +939,15 @@ async function handleEndWorkout() {
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
+.stat-note {
+  font-size: 0.8rem;
+  color: var(--r-color-text-secondary);
+  margin-bottom: 0.15rem;
+}
+.stat-last-session {
+  font-size: 0.75rem;
+  font-style: italic;
+}
 .stat-secondary-row {
   display: flex;
   gap: var(--space-lg);
@@ -1101,6 +1000,22 @@ async function handleEndWorkout() {
   cursor: not-allowed;
 }
 .progress-percent { color: var(--r-color-text-secondary); flex-shrink: 0; }
+.planned-set-row { margin: var(--space-xs) 0 0; }
+.planned-label {
+  font-size: 0.85rem;
+  color: var(--color-stone-500, #78716c);
+}
+.overall-progress-label {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--r-color-text-secondary);
+  margin-top: 2px;
+}
+.exercise-groups {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm, 8px);
+}
 .stat-best {
   font-weight: 600;
   color: var(--r-color-primary);
@@ -1119,15 +1034,15 @@ async function handleEndWorkout() {
 }
 .warmup-toggle {
   display: flex;
-  margin-top: var(--space-md);
+  margin-top: var(--space-sm);
   width: 100%;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-md);
   padding: var(--space-sm) var(--space-md);
-  border-radius: 16px;
-  border: 1px solid var(--r-color-border, #e7e5e4);
-  background: var(--r-color-bg);
+  border-radius: 12px;
+  border: 1px solid var(--r-color-stroke);
+  background: none;
   cursor: pointer;
   font-family: inherit;
   text-align: left;
@@ -1279,8 +1194,7 @@ async function handleEndWorkout() {
 .error { color: var(--r-color-error); margin: 0.5rem 0 0 0; font-size: 0.9rem; }
 .log-set-cta {
   width: 100%;
-  margin-top: var(--space-lg);
-  padding: var(--space-lg) var(--space-xl);
+  margin-top: var(--space-sm);
   font-size: 1.1rem;
 }
 
@@ -1354,54 +1268,24 @@ async function handleEndWorkout() {
 }
 .set-edit-btn:hover { color: var(--r-color-primary); background: var(--r-color-fill-secondary); }
 
-/* Plate math */
-.plate-math {
-  margin-bottom: var(--space-sm);
-}
-.plate-label { margin: 0 0 0.25rem 0; font-size: 0.85rem; }
-.plate-value { margin: 0; font-weight: 600; }
-.plate-reverse-row {
-  display: flex;
-  gap: var(--space-sm);
-  align-items: center;
-}
-.plate-input { flex: 1; max-width: 160px; }
-.bar-toggle {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+/* Plate math trigger */
+.plate-math-trigger {
+  width: 100%;
+  padding: var(--space-sm) var(--space-md);
+  border: 1px solid var(--r-color-stroke);
+  border-radius: 12px;
+  background: none;
+  font-family: inherit;
   font-size: 0.85rem;
+  font-weight: 500;
   color: var(--r-color-text-secondary);
-  margin: 0 0 var(--space-sm);
   cursor: pointer;
+  margin-top: var(--space-sm);
+  transition: background 0.1s;
 }
-.bar-toggle input[type="checkbox"] { accent-color: var(--r-color-primary); }
-
-/* Demo */
-.exercise-gif { text-align: center; min-height: 120px; }
-.exercise-gif img { max-width: 100%; max-height: 240px; object-fit: contain; }
-.exercise-gif-placeholder {
-  min-height: 100px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: var(--space-lg);
+.plate-math-trigger:active {
   background: var(--r-color-fill-secondary);
-  border-radius: 8px;
-  color: var(--r-color-text-secondary);
 }
-.placeholder-icon { font-size: 1.5rem; margin-bottom: 0.25rem; }
-.exercise-gif-placeholder p { margin: 0; font-size: 0.85rem; }
-.exercise-metadata-card {
-  padding: var(--space-md);
-  background: var(--r-color-fill-secondary);
-  border-radius: 8px;
-  text-align: left;
-}
-.metadata-row { margin: 0 0 var(--space-xs) 0; font-size: 0.85rem; color: var(--r-color-text-secondary); }
-.metadata-row:last-child { margin-bottom: 0; }
-.metadata-label { font-weight: 600; color: var(--r-color-text); margin-right: 0.25rem; }
 
 /* Workout flow list */
 .workout-flow-list { margin: 0; padding: 0; list-style: none; }

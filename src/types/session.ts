@@ -62,6 +62,7 @@ export interface SetLog {
   prevWeight?: number
   prevReps?: number
   prevRpe?: number
+  prevIsWarmup?: boolean
 }
 
 export interface WorkoutSession {
