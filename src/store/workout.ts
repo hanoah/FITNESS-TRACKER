@@ -658,7 +658,7 @@ export const useWorkoutStore = defineStore('workout', () => {
 
     try {
       await db.sets.delete(setId)
-      const sessionPatch: Record<string, unknown> = { completedSetCount: newCount }
+      const sessionPatch: Partial<WorkoutSession> = { completedSetCount: newCount }
       if (shouldRollBack && activeSession.value) {
         sessionPatch.currentExerciseIndex = activeSession.value.currentExerciseIndex
       }
