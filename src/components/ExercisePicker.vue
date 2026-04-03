@@ -40,12 +40,31 @@ function filterByContext(list: ExerciseInfo[]): ExerciseInfo[] {
   return filterByMuscles(list, props.contextMuscles)
 }
 
+function hasMuscleData(ex: ExerciseInfo): boolean {
+  if (!ex.muscles) return false
+  const primary = ex.muscles.primary ?? []
+  const secondary = ex.muscles.secondary ?? []
+  return primary.length > 0 || secondary.length > 0
+}
+
+const isSubstituteMode = computed(() => (props.contextMuscles?.length ?? 0) > 0)
+
 const searchResults = computed(() => {
   const all = allExercises.value
   const filtered = filterByContext(all)
-  if (!searchQuery.value.trim()) return filtered
-  const q = searchQuery.value.toLowerCase()
-  return filtered.filter((ex) => ex.name.toLowerCase().includes(q))
+  const q = searchQuery.value.trim().toLowerCase()
+  const list = q ? filtered.filter((ex) => ex.name.toLowerCase().includes(q)) : filtered
+  if (!isSubstituteMode.value) return list
+  return list.filter(hasMuscleData)
+})
+
+const unclassifiedResults = computed(() => {
+  if (!isSubstituteMode.value) return []
+  const all = allExercises.value
+  const filtered = filterByContext(all)
+  const q = searchQuery.value.trim().toLowerCase()
+  const list = q ? filtered.filter((ex) => ex.name.toLowerCase().includes(q)) : filtered
+  return list.filter((ex) => !hasMuscleData(ex))
 })
 
 const filteredRecent = computed(() => filterByContext(recentExercises.value))
@@ -160,7 +179,18 @@ function handleCancel() {
               </ul>
             </div>
 
-            <div v-if="searchQuery.trim() && searchResults.length === 0" class="no-results">
+            <div v-if="unclassifiedResults.length > 0" class="section">
+              <RText tag="p" class="section-label">Custom / Unclassified</RText>
+              <ul class="exercise-list">
+                <li v-for="ex in unclassifiedResults" :key="ex.name">
+                  <button type="button" class="list-item" @click="selectFromInfo(ex)">
+                    {{ ex.name }}
+                  </button>
+                </li>
+              </ul>
+            </div>
+
+            <div v-if="searchQuery.trim() && searchResults.length === 0 && unclassifiedResults.length === 0" class="no-results">
               <RText tag="p">No matches. Type a custom exercise name below.</RText>
             </div>
 

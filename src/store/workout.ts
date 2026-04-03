@@ -48,6 +48,13 @@ export interface RestTimerPanel {
   setLabel: string
 }
 
+export function isExerciseComplete(ex: SessionExercise, setsForEx: SetLog[]): boolean {
+  const workingDone = setsForEx.filter((s) => !s.isWarmup).length
+  const totalDone = setsForEx.length
+  const totalPlanned = ex.warmupSets + ex.workingSets
+  return workingDone >= ex.workingSets || totalDone >= totalPlanned
+}
+
 export const useWorkoutStore = defineStore('workout', () => {
   const activeSession = ref<WorkoutSession | null>(null)
   const restTimerSnapshot = ref<RestTimerSnapshot | null>(null)
@@ -67,6 +74,17 @@ export const useWorkoutStore = defineStore('workout', () => {
     return todayExercises.value[idx] ?? null
   })
 
+  /** Sets grouped by exercise slotKey. Single O(n) pass, O(1) lookups. */
+  const completedSetsBySlot = computed(() => {
+    const map = new Map<string, SetLog[]>()
+    for (const s of completedSets.value) {
+      const arr = map.get(s.exerciseSlot)
+      if (arr) arr.push(s)
+      else map.set(s.exerciseSlot, [s])
+    }
+    return map
+  })
+
   const currentSetNumber = computed(() => {
     return completedSets.value.length + 1
   })
@@ -75,20 +93,24 @@ export const useWorkoutStore = defineStore('workout', () => {
     return todayExercises.value.reduce((sum, ex) => sum + ex.warmupSets + ex.workingSets, 0)
   })
 
+  const totalSetsForCurrentExercise = computed(() => {
+    const ex = currentExercise.value
+    if (!ex) return 0
+    return ex.warmupSets + ex.workingSets
+  })
+
   const currentExerciseSetNumber = computed(() => {
     const ex = currentExercise.value
     if (!ex) return 0
-    const setsForThisExercise = completedSets.value.filter(
-      (s) => s.exerciseSlot === ex.slotKey
-    )
-    return setsForThisExercise.length + 1
+    const setsForEx = completedSetsBySlot.value.get(ex.slotKey)
+    return (setsForEx?.length ?? 0) + 1
   })
 
   const isWarmupSet = computed(() => {
     const ex = currentExercise.value
     if (!ex) return false
-    const count = completedSets.value.filter((s) => s.exerciseSlot === ex.slotKey).length
-    return count < ex.warmupSets
+    const setsForEx = completedSetsBySlot.value.get(ex.slotKey)
+    return (setsForEx?.length ?? 0) < ex.warmupSets
   })
 
   /** Overall workout progress: completed sets / total sets across all exercises. 0–1, clamped. */
@@ -152,9 +174,8 @@ export const useWorkoutStore = defineStore('workout', () => {
     if (!session || !ex) return { ok: false }
 
     const resolvedWarmup = isWarmup ?? isWarmupSet.value
-    const priorWorking = completedSets.value.filter(
-      (s) => s.exerciseSlot === ex.slotKey && !s.isWarmup
-    )
+    const setsForSlot = completedSetsBySlot.value.get(ex.slotKey) ?? []
+    const priorWorking = setsForSlot.filter((s) => !s.isWarmup)
     const sessionBestBefore = priorWorking.length
       ? Math.max(...priorWorking.map((s) => s.weight))
       : 0
@@ -186,9 +207,8 @@ export const useWorkoutStore = defineStore('workout', () => {
         prSetIds.value = [...prSetIds.value, id]
       }
 
-      const setsForEx = completedSets.value.filter((s) => s.exerciseSlot === ex.slotKey)
-      const workingDone = setsForEx.filter((s) => !s.isWarmup).length
-      if (workingDone >= ex.workingSets) {
+      const setsForExAfter = completedSetsBySlot.value.get(ex.slotKey) ?? []
+      if (isExerciseComplete(ex, setsForExAfter)) {
         const nextIdx = session.currentExerciseIndex + 1
         await db.sessions.update(session.id!, {
           currentExerciseIndex: nextIdx,
@@ -423,7 +443,7 @@ export const useWorkoutStore = defineStore('workout', () => {
     if (idx < session.currentExerciseIndex) return false
 
     const ex = exercises[idx]
-    const completedCount = completedSets.value.filter((s) => s.exerciseSlot === slotKey).length
+    const completedCount = completedSetsBySlot.value.get(slotKey)?.length ?? 0
     const total = ex.warmupSets + ex.workingSets
 
     if (total <= 1) return false
@@ -550,7 +570,7 @@ export const useWorkoutStore = defineStore('workout', () => {
   }
 
   /** Centralized set edit: validates, applies audit metadata, updates db and in-memory completedSets if active. */
-  async function updateSetLog(setId: number, weight: number, reps: number, rpe: number): Promise<boolean> {
+  async function updateSetLog(setId: number, weight: number, reps: number, rpe: number, isWarmup?: boolean): Promise<boolean> {
     const validated = validateSetEdit(weight, reps, rpe)
     let set: SetLog | undefined
     try {
@@ -561,7 +581,7 @@ export const useWorkoutStore = defineStore('workout', () => {
     }
     if (!set) return false
 
-    const patch = {
+    const patch: Record<string, unknown> = {
       weight: validated.weight,
       reps: validated.reps,
       rpe: validated.rpe,
@@ -569,6 +589,10 @@ export const useWorkoutStore = defineStore('workout', () => {
       prevWeight: set.weight,
       prevReps: set.reps,
       prevRpe: set.rpe,
+    }
+    if (isWarmup !== undefined) {
+      patch.isWarmup = isWarmup
+      patch.prevIsWarmup = set.isWarmup
     }
     try {
       await db.sets.update(setId, patch)
@@ -586,12 +610,62 @@ export const useWorkoutStore = defineStore('workout', () => {
         const updated = { ...completedSets.value[idx], ...patch }
         completedSets.value = [
           ...completedSets.value.slice(0, idx),
-          updated,
+          updated as SetLog,
           ...completedSets.value.slice(idx + 1),
         ]
       }
     }
     return true
+  }
+
+  /**
+   * Delete a logged set by ID. Optimistic: removes from memory first, reverts on DB failure.
+   * Guards auto-advance rollback: only rolls back currentExerciseIndex if the deleted set
+   * triggered the advance AND no sets have been logged on the new (current) exercise.
+   */
+  async function deleteSetLog(setId: number): Promise<boolean> {
+    const session = activeSession.value
+    if (!session || session.id == null) return false
+
+    const idx = completedSets.value.findIndex((s) => s.id === setId)
+    if (idx < 0) return false
+
+    const deletedSet = completedSets.value[idx]
+    const prevSets = [...completedSets.value]
+    const prevIndex = session.currentExerciseIndex
+
+    completedSets.value = prevSets.filter((s) => s.id !== setId)
+    prSetIds.value = prSetIds.value.filter((id) => id !== setId)
+
+    const deletedSlot = deletedSet.exerciseSlot
+    const currentEx = todayExercises.value[prevIndex]
+    const shouldRollBack =
+      currentEx &&
+      currentEx.slotKey !== deletedSlot &&
+      prevIndex > 0 &&
+      !(completedSetsBySlot.value.get(currentEx.slotKey)?.length)
+
+    if (shouldRollBack) {
+      const rolledBackIdx = todayExercises.value.findIndex((e) => e.slotKey === deletedSlot)
+      if (rolledBackIdx >= 0) {
+        activeSession.value = { ...session, currentExerciseIndex: rolledBackIdx }
+      }
+    }
+
+    try {
+      await db.sets.delete(setId)
+      if (shouldRollBack && activeSession.value) {
+        await db.sessions.update(session.id!, {
+          currentExerciseIndex: activeSession.value.currentExerciseIndex,
+        })
+      }
+      return true
+    } catch (e) {
+      completedSets.value = prevSets
+      activeSession.value = { ...session, currentExerciseIndex: prevIndex }
+      console.error('[workout.deleteSetLog] Failed to delete', { setId }, e)
+      return false
+    }
   }
 
   function setRestTimerSnapshot(snapshot: RestTimerSnapshot) {
@@ -632,11 +706,13 @@ export const useWorkoutStore = defineStore('workout', () => {
     activeSession,
     todayExercises,
     completedSets,
+    completedSetsBySlot,
     prSetIds,
     isPRSet,
     currentExercise,
     currentSetNumber,
     totalWorkoutSets,
+    totalSetsForCurrentExercise,
     currentExerciseSetNumber,
     isWarmupSet,
     workoutProgress,
@@ -657,6 +733,7 @@ export const useWorkoutStore = defineStore('workout', () => {
     addSetToExercise,
     removeSetFromExercise,
     updateSetLog,
+    deleteSetLog,
     restTimerSnapshot,
     restTimerPanel,
     restTimerMinimized,

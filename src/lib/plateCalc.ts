@@ -6,7 +6,7 @@
 
 export const DEFAULT_BAR_WEIGHT = 45
 
-const PLATE_WEIGHTS = [45, 25, 10, 5, 2.5, 1.25] as const
+const PLATE_WEIGHTS = [45, 35, 25, 10, 5, 2.5, 1.25] as const
 
 export interface PlateConfig {
   plates: { weight: number; count: number }[]
@@ -22,12 +22,8 @@ export function plateCalc(
   if (totalWeight < 0 || !Number.isFinite(totalWeight)) {
     throw new Error('Weight must be a positive number')
   }
-  if (totalWeight < barWeight) {
-    throw new Error(`Weight ${totalWeight} is less than bar (${barWeight})`)
-  }
-
   const loadPerSide = (totalWeight - barWeight) / 2
-  if (loadPerSide < 0) {
+  if (loadPerSide <= 0) {
     return {
       plates: [],
       perSide: [],

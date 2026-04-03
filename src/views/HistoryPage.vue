@@ -157,19 +157,19 @@ function closeEditModal() {
   editingSet.value = null
 }
 
-async function handleEditSave(weight: number, reps: number, rpe: number) {
+async function handleEditSave(weight: number, reps: number, rpe: number, isWarmup: boolean) {
   const set = editingSet.value
   if (!set?.id) return
   savingEdit.value = true
   try {
-    const ok = await workoutStore.updateSetLog(set.id, weight, reps, rpe)
+    const ok = await workoutStore.updateSetLog(set.id, weight, reps, rpe, isWarmup)
     if (ok) {
       const sessionId = set.sessionId
       const cached = setsBySession.value[sessionId]
       if (cached) {
         const idx = cached.findIndex((s) => s.id === set.id)
         if (idx >= 0) {
-          const updated = { ...cached[idx], weight, reps, rpe, editedAt: Date.now(), prevWeight: set.weight, prevReps: set.reps, prevRpe: set.rpe }
+          const updated = { ...cached[idx], weight, reps, rpe, isWarmup, editedAt: Date.now(), prevWeight: set.weight, prevReps: set.reps, prevRpe: set.rpe, prevIsWarmup: set.isWarmup }
           setsBySession.value = {
             ...setsBySession.value,
             [sessionId]: [...cached.slice(0, idx), updated, ...cached.slice(idx + 1)],
