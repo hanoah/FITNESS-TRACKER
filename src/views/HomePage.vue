@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useWorkoutStore } from '../store/workout'
+import { detectCaps } from '../composables/useTimerBackground'
 import TemplatePicker from '../components/TemplatePicker.vue'
 import type { SessionExercise } from '../types/session'
 import { RButton, RCard, RText, useToast } from 'roughness'
@@ -13,12 +14,55 @@ const loading = ref(true)
 const starting = ref(false)
 const resumable = ref(false)
 const showTemplatePicker = ref(false)
+const showNotifBanner = ref(false)
+
+const NOTIF_ASKED_KEY = 'notif-permission-asked'
 
 onMounted(async () => {
   const session = await workoutStore.loadResumableSession()
   resumable.value = !!session
   loading.value = false
 })
+
+async function requestNotifPermission() {
+  showNotifBanner.value = false
+  try {
+    localStorage.setItem(NOTIF_ASKED_KEY, '1')
+  } catch { /* storage disabled */ }
+  if (detectCaps().notification) {
+    await Notification.requestPermission()
+  }
+}
+
+function dismissNotifBanner() {
+  showNotifBanner.value = false
+  try {
+    localStorage.setItem(NOTIF_ASKED_KEY, '1')
+  } catch { /* storage disabled */ }
+}
+
+function shouldAskNotifPermission(): boolean {
+  const caps = detectCaps()
+  if (!caps.notification) return false
+  if (Notification.permission !== 'default') return false
+  try {
+    if (localStorage.getItem(NOTIF_ASKED_KEY)) return false
+  } catch { /* storage disabled, ask anyway */ }
+  return true
+}
+
+async function onWorkoutStart(navigateFn: () => Promise<void>) {
+  if (shouldAskNotifPermission()) {
+    showNotifBanner.value = true
+    await new Promise<void>((resolve) => {
+      const check = setInterval(() => {
+        if (!showNotifBanner.value) { clearInterval(check); resolve() }
+      }, 100)
+      setTimeout(() => { showNotifBanner.value = false; clearInterval(check); resolve() }, 10000)
+    })
+  }
+  await navigateFn()
+}
 
 async function startFromTemplate(exercises: SessionExercise[]) {
   if (exercises.length === 0) return
@@ -32,7 +76,7 @@ async function startFromTemplate(exercises: SessionExercise[]) {
       return
     }
     showTemplatePicker.value = false
-    router.push('/workout')
+    await onWorkoutStart(() => router.push('/workout'))
   } finally {
     starting.value = false
   }
@@ -47,7 +91,7 @@ async function startFreeWorkout() {
       toast("Couldn't start — try again?")
       return
     }
-    router.push('/workout')
+    await onWorkoutStart(() => router.push('/workout'))
   } finally {
     starting.value = false
   }
@@ -110,6 +154,21 @@ async function resumeWorkout() {
         @select="startFromTemplate"
         @cancel="showTemplatePicker = false"
       />
+
+      <Teleport to="body">
+        <div v-if="showNotifBanner" class="notif-banner-overlay">
+          <div class="notif-banner">
+            <RText tag="p" class="notif-title">Stay on track between sets</RText>
+            <RText tag="p" class="notif-desc">
+              Enable notifications so we can remind you when your rest timer is up, even if you leave the app.
+            </RText>
+            <div class="notif-actions">
+              <RButton type="primary" @click="requestNotifPermission">Enable</RButton>
+              <RButton @click="dismissNotifBanner">Not now</RButton>
+            </div>
+          </div>
+        </div>
+      </Teleport>
     </template>
   </div>
 </template>
@@ -152,5 +211,39 @@ async function resumeWorkout() {
 .from-template-btn {
   width: 100%;
   margin-top: var(--space-md);
+}
+.notif-banner-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 1rem;
+}
+.notif-banner {
+  background: var(--r-color-bg);
+  border: 2px solid var(--r-color-stroke);
+  border-radius: 12px;
+  padding: var(--space-xl);
+  max-width: 340px;
+  text-align: center;
+}
+.notif-title {
+  font-weight: 600;
+  font-size: 1.1rem;
+  margin: 0 0 var(--space-sm) 0;
+}
+.notif-desc {
+  color: var(--r-color-text-secondary);
+  font-size: 0.9rem;
+  margin: 0 0 var(--space-lg) 0;
+  line-height: 1.4;
+}
+.notif-actions {
+  display: flex;
+  gap: var(--space-sm);
+  justify-content: center;
 }
 </style>
