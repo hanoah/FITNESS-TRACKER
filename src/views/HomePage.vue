@@ -51,7 +51,7 @@ function shouldAskNotifPermission(): boolean {
   return true
 }
 
-async function onWorkoutStart(navigateFn: () => Promise<void>) {
+async function onWorkoutStart(navigateFn: () => Promise<unknown>) {
   if (shouldAskNotifPermission()) {
     showNotifBanner.value = true
     await new Promise<void>((resolve) => {
