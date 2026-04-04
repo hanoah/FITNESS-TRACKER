@@ -88,7 +88,7 @@ export function useTimerBackground() {
   }
 
   // ── Media Session ────────────────────────────────────────────
-  function setMediaSession(remaining: number, total: number): void {
+  function setMediaSession(remaining: number, _total: number): void {
     if (!caps.mediaSession) return
     try {
       navigator.mediaSession.metadata = new MediaMetadata({
