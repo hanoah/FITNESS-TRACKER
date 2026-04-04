@@ -4,6 +4,36 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.2.0.0] - 2026-04-03
+
+### Added
+
+- Background-safe rest timer: countdown survives tab switches via visibilitychange listener and Wake Lock API
+- Audio chime (WAV) plays when rest timer ends, even when the app is backgrounded
+- MiniTimer persistent countdown chip on the home page while a rest timer is running
+- Collapsible stats section on workout page: suggested weight, PR, goal, projection, and last session data collapse behind a toggle, hidden entirely when no data exists
+- "Add Set" and "Remove Set" actions in the workout page overflow menu
+- `weight · reps · rpe` hint label below the log input
+- WorkoutPage.test.ts: 6 tests covering collapsible stats visibility, toggle, and reset behavior
+
+### Changed
+
+- Workout page decluttered: header card and log card merged into a single active card with a divider
+- Exercise name bumped to 1.5rem with tighter letter-spacing (-0.03em)
+- All secondary text tightened to 0.75rem with uppercase labels and letter-spacing
+- Chip/pill visual height reduced to 30px with 44px minimum tappable area
+- Action buttons now use a 1fr/2fr grid layout (plate math + log set), with single-column fallback for non-barbell exercises
+- Progress bar slimmed from 5px to 3px
+- Inline set +/- buttons removed from the workout card (functionality preserved in overflow menu)
+- Warmup toggle padding and dimensions reduced
+- ExerciseSetsGroup header, name, count, and set detail text sizes all tightened
+- Quick adjust row labels now uppercase with letter-spacing
+
+### Removed
+
+- 1.25lb plate from plate calculator UI and underlying plateCalc library (prevents overflow on small screens)
+- Inline planned-set-row with +/- buttons (replaced by overflow menu actions)
+
 ## [0.1.9.0] - 2026-04-02
 
 ### Added

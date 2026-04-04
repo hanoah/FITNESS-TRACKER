@@ -40,9 +40,9 @@ describe('plateCalc', () => {
     expect(result.perSide).toEqual([{ weight: 35, count: 1 }])
   })
 
-  it('47.5 lbs uses 1.25lb plate (1×1.25/side)', () => {
+  it('47.5 lbs rounds down (no 1.25lb plates available)', () => {
     const result = plateCalc(47.5)
-    expect(result.perSide).toEqual([{ weight: 1.25, count: 1 }])
+    expect(result.perSide).toEqual([])
   })
 
   it('works with barWeight = 0 (no bar)', () => {

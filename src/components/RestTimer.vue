@@ -5,12 +5,19 @@
  * State machine:
  *   counting --(remaining<=0)--> go --(confirm/skip)--> emit done|skip
  *
- * Audio: single AudioContext created on mount (user-gesture chain from Log set) so
- * mobile Safari can play the triple beep. Beep is best-effort; GO always shows.
+ * Audio fallback chain:
+ *   <audio> element (primary) -> Web Audio oscillator (fallback) -> vibrate (last resort)
+ *
+ * Platform integrations (via useTimerBackground composable):
+ *   - Wake Lock: keeps screen on during countdown, released on GO
+ *   - Media Session: Android lock screen metadata
+ *   - Notifications: fires when app is backgrounded at timer end
+ *   - Visibility change: recomputes remaining on tab resume
  */
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { RButton, RText } from 'roughness'
 import { useWorkoutStore } from '../store/workout'
+import { useTimerBackground } from '../composables/useTimerBackground'
 import { emitDebugEvent } from '../lib/debugEvents'
 
 const props = withDefaults(
@@ -30,6 +37,8 @@ const emit = defineEmits<{
 }>()
 
 const workoutStore = useWorkoutStore()
+const bg = useTimerBackground()
+
 const displaySeconds = ref(props.seconds)
 const isPaused = ref(false)
 /** 'counting' = rest countdown; 'go' = interstitial after timer hits zero */
@@ -54,7 +63,7 @@ function vibrateRestComplete(): void {
   }
 }
 
-/** Triple 880Hz sine tones, 0.15s each, spaced 0.3s apart. Fire-and-forget. */
+/** Triple 880Hz sine tones, 0.15s each, spaced 0.3s apart. Web Audio fallback. */
 function playBeep(): void {
   if (!audioCtx) return
   try {
@@ -79,16 +88,29 @@ function playBeep(): void {
   }
 }
 
+async function playChimeWithFallback(): Promise<void> {
+  const chimePlayed = await bg.playChime()
+  if (!chimePlayed) {
+    playBeep()
+  }
+  vibrateRestComplete()
+  bg.fireNotification()
+}
+
 function tick() {
   if (isPaused.value) return
   const remaining = Math.max(0, Math.ceil((endTime - Date.now()) / 1000))
   displaySeconds.value = remaining
   if (remaining <= 0) {
-    playBeep()
-    vibrateRestComplete()
+    void playChimeWithFallback()
+    bg.releaseWakeLock()
+    bg.clearMediaSession()
     timerPhase.value = 'go'
-    emitDebugEvent({ eventName: 'timer_completed', status: 'success', meta: { audio: !!audioCtx } })
+    emitDebugEvent({ eventName: 'timer_completed', status: 'success', meta: { audio: !!audioCtx, chimeReady: bg.chimeReady.value } })
     return
+  }
+  if (remaining % 5 === 0) {
+    bg.setMediaSession(remaining, props.seconds)
   }
   persistSnapshot()
   rafId = requestAnimationFrame(tick)
@@ -120,6 +142,8 @@ function start(initialSeconds?: number) {
   endTime = Date.now() + secs * 1000
   displaySeconds.value = secs
   isPaused.value = false
+  bg.requestWakeLock()
+  bg.setMediaSession(secs, props.seconds)
   rafId = requestAnimationFrame(tick)
 }
 
@@ -194,8 +218,27 @@ function initAudioContext(): void {
   }
 }
 
+function handleVisibilityResume() {
+  if (timerPhase.value !== 'counting' || isPaused.value) return
+  const remaining = Math.max(0, Math.ceil((endTime - Date.now()) / 1000))
+  displaySeconds.value = remaining
+  if (remaining <= 0) {
+    void playChimeWithFallback()
+    bg.releaseWakeLock()
+    bg.clearMediaSession()
+    timerPhase.value = 'go'
+    emitDebugEvent({ eventName: 'timer_completed', status: 'success', meta: { source: 'visibility_resume' } })
+    return
+  }
+  if (!rafId) {
+    rafId = requestAnimationFrame(tick)
+  }
+}
+
 onMounted(() => {
   initAudioContext()
+  bg.preloadChime()
+  bg.onVisibilityChange(handleVisibilityResume)
   if (props.seconds <= 0) return
   const restored = tryRestore()
   if (!restored) {
@@ -206,6 +249,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   cancelRaf()
+  bg.cleanup()
 })
 
 watch(
@@ -218,6 +262,7 @@ watch(
 
 function handleGoConfirm() {
   cancelRaf()
+  bg.cleanup()
   workoutStore.stopRestTimer()
   emit('done')
 }
@@ -225,6 +270,7 @@ function handleGoConfirm() {
 function handleSkip() {
   emitDebugEvent({ eventName: 'timer_skipped' })
   cancelRaf()
+  bg.cleanup()
   workoutStore.stopRestTimer()
   emit('skip')
 }

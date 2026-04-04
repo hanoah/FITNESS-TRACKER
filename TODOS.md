@@ -4,23 +4,23 @@ Deferred work tracked for future sprints.
 
 ---
 
-## Extract WorkoutPage cards into child components
+## Extract WorkoutPage into child components
 
-**What:** Split WorkoutPage.vue into InfoCard, DemoCard, QuickLogCard, and WorkoutFlowCard components.
+**What:** Split WorkoutPage.vue into ActiveExerciseCard and ExerciseList components.
 
-**Why:** WorkoutPage is 1100+ lines and growing. Card boundaries are now well-defined after the Bundle D restructure.
+**Why:** WorkoutPage is 1300+ lines. The declutter redesign merged header-card and log-card into a single active-card, so the extraction targets are now ActiveExerciseCard.vue (the merged card with input, chips, stats, actions) and ExerciseList.vue (the grouped exercise list).
 
-**Pros:** Each card becomes independently testable, readable, maintainable.
+**Pros:** Each component becomes independently testable, readable, maintainable.
 
-**Cons:** Prop-drilling for shared reactive state, ~4 new files, event bubbling.
+**Cons:** Prop-drilling for shared reactive state, ~2 new files, event bubbling.
 
-**Context:** Deferred from Bundle D per plan review. Revisit after Bundle D ships if the file feels unwieldy.
+**Context:** Updated after the workout page declutter redesign. The two-card structure was merged into one, reducing extraction targets from 4 to 2.
 
 **Effort:** M
 
 **Priority:** P3
 
-**Depends on:** Bundle D completion
+**Depends on:** Declutter redesign completion
 
 ---
 
@@ -101,3 +101,23 @@ Deferred work tracked for future sprints.
 **Priority:** P3
 
 **Depends on:** Nothing (can be done independently)
+
+---
+
+## Chime volume control in settings
+
+**What:** Add a volume slider in the Settings page that controls the rest timer chime volume. Persist to localStorage.
+
+**Why:** Users train in different environments (loud gym vs quiet home). The default chime volume may be too loud or too quiet. Currently there's no way to adjust it.
+
+**Pros:** User control over audio experience. Simple `audioEl.volume = N` integration with the existing `<audio>` chime element in `useTimerBackground.ts`.
+
+**Cons:** ~30 lines of UI in Settings, ~5 lines in composable. Trivial.
+
+**Context:** Deferred from Sprint 4 (Timer & Background). The core problem was "no sound at all in background," not volume. Volume control is a polish item.
+
+**Effort:** S
+
+**Priority:** P3
+
+**Depends on:** Sprint 4 `<audio>` chime implementation

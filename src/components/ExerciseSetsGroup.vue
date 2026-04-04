@@ -117,7 +117,7 @@ function handleHeaderKeydown(e: KeyboardEvent) {
   display: flex;
   align-items: center;
   gap: var(--space-sm, 8px);
-  padding: var(--space-sm, 8px) var(--space-md, 12px);
+  padding: var(--space-xs, 4px) var(--space-md, 12px);
   cursor: pointer;
   user-select: none;
   min-height: 44px;
@@ -142,7 +142,7 @@ function handleHeaderKeydown(e: KeyboardEvent) {
 
 .group-index {
   flex-shrink: 0;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   opacity: 0.7;
 }
 
@@ -156,7 +156,7 @@ function handleHeaderKeydown(e: KeyboardEvent) {
   background: none;
   border: none;
   font-family: inherit;
-  font-size: 0.9rem;
+  font-size: 0.8125rem;
   font-weight: 600;
   text-align: left;
   cursor: pointer;
@@ -191,7 +191,7 @@ function handleHeaderKeydown(e: KeyboardEvent) {
 
 .group-count {
   flex-shrink: 0;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   opacity: 0.7;
 }
 
@@ -233,7 +233,7 @@ function handleHeaderKeydown(e: KeyboardEvent) {
   background: none;
   border: none;
   font-family: inherit;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   text-align: left;
   cursor: pointer;
   color: var(--r-color-text-secondary, #78716c);
@@ -290,14 +290,14 @@ function handleHeaderKeydown(e: KeyboardEvent) {
 
 .group-empty-text {
   margin: 0;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-style: italic;
   color: var(--color-stone-400, #a8a29e);
 }
 
 .group-empty-hint {
   margin: 2px 0 0;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   color: var(--color-stone-500, #78716c);
 }
 </style>

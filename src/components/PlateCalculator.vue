@@ -19,7 +19,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { plateCalc } from '../lib/plateCalc'
 
-const PLATES = [45, 35, 25, 10, 5, 2.5, 1.25]
+const PLATES = [45, 35, 25, 10, 5, 2.5]
 const BAR_WEIGHTS = [45, 35, 15, 0]
 
 const props = defineProps<{

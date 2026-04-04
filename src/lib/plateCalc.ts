@@ -1,12 +1,12 @@
 /**
  * Barbell plate math: given total weight and bar weight, return plate configuration.
  * Default bar: 45 lb.
- * Assumes standard plates: 45, 25, 10, 5, 2.5, 1.25 (each side).
+ * Assumes standard plates: 45, 35, 25, 10, 5, 2.5 (each side).
  */
 
 export const DEFAULT_BAR_WEIGHT = 45
 
-const PLATE_WEIGHTS = [45, 35, 25, 10, 5, 2.5, 1.25] as const
+const PLATE_WEIGHTS = [45, 35, 25, 10, 5, 2.5] as const
 
 export interface PlateConfig {
   plates: { weight: number; count: number }[]
