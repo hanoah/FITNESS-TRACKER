@@ -38,6 +38,7 @@ const editingSet = ref<SetLog | null>(null)
 const savingEdit = ref(false)
 const showHistory = ref(false)
 const warmupOverride = ref<boolean | null>(null)
+const statsExpanded = ref(false)
 
 const { profile: userProfile } = useUserProfile()
 const strengthGoal = computed(() => {
@@ -140,6 +141,15 @@ const suggestedRpe = computed(() => {
   if (s?.rpe != null) return s.rpe
   return ex?.lastSetRPE ?? 9
 })
+
+const hasStatsData = computed(() =>
+  suggestedWeight.value != null ||
+  !!suggestion.value?.note ||
+  !!suggestion.value?.lastDate ||
+  overallBestWeight.value > 0 ||
+  strengthGoal.value != null ||
+  goalProjection.value != null
+)
 
 const lastCompletedSetForPreload = computed(() => {
   const sets = completedSetsForExercise.value
@@ -330,6 +340,7 @@ watch(
   () => currentExercise.value?.slotKey,
   () => {
     warmupOverride.value = null
+    statsExpanded.value = false
   }
 )
 
@@ -673,8 +684,7 @@ async function handleEndWorkout() {
     </div>
 
     <template v-else>
-      <!-- Header: Exercise name + navigation + overflow -->
-      <RCard class="header-card">
+      <RCard class="active-card">
         <div class="info-header">
           <div class="info-header-left">
             <button v-if="canUnskip" type="button" class="back-link" @click="handleUnskip">← Previous</button>
@@ -694,6 +704,8 @@ async function handleEndWorkout() {
                 <button v-if="todayExercises.length > 0" type="button" class="overflow-item" @click="handleSaveAsTemplate(); closeOverflowMenu()">Save as Template</button>
                 <button type="button" class="overflow-item" @click="openSubPicker(); closeOverflowMenu()">Substitute</button>
                 <button type="button" class="overflow-item" @click="openAddPicker(); closeOverflowMenu()">Add Exercise</button>
+                <button type="button" class="overflow-item" @click="handleAddSet(); closeOverflowMenu()">Add Set</button>
+                <button type="button" class="overflow-item" @click="handleRemoveSet(); closeOverflowMenu()">Remove Set</button>
                 <button type="button" class="overflow-item" @click="handleRemoveExercise(); closeOverflowMenu()">Remove</button>
                 <button type="button" class="overflow-item" @click="handleEndWorkout(); closeOverflowMenu()">End Workout</button>
               </div>
@@ -701,29 +713,6 @@ async function handleEndWorkout() {
           </div>
         </div>
 
-        <!-- Inline stats: Suggested hero + PR/Goal secondary -->
-        <div class="inline-stats">
-          <div class="stat-target" v-if="suggestedWeight">
-            <span class="target-weight">{{ suggestedWeight }} × {{ suggestedReps }}</span>
-            <span class="target-label">Suggested</span>
-          </div>
-          <div v-if="suggestion?.note" class="stat-note">{{ suggestion.note }}</div>
-          <div v-if="suggestion?.lastDate" class="stat-note stat-last-session">
-            Last: {{ suggestion.lastWeight }} × {{ suggestion.lastReps }}<template v-if="suggestion.lastRpe"> @ RPE {{ suggestion.lastRpe }}</template> · {{ suggestion.lastDate }}
-          </div>
-          <div class="stat-secondary-row">
-            <span v-if="overallBestWeight > 0" class="stat-secondary stat-best">PR: {{ overallBestWeight }} lb</span>
-            <span v-if="strengthGoal" class="stat-secondary"
-              >Goal: {{ strengthGoal.weight }} lb / {{ formatStrengthLevel(strengthGoal.level) }}</span
-            >
-            <span v-else-if="!userProfile?.weightKg" class="stat-secondary stat-hint">Set weight in Settings for goals</span>
-          </div>
-          <div class="stat-secondary-row" v-if="goalProjection">
-            <span class="stat-secondary goal-eta">~{{ goalProjection.sessions }} {{ goalProjection.sessions === 1 ? 'week' : 'weeks' }} to {{ goalProjection.goal }} lb</span>
-          </div>
-        </div>
-
-        <!-- Set progress (per-exercise) -->
         <div class="set-progress-row">
           <span class="set-info">Set {{ currentExerciseSetNumber }} of {{ totalSetsForCurrentExercise }}{{ effectiveIsWarmup ? ' (warm-up)' : '' }}</span>
           <span class="progress-percent">{{ Math.round(workoutProgress * 100) }}%</span>
@@ -731,35 +720,42 @@ async function handleEndWorkout() {
         <div class="progress-bar-wrap">
           <div class="progress-bar-fill" :style="{ width: (workoutProgress * 100) + '%' }" />
         </div>
-        <div class="set-progress-row planned-set-row">
-          <span class="planned-label">{{ totalSetsForCurrentExercise }} sets planned</span>
-          <div class="set-progress-actions">
-            <button
-              type="button"
-              class="set-count-btn"
-              :disabled="setAdjusting || ending"
-              aria-label="Remove one planned set"
-              @click="handleRemoveSet"
-            >
-              −
-            </button>
-            <button
-              type="button"
-              class="set-count-btn"
-              :disabled="setAdjusting || ending"
-              aria-label="Add one working set"
-              @click="handleAddSet"
-            >
-              +
-            </button>
-          </div>
-        </div>
         <span class="overall-progress-label">{{ currentSetNumber - 1 }} of {{ totalWorkoutSets }} total</span>
 
-      </RCard>
+        <div v-if="hasStatsData" class="stats-section">
+          <button
+            type="button"
+            class="stats-toggle"
+            :aria-expanded="statsExpanded"
+            @click="statsExpanded = !statsExpanded"
+          >
+            <span class="stats-toggle-label">Stats</span>
+            <span class="stats-toggle-arrow">{{ statsExpanded ? '▾' : '▸' }}</span>
+          </button>
+          <div v-show="statsExpanded" class="stats-body">
+            <div class="stat-target" v-if="suggestedWeight">
+              <span class="target-weight">{{ suggestedWeight }} × {{ suggestedReps }}</span>
+              <span class="target-label">Suggested</span>
+            </div>
+            <div v-if="suggestion?.note" class="stat-note">{{ suggestion.note }}</div>
+            <div v-if="suggestion?.lastDate" class="stat-note stat-last-session">
+              Last: {{ suggestion.lastWeight }} × {{ suggestion.lastReps }}<template v-if="suggestion.lastRpe"> @ RPE {{ suggestion.lastRpe }}</template> · {{ suggestion.lastDate }}
+            </div>
+            <div class="stat-secondary-row">
+              <span v-if="overallBestWeight > 0" class="stat-secondary stat-best">PR: {{ overallBestWeight }} lb</span>
+              <span v-if="strengthGoal" class="stat-secondary"
+                >Goal: {{ strengthGoal.weight }} lb / {{ formatStrengthLevel(strengthGoal.level) }}</span
+              >
+              <span v-else-if="!userProfile?.weightKg" class="stat-secondary stat-hint">Set weight in Settings for goals</span>
+            </div>
+            <div class="stat-secondary-row" v-if="goalProjection">
+              <span class="stat-secondary goal-eta">~{{ goalProjection.sessions }} {{ goalProjection.sessions === 1 ? 'week' : 'weeks' }} to {{ goalProjection.goal }} lb</span>
+            </div>
+          </div>
+        </div>
 
-      <!-- Log input (always visible, no card wrapper needed but keeping for roughness style) -->
-      <RCard class="log-card">
+        <div class="divider" />
+
         <div class="log-input-row">
           <RInput
             v-model="logInput"
@@ -770,15 +766,16 @@ async function handleEndWorkout() {
           />
           <button v-if="logInput.trim()" type="button" class="clear-x-btn" aria-label="Clear input" @click="logInput = ''">×</button>
         </div>
+        <span class="log-hint">weight · reps · rpe</span>
         <div class="quick-adjust-row">
-          <span class="quick-adjust-label">Weight:</span>
+          <span class="quick-adjust-label">Weight</span>
           <div class="pill-row">
             <RButton variant="secondary" class="pill-btn" :disabled="!canUseQuickAdjust || logging" @click="adjustWeight(2.5)">+2.5</RButton>
             <RButton variant="secondary" class="pill-btn" :disabled="!canUseQuickAdjust || logging" @click="adjustWeight(5)">+5</RButton>
           </div>
         </div>
         <div class="quick-adjust-row">
-          <span class="quick-adjust-label">Reps:</span>
+          <span class="quick-adjust-label">Reps</span>
           <div class="pill-row">
             <RButton variant="secondary" class="pill-btn" :disabled="!canUseQuickAdjust || logging" @click="adjustReps(-2)">−2</RButton>
             <RButton variant="secondary" class="pill-btn" :disabled="!canUseQuickAdjust || logging" @click="adjustReps(-1)">−1</RButton>
@@ -787,7 +784,7 @@ async function handleEndWorkout() {
           </div>
         </div>
         <div class="quick-adjust-row">
-          <span class="quick-adjust-label">RPE:</span>
+          <span class="quick-adjust-label">RPE</span>
           <div class="pill-row">
             <button v-for="r in [7, 8, 9, 10]" :key="r" type="button" class="rpe-pill" :class="{ active: parsedLogValues && Math.round(parsedLogValues.rpe) === r }" :disabled="!canUseQuickAdjust || logging" @click="setRpe(r)">{{ r }}</button>
           </div>
@@ -808,8 +805,10 @@ async function handleEndWorkout() {
             <span class="toggle-knob" />
           </span>
         </button>
-        <button v-if="isBarbell" type="button" class="plate-math-trigger" @click="showPlateModal = true">Plate math</button>
-        <RButton type="primary" class="log-set-cta" @click="handleSubmit" :disabled="!logInput.trim() || logging">Log set →</RButton>
+        <div class="card-actions" :class="{ 'card-actions--single': !isBarbell }">
+          <button v-if="isBarbell" type="button" class="plate-math-trigger" @click="showPlateModal = true">Plate math</button>
+          <RButton type="primary" class="log-set-cta" @click="handleSubmit" :disabled="!logInput.trim() || logging">Log set →</RButton>
+        </div>
       </RCard>
 
       <PlateCalculator
@@ -859,14 +858,11 @@ async function handleEndWorkout() {
   gap: var(--space-md);
 }
 
-/* Header card */
-.header-card {
+/* Active card (merged header + log) */
+.active-card {
   padding: var(--space-lg);
   position: relative;
   z-index: 10;
-}
-.log-card {
-  padding: var(--space-lg);
 }
 .info-header {
   display: flex;
@@ -879,7 +875,9 @@ async function handleEndWorkout() {
   min-width: 0;
 }
 .exercise-name {
-  font-size: 1.25rem;
+  font-size: 1.5rem;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
   margin: 0;
   overflow-wrap: break-word;
 }
@@ -917,9 +915,36 @@ async function handleEndWorkout() {
   border-radius: 4px;
 }
 
-/* Inline stats */
-.inline-stats {
-  margin: var(--space-md) 0 var(--space-sm);
+/* Collapsible stats */
+.stats-section {
+  margin-top: var(--space-xs);
+}
+.stats-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  width: 100%;
+  padding: var(--space-xs) 0;
+  background: none;
+  border: none;
+  font-family: inherit;
+  font-size: 0.75rem;
+  color: var(--r-color-text-secondary);
+  cursor: pointer;
+  text-align: left;
+}
+.stats-toggle:hover { color: var(--r-color-text); }
+.stats-toggle-label {
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+.stats-toggle-arrow {
+  font-size: 0.65rem;
+  opacity: 0.6;
+}
+.stats-body {
+  padding: var(--space-xs) 0 var(--space-sm);
 }
 .stat-target {
   display: flex;
@@ -928,18 +953,18 @@ async function handleEndWorkout() {
   margin-bottom: 0.25rem;
 }
 .target-weight {
-  font-size: 1.4rem;
+  font-size: 1.25rem;
   font-weight: 700;
   color: var(--r-color-primary);
 }
 .target-label {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   color: var(--r-color-text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 .stat-note {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   color: var(--r-color-text-secondary);
   margin-bottom: 0.15rem;
 }
@@ -953,7 +978,7 @@ async function handleEndWorkout() {
   flex-wrap: wrap;
 }
 .stat-secondary {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   color: var(--r-color-text-secondary);
 }
 .stat-hint {
@@ -962,7 +987,7 @@ async function handleEndWorkout() {
   font-style: italic;
 }
 .goal-eta {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   color: var(--r-color-text-secondary);
 }
 
@@ -973,37 +998,10 @@ async function handleEndWorkout() {
   align-items: center;
   gap: 0.5rem;
   margin: var(--space-sm) 0 var(--space-xs);
-  font-size: 0.85rem;
+  font-size: 0.75rem;
 }
 .set-info { font-weight: 600; flex: 1; min-width: 0; }
-.set-progress-actions {
-  display: flex;
-  gap: 0.25rem;
-  flex-shrink: 0;
-}
-.set-count-btn {
-  min-width: 2rem;
-  height: 2rem;
-  padding: 0;
-  border-radius: 6px;
-  border: 1px solid var(--r-color-stroke);
-  background: var(--r-color-fill-secondary);
-  font-size: 1.1rem;
-  font-weight: 700;
-  line-height: 1;
-  cursor: pointer;
-  color: var(--r-color-text);
-}
-.set-count-btn:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
 .progress-percent { color: var(--r-color-text-secondary); flex-shrink: 0; }
-.planned-set-row { margin: var(--space-xs) 0 0; }
-.planned-label {
-  font-size: 0.85rem;
-  color: var(--color-stone-500, #78716c);
-}
 .overall-progress-label {
   display: block;
   font-size: 0.75rem;
@@ -1026,9 +1024,9 @@ async function handleEndWorkout() {
 }
 .progress-bar-wrap {
   width: 100%;
-  height: 5px;
+  height: 3px;
   background: var(--r-color-fill-secondary);
-  border-radius: 3px;
+  border-radius: 2px;
   overflow: hidden;
 }
 .warmup-toggle {
@@ -1038,7 +1036,7 @@ async function handleEndWorkout() {
   align-items: center;
   justify-content: space-between;
   gap: var(--space-md);
-  padding: var(--space-sm) var(--space-md);
+  padding: var(--space-xs) var(--space-md);
   border-radius: 12px;
   border: 1px solid var(--r-color-stroke);
   background: none;
@@ -1056,7 +1054,7 @@ async function handleEndWorkout() {
   min-width: 0;
 }
 .warmup-toggle-title {
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   font-weight: 600;
   color: var(--r-color-text);
 }
@@ -1066,8 +1064,8 @@ async function handleEndWorkout() {
 }
 .toggle-track {
   flex-shrink: 0;
-  width: 2.75rem;
-  height: 1.5rem;
+  width: 2.5rem;
+  height: 1.375rem;
   border-radius: 999px;
   background: var(--r-color-fill-secondary, #d6d3d1);
   position: relative;
@@ -1080,21 +1078,21 @@ async function handleEndWorkout() {
   position: absolute;
   top: 2px;
   left: 2px;
-  width: 1.125rem;
-  height: 1.125rem;
+  width: 1rem;
+  height: 1rem;
   border-radius: 50%;
   background: #fff;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
   transition: transform 0.15s ease;
 }
 .toggle-track.on .toggle-knob {
-  transform: translateX(1.25rem);
+  transform: translateX(1.125rem);
 }
 
 .progress-bar-fill {
   height: 100%;
   background: var(--r-color-primary);
-  border-radius: 3px;
+  border-radius: 2px;
   transition: width 0.3s ease;
 }
 
@@ -1131,11 +1129,27 @@ async function handleEndWorkout() {
 .dropdown-enter-from,
 .dropdown-leave-to { opacity: 0; transform: translateY(-4px); }
 
-/* Log card */
+/* Divider */
+.divider {
+  height: 1px;
+  background: var(--r-color-fill-secondary);
+  margin: var(--space-sm) calc(var(--space-lg) * -1);
+}
+
+/* Log area */
 .log-input-large :deep(.r-input__input) {
   font-size: 1.5rem;
   text-align: center;
   padding: var(--space-lg);
+}
+.log-hint {
+  display: block;
+  text-align: center;
+  font-size: 0.7rem;
+  color: var(--r-color-text-secondary);
+  letter-spacing: 0.04em;
+  margin-top: calc(var(--space-xs) * -1);
+  margin-bottom: var(--space-xs);
 }
 .log-input-row {
   display: flex;
@@ -1164,22 +1178,38 @@ async function handleEndWorkout() {
 .quick-adjust-row {
   display: flex;
   align-items: center;
-  gap: var(--space-md);
-  margin-top: var(--space-md);
+  gap: var(--space-sm);
+  margin-top: var(--space-sm);
   flex-wrap: wrap;
 }
 .quick-adjust-label {
-  font-size: 0.85rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
   color: var(--r-color-text-secondary);
-  min-width: 3.5rem;
+  min-width: 3rem;
 }
-.pill-row { display: flex; gap: var(--space-sm); flex-wrap: wrap; }
-.pill-btn { min-width: 2.5rem; padding: 0.35rem 0.6rem; }
+.pill-row { display: flex; gap: var(--space-xs); flex-wrap: wrap; }
+.pill-btn {
+  min-width: 2.5rem;
+  height: 1.875rem;
+  padding: 0 0.5rem;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 .rpe-pill {
   min-width: 2.25rem;
-  padding: 0.35rem 0.5rem;
+  height: 1.875rem;
+  padding: 0 0.5rem;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-family: inherit;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   border: 2px solid var(--r-color-stroke);
   background: var(--r-color-fill-secondary);
   border-radius: 8px;
@@ -1193,93 +1223,30 @@ async function handleEndWorkout() {
 .error { color: var(--r-color-error); margin: 0.5rem 0 0 0; font-size: 0.9rem; }
 .log-set-cta {
   width: 100%;
-  margin-top: var(--space-sm);
   font-size: 1.1rem;
 }
 
-/* Collapsible sections */
-.collapsible-section {
-  padding: 0 var(--space-lg);
-}
-.collapsible-toggle {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  padding: var(--space-md) 0;
-  background: none;
-  border: none;
-  border-bottom: 1px solid var(--r-color-fill-secondary);
-  font-family: inherit;
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--r-color-text);
-  cursor: pointer;
+
+/* Card actions grid */
+.card-actions {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
   gap: var(--space-sm);
+  margin-top: var(--space-md);
 }
-.collapsible-toggle:hover { color: var(--r-color-primary); }
-.toggle-arrow {
-  flex-shrink: 0;
-  color: var(--r-color-text-secondary);
-  font-size: 0.8rem;
+.card-actions--single {
+  grid-template-columns: 1fr;
 }
-.toggle-preview {
-  flex: 1;
-  text-align: right;
-  font-weight: 400;
-  font-size: 0.8rem;
-  color: var(--r-color-text-secondary);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.collapsible-body {
-  padding: var(--space-md) 0;
-}
-
-/* Logged sets compact */
-.logged-sets-compact {
-  padding: var(--space-md) 0;
-  border-bottom: 1px solid var(--r-color-fill-secondary);
-}
-.logged-label {
-  font-size: 0.85rem;
-  font-weight: 600;
-}
-.logged-sets-list {
-  margin: 0;
-  padding: var(--space-xs) 0 0 0;
-  list-style: none;
-}
-.set-item-clickable { list-style: none; }
-.set-edit-btn {
-  display: block;
-  width: 100%;
-  padding: 0.25rem 0;
-  text-align: left;
-  background: none;
-  border: none;
-  font-family: inherit;
-  font-size: 0.85rem;
-  color: var(--r-color-text-secondary);
-  cursor: pointer;
-  border-radius: 4px;
-}
-.set-edit-btn:hover { color: var(--r-color-primary); background: var(--r-color-fill-secondary); }
-
-/* Plate math trigger */
 .plate-math-trigger {
-  width: 100%;
   padding: var(--space-sm) var(--space-md);
-  border: 1px solid var(--r-color-stroke);
   border-radius: 12px;
+  border: 1px solid var(--r-color-stroke);
   background: none;
   font-family: inherit;
   font-size: 0.85rem;
   font-weight: 500;
   color: var(--r-color-text-secondary);
   cursor: pointer;
-  margin-top: var(--space-sm);
   transition: background 0.1s;
 }
 .plate-math-trigger:active {
